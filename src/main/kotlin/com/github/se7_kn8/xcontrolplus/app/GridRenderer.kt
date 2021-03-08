@@ -6,6 +6,7 @@ import com.github.se7_kn8.xcontrolplus.app.grid.GridContext
 import com.github.se7_kn8.xcontrolplus.app.grid.Rotation
 import com.github.se7_kn8.xcontrolplus.app.grid.toolbox.ToolboxMode
 import javafx.animation.AnimationTimer
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.scene.canvas.Canvas
@@ -41,13 +42,18 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
 
     val lastFpsProperty = SimpleIntegerProperty(0)
 
+    val showGridProperty = SimpleBooleanProperty(true)
+
     override fun handle(now: Long) {
         calcFps()
         clearScreen()
 
 
 
-        renderGrid()
+        if (showGridProperty.get()) {
+            renderGrid()
+        }
+
         renderCells()
         renderTool()
     }

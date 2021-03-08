@@ -60,8 +60,11 @@ class XControlPlus : Application() {
         val fpsInfo = Label()
         fpsInfo.textProperty().bind(Bindings.concat("FPS: ", gridRenderer.lastFpsProperty))
 
+        val showGrid = CheckBox()
+        showGrid.selectedProperty().bindBidirectional(gridRenderer.showGridProperty)
 
         val bottom = HBox()
+        bottom.children.add(showGrid)
         bottom.children.add(fpsInfo)
         bottom.children.add(mousePosInfo)
         bottom.children.add(zoomSlider)
