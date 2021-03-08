@@ -6,8 +6,9 @@ import javafx.scene.paint.Color
 class Colors {
     companion object {
         val background: Color = Color.WHITE
-        val grid: Color = Color.GRAY
+        val grid: Color = Color.DARKGRAY
         val track: Color = Color.BLACK
-        val trackHighlight: Color = Color.LIGHTGRAY
+        val trackHighlight: Color = Color.GRAY
+        val trackHighlightTurnout = Color.WHITE
     }
 }

@@ -13,7 +13,11 @@ enum class GridCellRenderer {
                         gridX.toDouble() * GRID_SIZE,
                         (gridY.toDouble() + 0.3) * GRID_SIZE, GRID_SIZE.toDouble(), 0.4 * GRID_SIZE.toDouble()
                     )
-                    gc.fill = Colors.trackHighlight
+                    if (cell is TurnoutGridCell && !cell.turned) {
+                        gc.fill = Colors.trackHighlightTurnout
+                    } else {
+                        gc.fill = Colors.trackHighlight
+                    }
                     gc.fillRect(
                         gridX.toDouble() * GRID_SIZE,
                         (gridY.toDouble() + 0.4) * GRID_SIZE, GRID_SIZE.toDouble(), 0.2 * GRID_SIZE.toDouble()
@@ -24,7 +28,11 @@ enum class GridCellRenderer {
                         (gridX.toDouble() + 0.3) * GRID_SIZE,
                         gridY.toDouble() * GRID_SIZE, 0.4 * GRID_SIZE.toDouble(), GRID_SIZE.toDouble()
                     )
-                    gc.fill = Colors.trackHighlight
+                    if (cell is TurnoutGridCell && !cell.turned) {
+                        gc.fill = Colors.trackHighlightTurnout
+                    } else {
+                        gc.fill = Colors.trackHighlight
+                    }
                     gc.fillRect(
                         (gridX.toDouble() + 0.4) * GRID_SIZE,
                         gridY.toDouble() * GRID_SIZE, 0.2 * GRID_SIZE.toDouble(), GRID_SIZE.toDouble()
@@ -56,7 +64,11 @@ enum class GridCellRenderer {
                             (gridY.toDouble() + 0.7) * GRID_SIZE
                         )
                     gc.fillPolygon(x, y, 4)
-                    gc.fill = Colors.trackHighlight
+                    if (cell is TurnoutGridCell && cell.turned) {
+                        gc.fill = Colors.trackHighlightTurnout
+                    } else {
+                        gc.fill = Colors.trackHighlight
+                    }
                     x =
                         doubleArrayOf(
                             (gridX.toDouble() + 0.4) * GRID_SIZE,
@@ -89,7 +101,11 @@ enum class GridCellRenderer {
                             (gridY.toDouble() + 0.7) * GRID_SIZE
                         )
                     gc.fillPolygon(x, y, 4)
-                    gc.fill = Colors.trackHighlight
+                    if (cell is TurnoutGridCell && cell.turned) {
+                        gc.fill = Colors.trackHighlightTurnout
+                    } else {
+                        gc.fill = Colors.trackHighlight
+                    }
                     x =
                         doubleArrayOf(
                             (gridX.toDouble() + 0.0) * GRID_SIZE,
@@ -122,7 +138,11 @@ enum class GridCellRenderer {
                             (gridY.toDouble() + 0.0) * GRID_SIZE
                         )
                     gc.fillPolygon(x, y, 4)
-                    gc.fill = Colors.trackHighlight
+                    if (cell is TurnoutGridCell && cell.turned) {
+                        gc.fill = Colors.trackHighlightTurnout
+                    } else {
+                        gc.fill = Colors.trackHighlight
+                    }
                     x =
                         doubleArrayOf(
                             (gridX.toDouble() + 0.6) * GRID_SIZE,
@@ -155,7 +175,11 @@ enum class GridCellRenderer {
                             (gridY.toDouble() + 0.3) * GRID_SIZE
                         )
                     gc.fillPolygon(x, y, 4)
-                    gc.fill = Colors.trackHighlight
+                    if (cell is TurnoutGridCell && cell.turned) {
+                        gc.fill = Colors.trackHighlightTurnout
+                    } else {
+                        gc.fill = Colors.trackHighlight
+                    }
                     x =
                         doubleArrayOf(
                             (gridX.toDouble() + 1.0) * GRID_SIZE,
@@ -171,7 +195,6 @@ enum class GridCellRenderer {
                             (gridY.toDouble() + 0.4) * GRID_SIZE
                         )
                     gc.fillPolygon(x, y, 4)
-                    gc.fill = Colors.trackHighlight
                 }
             }
 
@@ -184,11 +207,11 @@ enum class GridCellRenderer {
         override fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext, cell: GridCell?) {
             if (cell is TurnoutGridCell) {
                 if (cell.turned) {
-                    STRAIGHT.render(gridX, gridY, rot, gc)
-                    TURN.render(gridX, gridY, rot, gc)
+                    STRAIGHT.render(gridX, gridY, rot, gc, cell)
+                    TURN.render(gridX, gridY, rot, gc, cell)
                 } else {
-                    TURN.render(gridX, gridY, rot, gc)
-                    STRAIGHT.render(gridX, gridY, rot, gc)
+                    TURN.render(gridX, gridY, rot, gc, cell)
+                    STRAIGHT.render(gridX, gridY, rot, gc, cell)
                 }
             } else {
                 STRAIGHT.render(gridX, gridY, rot, gc)
