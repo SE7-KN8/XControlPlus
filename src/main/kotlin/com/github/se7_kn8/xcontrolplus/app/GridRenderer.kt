@@ -1,12 +1,14 @@
 package com.github.se7_kn8.xcontrolplus.app
 
+import com.github.se7_kn8.xcontrolplus.app.grid.Colors
 import com.github.se7_kn8.xcontrolplus.app.grid.GridCell
 import com.github.se7_kn8.xcontrolplus.app.grid.GridContext
+import com.github.se7_kn8.xcontrolplus.app.grid.Rotation
+import com.github.se7_kn8.xcontrolplus.app.grid.toolbox.ToolboxMode
 import javafx.animation.AnimationTimer
 import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.scene.canvas.Canvas
-import javafx.scene.paint.Color
-import javafx.scene.text.Font
 
 
 const val GRID_SIZE = 50
@@ -23,16 +25,71 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
 
     private var fpsAvg = 0.0
     private var fpsCounter = 0
-    private var lastFpsAvg = 0.0
-    private var grid = Array(GRID_WIDTH * 2) { Array(GRID_HEIGHT * 2) { GridCell() } }
+    private val cells = ArrayList<GridCell>()
 
-    val zoomProperty = SimpleDoubleProperty(1.0)
+    var toolboxMode = ToolboxMode.MOUSE
+    var rotation = Rotation.D0
+
 
     var zoomCenterX = 0.0
     var zoomCenterY = 0.0
 
-    override fun handle(now: Long) {
+    val mouseXProperty = SimpleIntegerProperty(1)
+    val mouseYProperty = SimpleIntegerProperty(1)
 
+    val zoomProperty = SimpleDoubleProperty(1.0)
+
+    val lastFpsProperty = SimpleIntegerProperty(0)
+
+    override fun handle(now: Long) {
+        calcFps()
+        clearScreen()
+
+
+
+        renderGrid()
+        renderCells()
+        renderTool()
+    }
+
+    private fun renderGrid() {
+        gc.stroke = Colors.grid
+
+        gc.lineWidth = 2.0
+        for (x in -PIXEL_WIDTH..PIXEL_WIDTH step GRID_SIZE) {
+            gc.strokeLine(x.toDouble(), -PIXEL_HEIGHT.toDouble(), x.toDouble(), PIXEL_HEIGHT.toDouble())
+        }
+        for (y in -PIXEL_HEIGHT..PIXEL_HEIGHT step GRID_SIZE) {
+            gc.strokeLine(-PIXEL_WIDTH.toDouble(), y.toDouble(), PIXEL_WIDTH.toDouble(), y.toDouble())
+        }
+
+
+        gc.lineWidth = 5.0
+        gc.strokeLine(-PIXEL_WIDTH.toDouble(), 0.0, PIXEL_WIDTH.toDouble(), 0.0)
+        gc.strokeLine(0.0, -PIXEL_HEIGHT.toDouble(), 0.0, PIXEL_HEIGHT.toDouble())
+    }
+
+    private fun renderCells() {
+        gc.stroke = Colors.track
+        gc.fill = Colors.track
+
+        for (cell in cells) {
+            cell.getRenderer().render(cell.getGridPosX(), cell.getGridPosY(), cell.getRotation(), gc)
+        }
+    }
+
+    private fun renderTool() {
+        gc.fill = Colors.track
+        toolboxMode.draw(getGridX(), getGridY(), rotation, gc)
+    }
+
+    private fun clearScreen() {
+        gc.fill = Colors.background
+        // Draw rect without transformations to clear screen
+        canvas.graphicsContext2D.fillRect(0.0, 0.0, canvas.width, canvas.height)
+    }
+
+    private fun calcFps() {
         fpsCounter++
         val elapsedTime = System.currentTimeMillis() - lastTime
         lastTime = System.currentTimeMillis()
@@ -41,47 +98,11 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
         fpsAvg += currentFps
 
         if (fpsCounter == 10) {
-            lastFpsAvg = fpsAvg / (fpsCounter.toDouble())
+            lastFpsProperty.set((fpsAvg / (fpsCounter.toDouble())).toInt())
             fpsCounter = 0
             fpsAvg = 0.0
         }
-
-        gc.fill = Color.WHITE
-        // Draw rect without transformations to clear screen
-        canvas.graphicsContext2D.fillRect(0.0, 0.0, canvas.width, canvas.height)
-
-        for (x in -GRID_WIDTH until GRID_WIDTH) {
-            for (y in -GRID_HEIGHT until GRID_HEIGHT) {
-                val xWidth = (x.toDouble() + GRID_WIDTH) / (GRID_WIDTH * 2.0)
-                val yWidth = (y.toDouble() + GRID_HEIGHT) / (GRID_HEIGHT * 2.0)
-                gc.fill = grid[x + GRID_WIDTH][y + GRID_HEIGHT].getFill()
-                gc.fillRect(x.toDouble() * GRID_SIZE, y.toDouble() * GRID_SIZE, GRID_SIZE.toDouble(), GRID_SIZE.toDouble())
-            }
-        }
-
-        gc.fill = Color.BLACK
-        gc.fontSize = 10.0
-
-        gc.fillText("Time: ", 10.0, 10.0)
-        gc.fillText("Name: ", 10.0, 30.0)
-        gc.fillText("Desc: ", 10.0, 50.0)
-        gc.fillText("FPS: " + lastFpsAvg.toInt(), 10.0, 70.0)
-        gc.lineWidth = 2.0
-        gc.stroke = Color.GRAY
-
-        for (x in -PIXEL_WIDTH..PIXEL_WIDTH step GRID_SIZE) {
-            gc.strokeLine(x.toDouble(), -PIXEL_HEIGHT.toDouble(), x.toDouble(), PIXEL_HEIGHT.toDouble())
-        }
-        for (y in -PIXEL_HEIGHT..PIXEL_HEIGHT step GRID_SIZE) {
-            gc.strokeLine(-PIXEL_WIDTH.toDouble(), y.toDouble(), PIXEL_WIDTH.toDouble(), y.toDouble())
-        }
-
-        gc.stroke = Color.BLACK
-        gc.lineWidth = 3.0
-        gc.strokeLine(-PIXEL_WIDTH.toDouble(), 0.0, PIXEL_WIDTH.toDouble(), 0.0)
-        gc.strokeLine(0.0, -PIXEL_HEIGHT.toDouble(), 0.0, PIXEL_HEIGHT.toDouble())
     }
-
 
     fun transformX(x: Double): Double {
         val middleX = (x - zoomCenterX) + ((canvas.width / 2.0) * (1.0 / zoomProperty.get()))
@@ -101,6 +122,29 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
     fun transformScreenY(screenY: Double): Double {
         val middleY = screenY - canvas.height / 2.0
         return (middleY / zoomProperty.get()) + zoomCenterY
+    }
+
+    fun onClick() {
+        toolboxMode.onClick(getGridX(), getGridY(), rotation, cells)
+    }
+
+    fun getGridX(): Int {
+        var mouseX = mouseXProperty.get()
+
+        if (mouseX > 0) {
+            mouseX -= 1
+        }
+        return mouseX
+    }
+
+    fun getGridY(): Int {
+        var mouseY = mouseYProperty.get()
+
+
+        if (mouseY > 0) {
+            mouseY -= 1
+        }
+        return mouseY
     }
 
 }
