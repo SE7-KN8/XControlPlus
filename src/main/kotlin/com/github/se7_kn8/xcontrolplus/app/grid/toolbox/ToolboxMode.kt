@@ -8,16 +8,17 @@ enum class ToolboxMode {
 
     MOUSE {
         override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext) {
-            gc.fillRect(
-                (gridX * GRID_SIZE).toDouble(),
-                (gridY * GRID_SIZE).toDouble(), GRID_SIZE.toDouble(), GRID_SIZE.toDouble()
-            )
+            // Do nothing
         }
 
         override fun getCursor(): Cursor = Cursor.DEFAULT
 
         override fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>) {
-            // Do nothing
+            for (cell in cells) {
+                if (cell.getGridPosX() == gridX && cell.getGridPosY() == gridY && cell is TurnoutGridCell) {
+                    cell.turned = !cell.turned
+                }
+            }
         }
     },
     STRAIGHT {
@@ -41,6 +42,7 @@ enum class ToolboxMode {
 
         override fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>) {
             removeCellAtSamePos(gridX, gridY, cells)
+            cells.add(TurnGridCell(gridX, gridY, rot))
         }
     },
     TURNOUT {
@@ -52,12 +54,16 @@ enum class ToolboxMode {
 
         override fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>) {
             removeCellAtSamePos(gridX, gridY, cells)
+            cells.add(TurnoutGridCell(gridX, gridY, rot))
         }
     },
 
     DELETE {
         override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext) {
-            // Do nothing
+            gc.fillRect(
+                (gridX * GRID_SIZE).toDouble(),
+                (gridY * GRID_SIZE).toDouble(), GRID_SIZE.toDouble(), GRID_SIZE.toDouble()
+            )
         }
 
         override fun getCursor(): Cursor = Cursor.OPEN_HAND

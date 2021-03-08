@@ -3,6 +3,7 @@ package com.github.se7_kn8.xcontrolplus.app.grid
 import com.github.se7_kn8.xcontrolplus.app.GridRenderer
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Paint
+import javafx.scene.shape.ArcType
 import javafx.scene.text.Font
 
 class GridContext(private val gc: GraphicsContext, private val renderer: GridRenderer) {
@@ -45,6 +46,28 @@ class GridContext(private val gc: GraphicsContext, private val renderer: GridRen
 
     fun fillText(text: String, x: Double, y: Double) {
         gc.fillText(text, renderer.transformX(x), renderer.transformY(y))
+    }
+
+    fun fillArc(x: Double, y: Double, w: Double, h: Double, startAngle: Double, endAngle: Double, type: ArcType) {
+        gc.fillArc(
+            renderer.transformX(x),
+            renderer.transformY(y),
+            w * renderer.zoomProperty.get(),
+            h * renderer.zoomProperty.get(),
+            startAngle,
+            endAngle,
+            type
+        )
+    }
+
+    fun fillPolygon(xPoints: DoubleArray, yPoints: DoubleArray, points: Int) {
+        for ((index, xPoint) in xPoints.withIndex()) {
+            xPoints[index] = renderer.transformX(xPoint)
+        }
+        for ((index, yPoint) in yPoints.withIndex()) {
+            yPoints[index] = renderer.transformY(yPoint)
+        }
+        gc.fillPolygon(xPoints, yPoints, points)
     }
 
 }

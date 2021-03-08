@@ -121,7 +121,9 @@ class XControlPlus : Application() {
             moveOffsetY = gridRenderer.zoomCenterY * gridRenderer.zoomProperty.get()
             mouseStartPosX = it.x
             mouseStartPosY = it.y
-            gridRenderer.onClick()
+            if (it.button == MouseButton.PRIMARY) {
+                gridRenderer.onClick()
+            }
         }
 
         scene.setOnMouseDragged {

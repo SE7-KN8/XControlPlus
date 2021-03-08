@@ -74,7 +74,7 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
         gc.fill = Colors.track
 
         for (cell in cells) {
-            cell.getRenderer().render(cell.getGridPosX(), cell.getGridPosY(), cell.getRotation(), gc)
+            cell.getRenderer().render(cell.getGridPosX(), cell.getGridPosY(), cell.getRotation(), gc, cell)
         }
     }
 
