@@ -3,7 +3,6 @@ package com.github.se7_kn8.xcontrolplus.app
 import javafx.application.Application
 import javafx.beans.binding.Bindings
 import javafx.beans.property.SimpleDoubleProperty
-import javafx.beans.property.SimpleIntegerProperty
 import javafx.geometry.Pos
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
@@ -13,7 +12,6 @@ import javafx.scene.layout.*
 import javafx.stage.Stage
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 class XControlPlus : Application() {
 
@@ -41,8 +39,8 @@ class XControlPlus : Application() {
             }
         }
 
-        val mouseXProperty = SimpleIntegerProperty(0)
-        val mouseYProperty = SimpleIntegerProperty(0)
+        val mouseXProperty = SimpleDoubleProperty(0.0)
+        val mouseYProperty = SimpleDoubleProperty(0.0)
         val mousePosInfo = Label()
         mousePosInfo.textProperty().bind(Bindings.concat("X: ", mouseXProperty, "Y: ", mouseYProperty))
 
@@ -75,14 +73,28 @@ class XControlPlus : Application() {
         scene.setOnScroll {
             val zoom = it.deltaY * it.multiplierY * 0.0001 + 1.0
             var newValue: Double = timer.zoomProperty.get() * zoom
-            newValue = min(newValue, zoomSlider.max)
-            newValue = max(newValue, zoomSlider.min)
+            if (!it.isAltDown) {
+                newValue = min(newValue, zoomSlider.max)
+                newValue = max(newValue, zoomSlider.min)
+            }
             timer.zoomProperty.set(newValue)
         }
 
         scene.setOnMouseMoved {
-            mouseXProperty.set((timer.transformScreenX(it.x - canvas.layoutX) + 1.4).roundToInt() / GRID_SPACE)
-            mouseYProperty.set((timer.transformScreenY(it.y - canvas.layoutY) + 1.4).roundToInt() / GRID_SPACE)
+            var tX = timer.transformScreenX(it.x - canvas.parent.layoutX) / GRID_SIZE
+            var tY = timer.transformScreenY(it.y - canvas.parent.layoutY) / GRID_SIZE
+            if (tX > 0.0) {
+                tX += 1.0
+            } else {
+                tX -= 1.0
+            }
+            if (tY > 0.0) {
+                tY += 1.0
+            } else {
+                tY -= 1.0
+            }
+            mouseXProperty.set(tX.toInt().toDouble())
+            mouseYProperty.set(tY.toInt().toDouble())
         }
         scene.setOnMousePressed {
             moveOffsetX = timer.zoomCenterX * timer.zoomProperty.get()
