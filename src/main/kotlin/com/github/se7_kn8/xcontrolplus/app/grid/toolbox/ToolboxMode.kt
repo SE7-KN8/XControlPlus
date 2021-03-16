@@ -3,11 +3,12 @@ package com.github.se7_kn8.xcontrolplus.app.grid.toolbox
 import com.github.se7_kn8.xcontrolplus.app.GRID_SIZE
 import com.github.se7_kn8.xcontrolplus.app.grid.*
 import javafx.scene.Cursor
+import javafx.scene.canvas.GraphicsContext
 
 enum class ToolboxMode {
 
     MOUSE {
-        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext) {
+        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext) {
             // Do nothing
         }
 
@@ -22,7 +23,7 @@ enum class ToolboxMode {
         }
     },
     STRAIGHT {
-        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext) {
+        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext) {
             GridCellRenderer.STRAIGHT.render(gridX, gridY, rot, gc)
         }
 
@@ -34,7 +35,7 @@ enum class ToolboxMode {
         }
     },
     TURN {
-        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext) {
+        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext) {
             GridCellRenderer.TURN.render(gridX, gridY, rot, gc)
         }
 
@@ -46,7 +47,7 @@ enum class ToolboxMode {
         }
     },
     TURNOUT {
-        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext) {
+        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext) {
             GridCellRenderer.TURNOUT.render(gridX, gridY, rot, gc)
         }
 
@@ -59,7 +60,7 @@ enum class ToolboxMode {
     },
 
     DELETE {
-        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext) {
+        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext) {
             gc.fillRect(
                 (gridX * GRID_SIZE).toDouble(),
                 (gridY * GRID_SIZE).toDouble(), GRID_SIZE.toDouble(), GRID_SIZE.toDouble()
@@ -75,7 +76,7 @@ enum class ToolboxMode {
     },
     ;
 
-    abstract fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext)
+    abstract fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext)
 
     abstract fun getCursor(): Cursor
 

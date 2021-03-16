@@ -3,14 +3,12 @@ package com.github.se7_kn8.xcontrolplus.app
 import com.github.se7_kn8.xcontrolplus.app.grid.toolbox.ToolboxMode
 import javafx.application.Application
 import javafx.beans.binding.Bindings
-import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
+import javafx.geometry.Point2D
 import javafx.geometry.Pos
-import javafx.scene.Cursor
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.scene.control.*
-import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.*
 import javafx.stage.Stage
@@ -19,13 +17,11 @@ import kotlin.math.min
 
 class XControlPlus : Application() {
 
-    private var moveOffsetX = 0.0
-    private var moveOffsetY = 0.0
-    private var mouseStartPosX = 0.0
-    private var mouseStartPosY = 0.0
+    private val mouseGridPosX = SimpleIntegerProperty(0)
+    private val mouseGridPosY = SimpleIntegerProperty(0)
 
-    private val mouseXProperty = SimpleIntegerProperty(1)
-    private val mouseYProperty = SimpleIntegerProperty(1)
+    private var moveOffset = Point2D(0.0, 0.0)
+    private var mouseStartPos = Point2D(0.0, 0.0)
 
     private lateinit var canvas: Canvas
     private lateinit var gridRenderer: GridRenderer
@@ -49,13 +45,11 @@ class XControlPlus : Application() {
                 zoomSlider.value = 1.0
             }
         }
-
-
-        gridRenderer.mouseXProperty.bind(mouseXProperty)
-        gridRenderer.mouseYProperty.bind(mouseYProperty)
+        gridRenderer.mouseGridXProperty.bind(mouseGridPosX)
+        gridRenderer.mouseGridYProperty.bind(mouseGridPosY)
 
         val mousePosInfo = Label()
-        mousePosInfo.textProperty().bind(Bindings.concat("X: ", mouseXProperty, "Y: ", mouseYProperty))
+        mousePosInfo.textProperty().bind(Bindings.concat("X:", mouseGridPosX, " Y: ", mouseGridPosY))
 
         val fpsInfo = Label()
         fpsInfo.textProperty().bind(Bindings.concat("FPS: ", gridRenderer.lastFpsProperty))
@@ -68,10 +62,11 @@ class XControlPlus : Application() {
         bottom.children.add(fpsInfo)
         bottom.children.add(mousePosInfo)
         bottom.children.add(zoomSlider)
+        bottom.spacing = 10.0
         bottom.alignment = Pos.CENTER_RIGHT
 
         val left = VBox()
-        //left.children.addAll(Button("Test1"), Button("Test2"), Button("Test3"))
+        left.children.addAll(Button("Test1"), Button("Test2"), Button("Test3"))
 
         val toolboxButtonGroup = ToggleGroup()
 
@@ -113,17 +108,15 @@ class XControlPlus : Application() {
                 newValue = max(newValue, zoomSlider.min)
             }
             gridRenderer.zoomProperty.set(newValue)
-            updateMousePos(it.x, it.y)
+            updateMousePos(Point2D(it.x, it.y))
         }
 
         scene.setOnMouseMoved {
-            updateMousePos(it.x, it.y)
+            updateMousePos(Point2D(it.x, it.y))
         }
         scene.setOnMousePressed {
-            moveOffsetX = gridRenderer.zoomCenterX * gridRenderer.zoomProperty.get()
-            moveOffsetY = gridRenderer.zoomCenterY * gridRenderer.zoomProperty.get()
-            mouseStartPosX = it.x
-            mouseStartPosY = it.y
+            moveOffset = gridRenderer.translateProperty.get()
+            mouseStartPos = Point2D(it.x, it.y)
             if (it.button == MouseButton.PRIMARY) {
                 gridRenderer.onClick()
             }
@@ -131,10 +124,7 @@ class XControlPlus : Application() {
 
         scene.setOnMouseDragged {
             if (it.button == MouseButton.MIDDLE) {
-                val deltaX = it.x - mouseStartPosX
-                val deltaY = it.y - mouseStartPosY
-                gridRenderer.zoomCenterX = (moveOffsetX - deltaX) / gridRenderer.zoomProperty.get()
-                gridRenderer.zoomCenterY = (moveOffsetY - deltaY) / gridRenderer.zoomProperty.get()
+                gridRenderer.translateProperty.set(Point2D(it.x, it.y).add(moveOffset).subtract(mouseStartPos))
             }
         }
 
@@ -155,21 +145,20 @@ class XControlPlus : Application() {
         stage.show()
     }
 
-    private fun updateMousePos(screenX: Double, screenY: Double) {
-        var tX = gridRenderer.transformScreenX(screenX - canvas.parent.layoutX) / GRID_SIZE
-        var tY = gridRenderer.transformScreenY(screenY - canvas.parent.layoutY) / GRID_SIZE
-        if (tX > 0.0) {
-            tX += 1.0
-        } else {
-            tX -= 1.0
+    private fun updateMousePos(mousePos: Point2D) {
+        val grid = gridRenderer.transformScreen(mousePos.subtract(canvas.parent.layoutX, canvas.parent.layoutY)).multiply(1.0 / GRID_SIZE)
+        var x = grid.x
+        var y = grid.y
+
+        if (x < 0.0) {
+            x -= 1.0
         }
-        if (tY > 0.0) {
-            tY += 1.0
-        } else {
-            tY -= 1.0
+        if (y < 0.0) {
+            y -= 1.0
         }
-        mouseXProperty.set(tX.toInt())
-        mouseYProperty.set(tY.toInt())
+
+        mouseGridPosX.value = x.toInt()
+        mouseGridPosY.value = y.toInt()
     }
 
 }

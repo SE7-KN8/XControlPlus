@@ -2,17 +2,19 @@ package com.github.se7_kn8.xcontrolplus.app
 
 import com.github.se7_kn8.xcontrolplus.app.grid.Colors
 import com.github.se7_kn8.xcontrolplus.app.grid.GridCell
-import com.github.se7_kn8.xcontrolplus.app.grid.GridContext
 import com.github.se7_kn8.xcontrolplus.app.grid.Rotation
 import com.github.se7_kn8.xcontrolplus.app.grid.toolbox.ToolboxMode
 import javafx.animation.AnimationTimer
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.geometry.Point2D
 import javafx.scene.canvas.Canvas
+import javafx.scene.transform.Affine
 
 
-const val GRID_SIZE = 50
+const val GRID_SIZE = 32
 const val GRID_WIDTH = 32
 const val GRID_HEIGHT = 18
 const val PIXEL_WIDTH = GRID_SIZE * GRID_WIDTH
@@ -20,7 +22,7 @@ const val PIXEL_HEIGHT = GRID_SIZE * GRID_HEIGHT
 
 class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
 
-    private val gc = GridContext(canvas.graphicsContext2D, this)
+    private val gc = canvas.graphicsContext2D
 
     private var lastTime: Long = 0
 
@@ -31,23 +33,42 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
     var toolboxMode = ToolboxMode.MOUSE
     var rotation = Rotation.D0
 
-
-    var zoomCenterX = 0.0
-    var zoomCenterY = 0.0
-
-    val mouseXProperty = SimpleIntegerProperty(1)
-    val mouseYProperty = SimpleIntegerProperty(1)
+    val mouseGridXProperty = SimpleIntegerProperty(0)
+    val mouseGridYProperty = SimpleIntegerProperty(0)
 
     val zoomProperty = SimpleDoubleProperty(1.0)
+    val translateProperty = SimpleObjectProperty(Point2D(0.0, 0.0))
 
     val lastFpsProperty = SimpleIntegerProperty(0)
 
     val showGridProperty = SimpleBooleanProperty(true)
 
+    init {
+        zoomProperty.addListener { _, oldValue, newValue ->
+            val scaleFactor = oldValue.toDouble() / newValue.toDouble()
+            val middlePoint = transformScreen(Point2D(canvas.width / 2.0, canvas.height / 2.0))
+            val newScale = gc.transform.apply {
+                appendScale(
+                    scaleFactor,
+                    scaleFactor,
+                    middlePoint.x,
+                    middlePoint.y
+                )
+            }
+            gc.transform = newScale
+        }
+        translateProperty.addListener { _, _, newValue ->
+            val newTranslation = gc.transform.apply {
+                tx = newValue.x
+                ty = newValue.y
+            }
+            gc.transform = newTranslation
+        }
+    }
+
     override fun handle(now: Long) {
         calcFps()
         clearScreen()
-
 
 
         if (showGridProperty.get()) {
@@ -69,7 +90,6 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
             gc.strokeLine(-PIXEL_WIDTH.toDouble(), y.toDouble(), PIXEL_WIDTH.toDouble(), y.toDouble())
         }
 
-
         gc.lineWidth = 5.0
         gc.strokeLine(-PIXEL_WIDTH.toDouble(), 0.0, PIXEL_WIDTH.toDouble(), 0.0)
         gc.strokeLine(0.0, -PIXEL_HEIGHT.toDouble(), 0.0, PIXEL_HEIGHT.toDouble())
@@ -86,13 +106,16 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
 
     private fun renderTool() {
         gc.fill = Colors.track
-        toolboxMode.draw(getGridX(), getGridY(), rotation, gc)
+        toolboxMode.draw(mouseGridXProperty.get(), mouseGridYProperty.get(), rotation, gc)
     }
 
     private fun clearScreen() {
+        val oldAffine = gc.transform
+        // Reset matrix to fill complete screen
+        gc.transform = Affine()
         gc.fill = Colors.background
-        // Draw rect without transformations to clear screen
-        canvas.graphicsContext2D.fillRect(0.0, 0.0, canvas.width, canvas.height)
+        gc.fillRect(0.0, 0.0, canvas.width, canvas.height)
+        gc.transform = oldAffine
     }
 
     private fun calcFps() {
@@ -110,47 +133,11 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
         }
     }
 
-    fun transformX(x: Double): Double {
-        val middleX = (x - zoomCenterX) + ((canvas.width / 2.0) * (1.0 / zoomProperty.get()))
-        return middleX * zoomProperty.get()
-    }
-
-    fun transformY(y: Double): Double {
-        val middleY = (y - zoomCenterY) + ((canvas.height / 2.0) * (1.0 / zoomProperty.get()))
-        return middleY * zoomProperty.get()
-    }
-
-    fun transformScreenX(screenX: Double): Double {
-        val middleX = screenX - canvas.width / 2.0
-        return (middleX / zoomProperty.get()) + zoomCenterX
-    }
-
-    fun transformScreenY(screenY: Double): Double {
-        val middleY = screenY - canvas.height / 2.0
-        return (middleY / zoomProperty.get()) + zoomCenterY
+    fun transformScreen(screen: Point2D): Point2D {
+        return gc.transform.inverseTransform(screen)
     }
 
     fun onClick() {
-        toolboxMode.onClick(getGridX(), getGridY(), rotation, cells)
+        toolboxMode.onClick(mouseGridXProperty.get(), mouseGridYProperty.get(), rotation, cells)
     }
-
-    fun getGridX(): Int {
-        var mouseX = mouseXProperty.get()
-
-        if (mouseX > 0) {
-            mouseX -= 1
-        }
-        return mouseX
-    }
-
-    fun getGridY(): Int {
-        var mouseY = mouseYProperty.get()
-
-
-        if (mouseY > 0) {
-            mouseY -= 1
-        }
-        return mouseY
-    }
-
 }

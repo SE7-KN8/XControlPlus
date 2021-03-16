@@ -1,11 +1,11 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
 import com.github.se7_kn8.xcontrolplus.app.GRID_SIZE
-import javafx.scene.shape.ArcType
+import javafx.scene.canvas.GraphicsContext
 
 enum class GridCellRenderer {
     STRAIGHT {
-        override fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext, cell: GridCell?) {
+        override fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext, cell: GridCell?) {
             gc.fill = Colors.track
             when (rot) {
                 Rotation.D0, Rotation.D180 -> {
@@ -44,7 +44,7 @@ enum class GridCellRenderer {
     },
 
     TURN {
-        override fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext, cell: GridCell?) {
+        override fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext, cell: GridCell?) {
             gc.fill = Colors.track
 
             when (rot) {
@@ -204,7 +204,7 @@ enum class GridCellRenderer {
     },
 
     TURNOUT {
-        override fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext, cell: GridCell?) {
+        override fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext, cell: GridCell?) {
             if (cell is TurnoutGridCell) {
                 if (cell.turned) {
                     STRAIGHT.render(gridX, gridY, rot, gc, cell)
@@ -223,7 +223,7 @@ enum class GridCellRenderer {
     ;
 
 
-    abstract fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GridContext, cell: GridCell? = null)
+    abstract fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext, cell: GridCell? = null)
 
 }
 
