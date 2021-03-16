@@ -101,7 +101,7 @@ class XControlPlus : Application() {
 
         scene = Scene(root, 800.0, 600.0)
         scene.setOnScroll {
-            val zoom = it.deltaY * it.multiplierY * 0.0001 + 1.0
+            val zoom = -it.deltaY * it.multiplierY * 0.0001 + 1.0
             var newValue: Double = gridRenderer.zoomProperty.get() * zoom
             if (!it.isAltDown) {
                 newValue = min(newValue, zoomSlider.max)
