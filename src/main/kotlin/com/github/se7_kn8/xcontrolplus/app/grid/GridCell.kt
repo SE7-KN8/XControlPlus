@@ -1,8 +1,8 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
-import com.github.se7_kn8.xcontrolplus.app.GRID_SIZE
-import com.github.se7_kn8.xcontrolplus.app.rotated
 import javafx.scene.canvas.GraphicsContext
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 enum class GridCellRenderer {
     STRAIGHT {
@@ -122,50 +122,34 @@ enum class GridCellRenderer {
 
 }
 
+@Serializable
+sealed class GridCell {
 
-interface GridCell {
-    fun getGridPosX(): Int
-    fun getGridPosY(): Int
-    fun getPosX(): Int {
-        return getGridPosX() * GRID_SIZE
-    }
+    abstract val gridX: Int
+    abstract val gridY: Int
+    abstract val rot: Rotation
 
-    fun getMidPosX(): Int {
-        return getPosX() + GRID_SIZE / 2
-    }
 
-    fun getPosY(): Int {
-        return getGridPosY() * GRID_SIZE
-    }
+    fun getPosX() = gridX * GRID_SIZE
+    fun getMidPosX() = getPosX() + GRID_SIZE / 2
 
-    fun getMidPosY(): Int {
-        return getPosY() + GRID_SIZE / 2
-    }
+    fun getPosY() = gridY * GRID_SIZE
+    fun getMidPosY() = getPosY() + GRID_SIZE / 2
 
-    fun getRotation(): Rotation
-    fun getRenderer(): GridCellRenderer
+    abstract fun getRenderer(): GridCellRenderer
 }
 
-class StraightGridCell(private val gridX: Int, private val gridY: Int, private val rot: Rotation) : GridCell {
-    override fun getGridPosX() = gridX
-
-    override fun getGridPosY() = gridY
-
-    override fun getRotation() = rot
-
+@Serializable
+@SerialName("straight")
+class StraightGridCell(override val gridX: Int, override val gridY: Int, override val rot: Rotation) : GridCell() {
     override fun getRenderer() = GridCellRenderer.STRAIGHT
 }
 
-class TurnGridCell(private val gridX: Int, private val gridY: Int, private val rot: Rotation) : GridCell {
-    override fun getGridPosX() = gridX
-
-    override fun getGridPosY() = gridY
-
-    override fun getRotation() = rot
-
+@Serializable
+@SerialName("turn")
+class TurnGridCell(override val gridX: Int, override val gridY: Int, override val rot: Rotation) : GridCell() {
     override fun getRenderer() = GridCellRenderer.TURN
 }
-
 
 enum class TurnoutType {
     LEFT {
@@ -179,16 +163,10 @@ enum class TurnoutType {
     abstract fun getRenderer(): GridCellRenderer
 }
 
-class TurnoutGridCell(private val gridX: Int, private val gridY: Int, private val rot: Rotation, private val type: TurnoutType) : GridCell {
-
+@Serializable
+@SerialName("turnout")
+class TurnoutGridCell(override val gridX: Int, override val gridY: Int, override val rot: Rotation, val turnoutType: TurnoutType) : GridCell() {
     var turned = false
-
-    override fun getGridPosX() = gridX
-
-    override fun getGridPosY() = gridY
-
-    override fun getRotation() = rot
-
-    override fun getRenderer() = type.getRenderer()
+    override fun getRenderer() = turnoutType.getRenderer()
 }
 

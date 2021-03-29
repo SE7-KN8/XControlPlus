@@ -1,6 +1,5 @@
-package com.github.se7_kn8.xcontrolplus.app.grid.toolbox
+package com.github.se7_kn8.xcontrolplus.app.toolbox
 
-import com.github.se7_kn8.xcontrolplus.app.GRID_SIZE
 import com.github.se7_kn8.xcontrolplus.app.grid.*
 import javafx.scene.Cursor
 import javafx.scene.canvas.GraphicsContext
@@ -14,9 +13,9 @@ enum class ToolboxMode {
 
         override fun getCursor(): Cursor = Cursor.DEFAULT
 
-        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>) {
-            for (cell in cells) {
-                if (cell.getGridPosX() == gridX && cell.getGridPosY() == gridY && cell is TurnoutGridCell) {
+        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, state: GridState) {
+            for (cell in state.cells) {
+                if (cell.gridX == gridX && cell.gridY == gridY && cell is TurnoutGridCell) {
                     cell.turned = !cell.turned
                 }
             }
@@ -29,9 +28,9 @@ enum class ToolboxMode {
 
         override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
-        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>) {
-            removeCellAtSamePos(gridX, gridY, cells)
-            cells.add(StraightGridCell(gridX, gridY, rot))
+        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, state: GridState) {
+            removeCellAtSamePos(gridX, gridY, state)
+            state.cells.add(StraightGridCell(gridX, gridY, rot))
         }
     },
     TURN {
@@ -41,9 +40,9 @@ enum class ToolboxMode {
 
         override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
-        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>) {
-            removeCellAtSamePos(gridX, gridY, cells)
-            cells.add(TurnGridCell(gridX, gridY, rot))
+        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, state: GridState) {
+            removeCellAtSamePos(gridX, gridY, state)
+            state.cells.add(TurnGridCell(gridX, gridY, rot))
         }
     },
 
@@ -54,9 +53,9 @@ enum class ToolboxMode {
 
         override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
-        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>) {
-            removeCellAtSamePos(gridX, gridY, cells)
-            cells.add(TurnoutGridCell(gridX, gridY, rot, TurnoutType.LEFT))
+        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, state: GridState) {
+            removeCellAtSamePos(gridX, gridY, state)
+            state.cells.add(TurnoutGridCell(gridX, gridY, rot, TurnoutType.LEFT))
         }
     },
 
@@ -67,9 +66,9 @@ enum class ToolboxMode {
 
         override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
-        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>) {
-            removeCellAtSamePos(gridX, gridY, cells)
-            cells.add(TurnoutGridCell(gridX, gridY, rot, TurnoutType.RIGHT))
+        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, state: GridState) {
+            removeCellAtSamePos(gridX, gridY, state)
+            state.cells.add(TurnoutGridCell(gridX, gridY, rot, TurnoutType.RIGHT))
         }
     },
 
@@ -83,8 +82,8 @@ enum class ToolboxMode {
 
         override fun getCursor(): Cursor = Cursor.OPEN_HAND
 
-        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>) {
-            removeCellAtSamePos(gridX, gridY, cells)
+        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, state: GridState) {
+            removeCellAtSamePos(gridX, gridY, state)
         }
 
     },
@@ -94,17 +93,17 @@ enum class ToolboxMode {
 
     abstract fun getCursor(): Cursor
 
-    abstract fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>)
+    abstract fun onClick(gridX: Int, gridY: Int, rot: Rotation, state: GridState)
 
-    fun removeCellAtSamePos(gridX: Int, gridY: Int, cells: ArrayList<GridCell>) {
+    fun removeCellAtSamePos(gridX: Int, gridY: Int, state: GridState) {
         var foundCell: GridCell? = null
-        for (cell in cells) {
-            if (cell.getGridPosX() == gridX && cell.getGridPosY() == gridY) {
+        for (cell in state.cells) {
+            if (cell.gridX == gridX && cell.gridY == gridY) {
                 foundCell = cell
                 break
             }
         }
-        cells.remove(foundCell)
+        state.cells.remove(foundCell)
     }
 
 }

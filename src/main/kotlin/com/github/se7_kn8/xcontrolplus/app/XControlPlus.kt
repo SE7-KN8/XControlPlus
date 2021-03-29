@@ -1,6 +1,9 @@
 package com.github.se7_kn8.xcontrolplus.app
 
-import com.github.se7_kn8.xcontrolplus.app.grid.toolbox.ToolboxMode
+import com.github.se7_kn8.xcontrolplus.app.grid.GRID_SIZE
+import com.github.se7_kn8.xcontrolplus.app.grid.GridRenderer
+import com.github.se7_kn8.xcontrolplus.app.grid.GridState
+import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolboxMode
 import javafx.application.Application
 import javafx.beans.binding.Bindings
 import javafx.beans.property.SimpleIntegerProperty
@@ -23,6 +26,7 @@ class XControlPlus : Application() {
     private var moveOffset = Point2D(0.0, 0.0)
     private var mouseStartPos = Point2D(0.0, 0.0)
 
+    private val gridState = GridState()
     private lateinit var canvas: Canvas
     private lateinit var gridRenderer: GridRenderer
     private lateinit var scene: Scene
@@ -30,7 +34,7 @@ class XControlPlus : Application() {
     override fun start(stage: Stage) {
 
         canvas = Canvas(0.0, 0.0)
-        gridRenderer = GridRenderer(canvas)
+        gridRenderer = GridRenderer(canvas, gridState)
         gridRenderer.start()
 
         val zoomSlider = Slider(0.1, 5.0, 1.0)
@@ -66,7 +70,9 @@ class XControlPlus : Application() {
         bottom.alignment = Pos.CENTER_RIGHT
 
         val left = VBox()
-        left.children.addAll(Button("Test1"), Button("Test2"), Button("Test3"))
+        left.children.addAll(
+            Button("Save").apply { setOnMouseClicked { gridState.saveToFile(stage) } },
+            Button("Load").apply { setOnMouseClicked { gridState.loadFromFile(stage) } })
 
         val toolboxButtonGroup = ToggleGroup()
 

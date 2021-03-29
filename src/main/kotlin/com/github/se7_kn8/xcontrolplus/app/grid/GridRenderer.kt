@@ -1,9 +1,6 @@
-package com.github.se7_kn8.xcontrolplus.app
+package com.github.se7_kn8.xcontrolplus.app.grid
 
-import com.github.se7_kn8.xcontrolplus.app.grid.Colors
-import com.github.se7_kn8.xcontrolplus.app.grid.GridCell
-import com.github.se7_kn8.xcontrolplus.app.grid.Rotation
-import com.github.se7_kn8.xcontrolplus.app.grid.toolbox.ToolboxMode
+import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolboxMode
 import javafx.animation.AnimationTimer
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
@@ -21,7 +18,7 @@ const val GRID_HEIGHT = 18
 const val PIXEL_WIDTH = GRID_SIZE * GRID_WIDTH
 const val PIXEL_HEIGHT = GRID_SIZE * GRID_HEIGHT
 
-class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
+class GridRenderer(private val canvas: Canvas, private val gridState: GridState) : AnimationTimer() {
 
     private val gc = canvas.graphicsContext2D
 
@@ -29,7 +26,6 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
 
     private var fpsAvg = 0.0
     private var fpsCounter = 0
-    private val cells = ArrayList<GridCell>()
 
     var toolboxMode = ToolboxMode.MOUSE
     var rotation = Rotation.D0
@@ -100,17 +96,17 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
         gc.stroke = Colors.track
         gc.fill = Colors.track
 
-        for (cell in cells) {
-            gc.rotated(cell.getRotation().degree, cell.getMidPosX().toDouble(), cell.getMidPosY().toDouble()) {
-                cell.getRenderer().drawBackground(cell.getGridPosX(), cell.getGridPosY(), gc, cell)
+        for (cell in gridState.cells) {
+            gc.rotated(cell.rot.degree, cell.getMidPosX().toDouble(), cell.getMidPosY().toDouble()) {
+                cell.getRenderer().drawBackground(cell.gridX, cell.gridY, gc, cell)
             }
         }
 
 
         gc.fill = Colors.trackHighlight
-        for (cell in cells) {
-            gc.rotated(cell.getRotation().degree, cell.getMidPosX().toDouble(), cell.getMidPosY().toDouble()) {
-                cell.getRenderer().drawForeground(cell.getGridPosX(), cell.getGridPosY(), gc, cell)
+        for (cell in gridState.cells) {
+            gc.rotated(cell.rot.degree, cell.getMidPosX().toDouble(), cell.getMidPosY().toDouble()) {
+                cell.getRenderer().drawForeground(cell.gridX, cell.gridY, gc, cell)
             }
         }
     }
@@ -156,7 +152,7 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
     }
 
     fun onClick() {
-        toolboxMode.onClick(mouseGridXProperty.get(), mouseGridYProperty.get(), rotation, cells)
+        toolboxMode.onClick(mouseGridXProperty.get(), mouseGridYProperty.get(), rotation, gridState)
     }
 }
 
