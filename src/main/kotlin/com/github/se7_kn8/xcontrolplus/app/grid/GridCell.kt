@@ -1,221 +1,108 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
 import com.github.se7_kn8.xcontrolplus.app.GRID_SIZE
+import com.github.se7_kn8.xcontrolplus.app.rotated
 import javafx.scene.canvas.GraphicsContext
 
 enum class GridCellRenderer {
     STRAIGHT {
-        override fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext, cell: GridCell?) {
-            gc.fill = Colors.track
-            when (rot) {
-                Rotation.D0, Rotation.D180 -> {
-                    gc.fillRect(
-                        gridX.toDouble() * GRID_SIZE,
-                        (gridY.toDouble() + 0.3) * GRID_SIZE, GRID_SIZE.toDouble(), 0.4 * GRID_SIZE.toDouble()
-                    )
-                    if (cell is TurnoutGridCell && !cell.turned) {
-                        gc.fill = Colors.trackHighlightTurnout
-                    } else {
-                        gc.fill = Colors.trackHighlight
-                    }
-                    gc.fillRect(
-                        gridX.toDouble() * GRID_SIZE,
-                        (gridY.toDouble() + 0.4) * GRID_SIZE, GRID_SIZE.toDouble(), 0.2 * GRID_SIZE.toDouble()
-                    )
-                }
-                Rotation.D90, Rotation.D270 -> {
-                    gc.fillRect(
-                        (gridX.toDouble() + 0.3) * GRID_SIZE,
-                        gridY.toDouble() * GRID_SIZE, 0.4 * GRID_SIZE.toDouble(), GRID_SIZE.toDouble()
-                    )
-                    if (cell is TurnoutGridCell && !cell.turned) {
-                        gc.fill = Colors.trackHighlightTurnout
-                    } else {
-                        gc.fill = Colors.trackHighlight
-                    }
-                    gc.fillRect(
-                        (gridX.toDouble() + 0.4) * GRID_SIZE,
-                        gridY.toDouble() * GRID_SIZE, 0.2 * GRID_SIZE.toDouble(), GRID_SIZE.toDouble()
-                    )
-                }
-            }
+        override fun drawBackground(gridX: Int, gridY: Int, gc: GraphicsContext, cell: GridCell?) {
+            gc.fillRect(
+                gridX.toDouble() * GRID_SIZE,
+                (gridY.toDouble() + 0.3) * GRID_SIZE, GRID_SIZE.toDouble(), 0.4 * GRID_SIZE.toDouble()
+            )
         }
 
+        override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, cell: GridCell?) {
+            gc.fillRect(
+                gridX.toDouble() * GRID_SIZE,
+                (gridY.toDouble() + 0.4) * GRID_SIZE, GRID_SIZE.toDouble(), 0.2 * GRID_SIZE.toDouble()
+            )
+        }
     },
 
     TURN {
-        override fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext, cell: GridCell?) {
-            gc.fill = Colors.track
+        override fun drawBackground(gridX: Int, gridY: Int, gc: GraphicsContext, cell: GridCell?) {
+            val x =
+                doubleArrayOf(
+                    (gridX.toDouble() + 0.3) * GRID_SIZE,
+                    (gridX.toDouble() + 0.7) * GRID_SIZE,
+                    (gridX.toDouble() + 0.0) * GRID_SIZE,
+                    (gridX.toDouble() + 0.0) * GRID_SIZE
+                )
+            val y =
+                doubleArrayOf(
+                    (gridY.toDouble() + 1.0) * GRID_SIZE,
+                    (gridY.toDouble() + 1.0) * GRID_SIZE,
+                    (gridY.toDouble() + 0.3) * GRID_SIZE,
+                    (gridY.toDouble() + 0.7) * GRID_SIZE
+                )
+            gc.fillPolygon(x, y, 4)
+        }
 
-            when (rot) {
-                Rotation.D0 -> {
-                    var x =
-                        doubleArrayOf(
-                            (gridX.toDouble() + 0.3) * GRID_SIZE,
-                            (gridX.toDouble() + 0.7) * GRID_SIZE,
-                            (gridX.toDouble() + 0.0) * GRID_SIZE,
-                            (gridX.toDouble() + 0.0) * GRID_SIZE
-                        )
-                    var y =
-                        doubleArrayOf(
-                            (gridY.toDouble() + 1.0) * GRID_SIZE,
-                            (gridY.toDouble() + 1.0) * GRID_SIZE,
-                            (gridY.toDouble() + 0.3) * GRID_SIZE,
-                            (gridY.toDouble() + 0.7) * GRID_SIZE
-                        )
-                    gc.fillPolygon(x, y, 4)
-                    if (cell is TurnoutGridCell && cell.turned) {
-                        gc.fill = Colors.trackHighlightTurnout
-                    } else {
-                        gc.fill = Colors.trackHighlight
-                    }
-                    x =
-                        doubleArrayOf(
-                            (gridX.toDouble() + 0.4) * GRID_SIZE,
-                            (gridX.toDouble() + 0.6) * GRID_SIZE,
-                            (gridX.toDouble() + 0.0) * GRID_SIZE,
-                            (gridX.toDouble() + 0.0) * GRID_SIZE
-                        )
-                    y =
-                        doubleArrayOf(
-                            (gridY.toDouble() + 1.0) * GRID_SIZE,
-                            (gridY.toDouble() + 1.0) * GRID_SIZE,
-                            (gridY.toDouble() + 0.4) * GRID_SIZE,
-                            (gridY.toDouble() + 0.6) * GRID_SIZE
-                        )
-                    gc.fillPolygon(x, y, 4)
-                }
-                Rotation.D90 -> {
-                    var x =
-                        doubleArrayOf(
-                            (gridX.toDouble() + 0.0) * GRID_SIZE,
-                            (gridX.toDouble() + 0.3) * GRID_SIZE,
-                            (gridX.toDouble() + 0.7) * GRID_SIZE,
-                            (gridX.toDouble() + 0.0) * GRID_SIZE
-                        )
-                    var y =
-                        doubleArrayOf(
-                            (gridY.toDouble() + 0.3) * GRID_SIZE,
-                            (gridY.toDouble() + 0.0) * GRID_SIZE,
-                            (gridY.toDouble() + 0.0) * GRID_SIZE,
-                            (gridY.toDouble() + 0.7) * GRID_SIZE
-                        )
-                    gc.fillPolygon(x, y, 4)
-                    if (cell is TurnoutGridCell && cell.turned) {
-                        gc.fill = Colors.trackHighlightTurnout
-                    } else {
-                        gc.fill = Colors.trackHighlight
-                    }
-                    x =
-                        doubleArrayOf(
-                            (gridX.toDouble() + 0.0) * GRID_SIZE,
-                            (gridX.toDouble() + 0.4) * GRID_SIZE,
-                            (gridX.toDouble() + 0.6) * GRID_SIZE,
-                            (gridX.toDouble() + 0.0) * GRID_SIZE
-                        )
-                    y =
-                        doubleArrayOf(
-                            (gridY.toDouble() + 0.4) * GRID_SIZE,
-                            (gridY.toDouble() + 0.0) * GRID_SIZE,
-                            (gridY.toDouble() + 0.0) * GRID_SIZE,
-                            (gridY.toDouble() + 0.6) * GRID_SIZE
-                        )
-                    gc.fillPolygon(x, y, 4)
-                }
-                Rotation.D180 -> {
-                    var x =
-                        doubleArrayOf(
-                            (gridX.toDouble() + 0.7) * GRID_SIZE,
-                            (gridX.toDouble() + 1.0) * GRID_SIZE,
-                            (gridX.toDouble() + 1.0) * GRID_SIZE,
-                            (gridX.toDouble() + 0.3) * GRID_SIZE
-                        )
-                    var y =
-                        doubleArrayOf(
-                            (gridY.toDouble() + 0.0) * GRID_SIZE,
-                            (gridY.toDouble() + 0.3) * GRID_SIZE,
-                            (gridY.toDouble() + 0.7) * GRID_SIZE,
-                            (gridY.toDouble() + 0.0) * GRID_SIZE
-                        )
-                    gc.fillPolygon(x, y, 4)
-                    if (cell is TurnoutGridCell && cell.turned) {
-                        gc.fill = Colors.trackHighlightTurnout
-                    } else {
-                        gc.fill = Colors.trackHighlight
-                    }
-                    x =
-                        doubleArrayOf(
-                            (gridX.toDouble() + 0.6) * GRID_SIZE,
-                            (gridX.toDouble() + 1.0) * GRID_SIZE,
-                            (gridX.toDouble() + 1.0) * GRID_SIZE,
-                            (gridX.toDouble() + 0.4) * GRID_SIZE
-                        )
-                    y =
-                        doubleArrayOf(
-                            (gridY.toDouble() + 0.0) * GRID_SIZE,
-                            (gridY.toDouble() + 0.4) * GRID_SIZE,
-                            (gridY.toDouble() + 0.6) * GRID_SIZE,
-                            (gridY.toDouble() + 0.0) * GRID_SIZE
-                        )
-                    gc.fillPolygon(x, y, 4)
-                }
-                Rotation.D270 -> {
-                    var x =
-                        doubleArrayOf(
-                            (gridX.toDouble() + 1.0) * GRID_SIZE,
-                            (gridX.toDouble() + 0.7) * GRID_SIZE,
-                            (gridX.toDouble() + 0.3) * GRID_SIZE,
-                            (gridX.toDouble() + 1.0) * GRID_SIZE
-                        )
-                    var y =
-                        doubleArrayOf(
-                            (gridY.toDouble() + 0.7) * GRID_SIZE,
-                            (gridY.toDouble() + 1.0) * GRID_SIZE,
-                            (gridY.toDouble() + 1.0) * GRID_SIZE,
-                            (gridY.toDouble() + 0.3) * GRID_SIZE
-                        )
-                    gc.fillPolygon(x, y, 4)
-                    if (cell is TurnoutGridCell && cell.turned) {
-                        gc.fill = Colors.trackHighlightTurnout
-                    } else {
-                        gc.fill = Colors.trackHighlight
-                    }
-                    x =
-                        doubleArrayOf(
-                            (gridX.toDouble() + 1.0) * GRID_SIZE,
-                            (gridX.toDouble() + 0.6) * GRID_SIZE,
-                            (gridX.toDouble() + 0.4) * GRID_SIZE,
-                            (gridX.toDouble() + 1.0) * GRID_SIZE
-                        )
-                    y =
-                        doubleArrayOf(
-                            (gridY.toDouble() + 0.6) * GRID_SIZE,
-                            (gridY.toDouble() + 1.0) * GRID_SIZE,
-                            (gridY.toDouble() + 1.0) * GRID_SIZE,
-                            (gridY.toDouble() + 0.4) * GRID_SIZE
-                        )
-                    gc.fillPolygon(x, y, 4)
-                }
-            }
-
-
+        override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, cell: GridCell?) {
+            val x =
+                doubleArrayOf(
+                    (gridX.toDouble() + 0.4) * GRID_SIZE,
+                    (gridX.toDouble() + 0.6) * GRID_SIZE,
+                    (gridX.toDouble() + 0.0) * GRID_SIZE,
+                    (gridX.toDouble() + 0.0) * GRID_SIZE
+                )
+            val y =
+                doubleArrayOf(
+                    (gridY.toDouble() + 1.0) * GRID_SIZE,
+                    (gridY.toDouble() + 1.0) * GRID_SIZE,
+                    (gridY.toDouble() + 0.4) * GRID_SIZE,
+                    (gridY.toDouble() + 0.6) * GRID_SIZE
+                )
+            gc.fillPolygon(x, y, 4)
         }
 
     },
 
-    TURNOUT {
-        override fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext, cell: GridCell?) {
+    LEFT_TURNOUT {
+        override fun drawBackground(gridX: Int, gridY: Int, gc: GraphicsContext, cell: GridCell?) {
+            STRAIGHT.drawBackground(gridX, gridY, gc, cell)
+            gc.rotated(90.0, (gridX * GRID_SIZE + GRID_SIZE / 2).toDouble(), (gridY * GRID_SIZE + GRID_SIZE / 2).toDouble()) {
+                TURN.drawBackground(gridX, gridY, gc, cell)
+            }
+        }
+
+        override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, cell: GridCell?) {
             if (cell is TurnoutGridCell) {
                 if (cell.turned) {
-                    STRAIGHT.render(gridX, gridY, rot, gc, cell)
-                    TURN.render(gridX, gridY, rot, gc, cell)
+                    gc.rotated(90.0, (gridX * GRID_SIZE + GRID_SIZE / 2).toDouble(), (gridY * GRID_SIZE + GRID_SIZE / 2).toDouble()) {
+                        TURN.drawForeground(gridX, gridY, gc, cell)
+                    }
                 } else {
-                    TURN.render(gridX, gridY, rot, gc, cell)
-                    STRAIGHT.render(gridX, gridY, rot, gc, cell)
+                    STRAIGHT.drawForeground(gridX, gridY, gc, cell)
                 }
             } else {
-                STRAIGHT.render(gridX, gridY, rot, gc)
-                TURN.render(gridX, gridY, rot, gc)
+                STRAIGHT.drawForeground(gridX, gridY, gc, cell)
+                gc.rotated(90.0, (gridX * GRID_SIZE + GRID_SIZE / 2).toDouble(), (gridY * GRID_SIZE + GRID_SIZE / 2).toDouble()) {
+                    TURN.drawForeground(gridX, gridY, gc, cell)
+                }
+            }
+        }
+
+    },
+
+    RIGHT_TURNOUT {
+        override fun drawBackground(gridX: Int, gridY: Int, gc: GraphicsContext, cell: GridCell?) {
+            STRAIGHT.drawBackground(gridX, gridY, gc, cell)
+            TURN.drawBackground(gridX, gridY, gc, cell)
+        }
+
+        override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, cell: GridCell?) {
+            if (cell is TurnoutGridCell) {
+                if (cell.turned) {
+                    TURN.drawForeground(gridX, gridY, gc, cell)
+                } else {
+                    STRAIGHT.drawForeground(gridX, gridY, gc, cell)
+                }
+            } else {
+                STRAIGHT.drawForeground(gridX, gridY, gc, cell)
+                TURN.drawForeground(gridX, gridY, gc, cell)
             }
         }
 
@@ -223,7 +110,15 @@ enum class GridCellRenderer {
     ;
 
 
-    abstract fun render(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext, cell: GridCell? = null)
+    abstract fun drawBackground(gridX: Int, gridY: Int, gc: GraphicsContext, cell: GridCell? = null)
+    abstract fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, cell: GridCell? = null)
+
+    fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, cell: GridCell? = null) {
+        gc.fill = Colors.track
+        drawBackground(gridX, gridY, gc, cell)
+        gc.fill = Colors.trackHighlight
+        drawForeground(gridX, gridY, gc, cell)
+    }
 
 }
 
@@ -231,6 +126,22 @@ enum class GridCellRenderer {
 interface GridCell {
     fun getGridPosX(): Int
     fun getGridPosY(): Int
+    fun getPosX(): Int {
+        return getGridPosX() * GRID_SIZE
+    }
+
+    fun getMidPosX(): Int {
+        return getPosX() + GRID_SIZE / 2
+    }
+
+    fun getPosY(): Int {
+        return getGridPosY() * GRID_SIZE
+    }
+
+    fun getMidPosY(): Int {
+        return getPosY() + GRID_SIZE / 2
+    }
+
     fun getRotation(): Rotation
     fun getRenderer(): GridCellRenderer
 }
@@ -256,7 +167,19 @@ class TurnGridCell(private val gridX: Int, private val gridY: Int, private val r
 }
 
 
-class TurnoutGridCell(private val gridX: Int, private val gridY: Int, private val rot: Rotation) : GridCell {
+enum class TurnoutType {
+    LEFT {
+        override fun getRenderer() = GridCellRenderer.LEFT_TURNOUT
+
+    },
+    RIGHT {
+        override fun getRenderer() = GridCellRenderer.RIGHT_TURNOUT
+    };
+
+    abstract fun getRenderer(): GridCellRenderer
+}
+
+class TurnoutGridCell(private val gridX: Int, private val gridY: Int, private val rot: Rotation, private val type: TurnoutType) : GridCell {
 
     var turned = false
 
@@ -266,6 +189,6 @@ class TurnoutGridCell(private val gridX: Int, private val gridY: Int, private va
 
     override fun getRotation() = rot
 
-    override fun getRenderer() = GridCellRenderer.TURNOUT
+    override fun getRenderer() = type.getRenderer()
 }
 

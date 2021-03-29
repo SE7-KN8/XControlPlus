@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Point2D
 import javafx.scene.canvas.Canvas
+import javafx.scene.canvas.GraphicsContext
 import javafx.scene.transform.Affine
 
 
@@ -100,13 +101,30 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
         gc.fill = Colors.track
 
         for (cell in cells) {
-            cell.getRenderer().render(cell.getGridPosX(), cell.getGridPosY(), cell.getRotation(), gc, cell)
+            gc.rotated(cell.getRotation().degree, cell.getMidPosX().toDouble(), cell.getMidPosY().toDouble()) {
+                cell.getRenderer().drawBackground(cell.getGridPosX(), cell.getGridPosY(), gc, cell)
+            }
+        }
+
+
+        gc.fill = Colors.trackHighlight
+        for (cell in cells) {
+            gc.rotated(cell.getRotation().degree, cell.getMidPosX().toDouble(), cell.getMidPosY().toDouble()) {
+                cell.getRenderer().drawForeground(cell.getGridPosX(), cell.getGridPosY(), gc, cell)
+            }
         }
     }
 
     private fun renderTool() {
         gc.fill = Colors.track
-        toolboxMode.draw(mouseGridXProperty.get(), mouseGridYProperty.get(), rotation, gc)
+        gc.rotated(
+            rotation.degree,
+            (mouseGridXProperty.get() * GRID_SIZE + GRID_SIZE / 2).toDouble(),
+            (mouseGridYProperty.get() * GRID_SIZE + GRID_SIZE / 2).toDouble()
+        ) {
+            toolboxMode.draw(mouseGridXProperty.get(), mouseGridYProperty.get(), gc)
+
+        }
     }
 
     private fun clearScreen() {
@@ -140,4 +158,21 @@ class GridRenderer(private val canvas: Canvas) : AnimationTimer() {
     fun onClick() {
         toolboxMode.onClick(mouseGridXProperty.get(), mouseGridYProperty.get(), rotation, cells)
     }
+}
+
+fun GraphicsContext.rotateAround(degree: Double, midPosX: Double, midPosY: Double) {
+    transform = transform.apply {
+        appendRotation(
+            degree,
+            midPosX,
+            midPosY
+        )
+    }
+}
+
+fun GraphicsContext.rotated(degree: Double, midPosX: Double, midPosY: Double, handler: () -> Unit) {
+    save()
+    rotateAround(degree, midPosX, midPosY)
+    handler()
+    restore()
 }

@@ -8,7 +8,7 @@ import javafx.scene.canvas.GraphicsContext
 enum class ToolboxMode {
 
     MOUSE {
-        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext) {
+        override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext) {
             // Do nothing
         }
 
@@ -23,8 +23,8 @@ enum class ToolboxMode {
         }
     },
     STRAIGHT {
-        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext) {
-            GridCellRenderer.STRAIGHT.render(gridX, gridY, rot, gc)
+        override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext) {
+            GridCellRenderer.STRAIGHT.draw(gridX, gridY, gc)
         }
 
         override fun getCursor(): Cursor = Cursor.CROSSHAIR
@@ -35,8 +35,8 @@ enum class ToolboxMode {
         }
     },
     TURN {
-        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext) {
-            GridCellRenderer.TURN.render(gridX, gridY, rot, gc)
+        override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext) {
+            GridCellRenderer.TURN.draw(gridX, gridY, gc)
         }
 
         override fun getCursor(): Cursor = Cursor.CROSSHAIR
@@ -46,21 +46,35 @@ enum class ToolboxMode {
             cells.add(TurnGridCell(gridX, gridY, rot))
         }
     },
-    TURNOUT {
-        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext) {
-            GridCellRenderer.TURNOUT.render(gridX, gridY, rot, gc)
+
+    LEFT_TURNOUT {
+        override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext) {
+            GridCellRenderer.LEFT_TURNOUT.draw(gridX, gridY, gc)
         }
 
         override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
         override fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>) {
             removeCellAtSamePos(gridX, gridY, cells)
-            cells.add(TurnoutGridCell(gridX, gridY, rot))
+            cells.add(TurnoutGridCell(gridX, gridY, rot, TurnoutType.LEFT))
+        }
+    },
+
+    RIGHT_TURNOUT {
+        override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext) {
+            GridCellRenderer.RIGHT_TURNOUT.draw(gridX, gridY, gc)
+        }
+
+        override fun getCursor(): Cursor = Cursor.CROSSHAIR
+
+        override fun onClick(gridX: Int, gridY: Int, rot: Rotation, cells: ArrayList<GridCell>) {
+            removeCellAtSamePos(gridX, gridY, cells)
+            cells.add(TurnoutGridCell(gridX, gridY, rot, TurnoutType.RIGHT))
         }
     },
 
     DELETE {
-        override fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext) {
+        override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext) {
             gc.fillRect(
                 (gridX * GRID_SIZE).toDouble(),
                 (gridY * GRID_SIZE).toDouble(), GRID_SIZE.toDouble(), GRID_SIZE.toDouble()
@@ -76,7 +90,7 @@ enum class ToolboxMode {
     },
     ;
 
-    abstract fun draw(gridX: Int, gridY: Int, rot: Rotation, gc: GraphicsContext)
+    abstract fun draw(gridX: Int, gridY: Int, gc: GraphicsContext)
 
     abstract fun getCursor(): Cursor
 
