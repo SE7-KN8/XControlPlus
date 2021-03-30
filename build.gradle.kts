@@ -23,6 +23,11 @@ javafx {
     modules = listOf("javafx.base", "javafx.controls", "javafx.graphics")
 }
 
+java {
+    modularity.inferModulePath.set(true)
+}
+
+
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "15"
     kotlinOptions.useIR = true
