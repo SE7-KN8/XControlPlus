@@ -5,6 +5,7 @@ import javafx.scene.paint.Color
 
 class Colors {
     companion object {
+        val text: Color = Color.BLACK
         val background: Color = Color.WHITE
         val grid: Color = Color.DARKGRAY
         val track: Color = Color.BLACK

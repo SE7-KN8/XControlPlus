@@ -9,12 +9,13 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Point2D
 import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
+import javafx.scene.text.Font
 import javafx.scene.transform.Affine
 
 
 const val GRID_SIZE = 32
-const val GRID_WIDTH = 32
-const val GRID_HEIGHT = 18
+const val GRID_WIDTH = 100
+const val GRID_HEIGHT = 50
 const val PIXEL_WIDTH = GRID_SIZE * GRID_WIDTH
 const val PIXEL_HEIGHT = GRID_SIZE * GRID_HEIGHT
 
@@ -26,6 +27,10 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
 
     private var fpsAvg = 0.0
     private var fpsCounter = 0
+
+    private var gridTransform = Affine()
+
+    private var firstFrame = true
 
     var toolboxMode = ToolboxMode.MOUSE
     var rotation = Rotation.D0
@@ -44,29 +49,29 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
         zoomProperty.addListener { _, oldValue, newValue ->
             val scaleFactor = oldValue.toDouble() / newValue.toDouble()
             val middlePoint = transformScreen(Point2D(canvas.width / 2.0, canvas.height / 2.0))
-            val newScale = gc.transform.apply {
-                appendScale(
-                    scaleFactor,
-                    scaleFactor,
-                    middlePoint.x,
-                    middlePoint.y
-                )
-            }
-            gc.transform = newScale
+            gridTransform.appendScale(
+                scaleFactor,
+                scaleFactor,
+                middlePoint.x,
+                middlePoint.y
+            )
         }
         translateProperty.addListener { _, _, newValue ->
-            val newTranslation = gc.transform.apply {
-                tx = newValue.x
-                ty = newValue.y
-            }
-            gc.transform = newTranslation
+            gridTransform.tx = newValue.x
+            gridTransform.ty = newValue.y
         }
     }
 
+
     override fun handle(now: Long) {
+        if (firstFrame) {
+            firstFrame()
+            firstFrame = false
+        }
         calcFps()
         clearScreen()
-
+        gc.save()
+        gc.transform = gridTransform
 
         if (showGridProperty.get()) {
             renderGrid()
@@ -74,22 +79,26 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
 
         renderCells()
         renderTool()
+        gc.fillCircle(PIXEL_WIDTH / 2.0, PIXEL_HEIGHT / 2.0, 20.0)
+        gc.restore()
+
+        renderOverlay()
+    }
+
+    private fun firstFrame() {
+        translateProperty.set(initPoint())
     }
 
     private fun renderGrid() {
         gc.stroke = Colors.grid
 
         gc.lineWidth = 2.0
-        for (x in -PIXEL_WIDTH..PIXEL_WIDTH step GRID_SIZE) {
-            gc.strokeLine(x.toDouble(), -PIXEL_HEIGHT.toDouble(), x.toDouble(), PIXEL_HEIGHT.toDouble())
+        for (x in 0..PIXEL_WIDTH step GRID_SIZE) {
+            gc.strokeLine(x.toDouble(), 0.0, x.toDouble(), PIXEL_HEIGHT.toDouble())
         }
-        for (y in -PIXEL_HEIGHT..PIXEL_HEIGHT step GRID_SIZE) {
-            gc.strokeLine(-PIXEL_WIDTH.toDouble(), y.toDouble(), PIXEL_WIDTH.toDouble(), y.toDouble())
+        for (y in 0..PIXEL_HEIGHT step GRID_SIZE) {
+            gc.strokeLine(0.0, y.toDouble(), PIXEL_WIDTH.toDouble(), y.toDouble())
         }
-
-        gc.lineWidth = 5.0
-        gc.strokeLine(-PIXEL_WIDTH.toDouble(), 0.0, PIXEL_WIDTH.toDouble(), 0.0)
-        gc.strokeLine(0.0, -PIXEL_HEIGHT.toDouble(), 0.0, PIXEL_HEIGHT.toDouble())
     }
 
     private fun renderCells() {
@@ -124,12 +133,8 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
     }
 
     private fun clearScreen() {
-        val oldAffine = gc.transform
-        // Reset matrix to fill complete screen
-        gc.transform = Affine()
         gc.fill = Colors.background
         gc.fillRect(0.0, 0.0, canvas.width, canvas.height)
-        gc.transform = oldAffine
     }
 
     private fun calcFps() {
@@ -147,8 +152,24 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
         }
     }
 
+    private fun renderOverlay() {
+        gc.font = Font.font(20.0)
+        gc.fill = Colors.text
+        gc.fillText("Test 123", 100.0, 100.0)
+    }
+
+    private fun initPoint(): Point2D {
+        var dx = -(PIXEL_WIDTH / 2.0)
+        var dy = -(PIXEL_HEIGHT / 2.0)
+
+        dx += canvas.width
+        dy += canvas.height / 2.0
+
+        return Point2D(dx, dy)
+    }
+
     fun transformScreen(screen: Point2D): Point2D {
-        return gc.transform.inverseTransform(screen)
+        return gridTransform.inverseTransform(screen)
     }
 
     fun onClick() {
@@ -171,4 +192,8 @@ fun GraphicsContext.rotated(degree: Double, midPosX: Double, midPosY: Double, ha
     rotateAround(degree, midPosX, midPosY)
     handler()
     restore()
+}
+
+fun GraphicsContext.fillCircle(x: Double, y: Double, r: Double) {
+    fillOval(x - r, y - r, 2 * r, 2 * r)
 }
