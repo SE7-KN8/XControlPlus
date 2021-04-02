@@ -55,6 +55,7 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
                 middlePoint.x,
                 middlePoint.y
             )
+            translateProperty.set(Point2D(gridTransform.tx, gridTransform.ty))
         }
         translateProperty.addListener { _, _, newValue ->
             gridTransform.tx = newValue.x
@@ -128,7 +129,6 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
             (mouseGridYProperty.get() * GRID_SIZE + GRID_SIZE / 2).toDouble()
         ) {
             toolboxMode.draw(mouseGridXProperty.get(), mouseGridYProperty.get(), gc)
-
         }
     }
 
@@ -155,7 +155,7 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
     private fun renderOverlay() {
         gc.font = Font.font(20.0)
         gc.fill = Colors.text
-        gc.fillText("Test 123", 100.0, 100.0)
+        // Currently no overlay
     }
 
     private fun initPoint(): Point2D {

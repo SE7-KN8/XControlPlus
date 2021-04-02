@@ -130,7 +130,8 @@ class XControlPlus : Application() {
 
         scene.setOnMouseDragged {
             if (it.button == MouseButton.MIDDLE) {
-                gridRenderer.translateProperty.set(Point2D(it.x, it.y).add(moveOffset).subtract(mouseStartPos))
+                val mouseMove = Point2D(it.x, it.y).subtract(mouseStartPos)
+                gridRenderer.translateProperty.set(mouseMove.add(moveOffset))
             }
         }
 
@@ -168,5 +169,3 @@ class XControlPlus : Application() {
     }
 
 }
-
-
