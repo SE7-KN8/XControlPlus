@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.4.31"
-    kotlin("plugin.serialization") version "1.4.31"
+    kotlin("jvm") version "1.4.32"
+    kotlin("plugin.serialization") version "1.4.32"
     id("application")
     id("org.openjfx.javafxplugin") version "0.0.9"
 }
@@ -29,7 +29,8 @@ java {
 
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "15"
-    kotlinOptions.useIR = true
+    kotlinOptions {
+        jvmTarget = "15"
+        useIR = true
+    }
 }
-
