@@ -9,6 +9,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Point2D
 import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
+import javafx.scene.input.MouseButton
 import javafx.scene.text.Font
 import javafx.scene.transform.Affine
 
@@ -31,6 +32,9 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
     private var gridTransform = Affine()
 
     private var firstFrame = true
+
+    private var moveOffset = Point2D(0.0, 0.0)
+    private var mouseStartPos = Point2D(0.0, 0.0)
 
     var toolboxMode = ToolboxMode.MOUSE
     var rotation = Rotation.D0
@@ -57,9 +61,34 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
             )
             translateProperty.set(Point2D(gridTransform.tx, gridTransform.ty))
         }
+
         translateProperty.addListener { _, _, newValue ->
             gridTransform.tx = newValue.x
             gridTransform.ty = newValue.y
+        }
+
+        canvas.setOnMousePressed {
+            moveOffset = translateProperty.get()
+            mouseStartPos = Point2D(it.x, it.y)
+            if (it.button == MouseButton.PRIMARY) {
+                onClick()
+            }
+        }
+
+        canvas.setOnMouseDragged {
+            if (it.button == MouseButton.MIDDLE) {
+                val translation = Point2D(it.x, it.y).subtract(mouseStartPos).add(moveOffset)
+                translateProperty.set(translation)
+            }
+        }
+        canvas.setOnScroll {
+            val zoom = -it.deltaY * it.multiplierY * 0.0001 + 1.0
+            val newValue: Double = zoomProperty.get() * zoom
+            zoomProperty.set(newValue)
+            updateMousePos(Point2D(it.x, it.y))
+        }
+        canvas.setOnMouseMoved {
+            updateMousePos(Point2D(it.x, it.y))
         }
     }
 
@@ -159,11 +188,14 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
     }
 
     private fun initPoint(): Point2D {
+        // TODO not working correctly
         var dx = -(PIXEL_WIDTH / 2.0)
         var dy = -(PIXEL_HEIGHT / 2.0)
+        val cW = (canvas.width / 2.0) - canvas.parent.layoutX
+        val cH = canvas.height / 2.0
 
-        dx += canvas.width
-        dy += canvas.height / 2.0
+        dx += cW
+        dy += cH
 
         return Point2D(dx, dy)
     }
@@ -172,8 +204,24 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
         return gridTransform.inverseTransform(screen)
     }
 
-    fun onClick() {
+    private fun onClick() {
         toolboxMode.onClick(mouseGridXProperty.get(), mouseGridYProperty.get(), rotation, gridState)
+    }
+
+    private fun updateMousePos(mousePos: Point2D) {
+        val gridPos = transformScreen(mousePos).multiply(1.0 / GRID_SIZE)
+        var x = gridPos.x
+        var y = gridPos.y
+
+        if (x < 0.0) {
+            x -= 1.0
+        }
+        if (y < 0.0) {
+            y -= 1.0
+        }
+
+        mouseGridXProperty.value = x.toInt()
+        mouseGridYProperty.value = y.toInt()
     }
 }
 
