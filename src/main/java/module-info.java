@@ -1,11 +1,12 @@
-module com.github.se7_kn8.xcontrolplus {
-	requires java.base;
-	requires javafx.base;
+module xcontrolplus {
 	requires javafx.controls;
 	requires javafx.graphics;
-	requires kotlin.stdlib.jdk8;
-	requires kotlinx.serialization.core.jvm;
-	requires kotlinx.serialization.json.jvm;
+	requires kotlin.stdlib;
+	requires com.google.gson;
 
+	// Required for javafx to start
 	exports com.github.se7_kn8.xcontrolplus.app to javafx.graphics;
+
+	// Allow json serialization
+	opens com.github.se7_kn8.xcontrolplus.app.grid to com.google.gson;
 }

@@ -1,8 +1,6 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
 import javafx.scene.canvas.GraphicsContext
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 
 enum class GridCellRenderer {
     STRAIGHT {
@@ -122,7 +120,6 @@ enum class GridCellRenderer {
 
 }
 
-@Serializable
 sealed class GridCell {
 
     abstract val gridX: Int
@@ -139,14 +136,10 @@ sealed class GridCell {
     abstract fun getRenderer(): GridCellRenderer
 }
 
-@Serializable
-@SerialName("straight")
 class StraightGridCell(override val gridX: Int, override val gridY: Int, override val rot: Rotation) : GridCell() {
     override fun getRenderer() = GridCellRenderer.STRAIGHT
 }
 
-@Serializable
-@SerialName("turn")
 class TurnGridCell(override val gridX: Int, override val gridY: Int, override val rot: Rotation) : GridCell() {
     override fun getRenderer() = GridCellRenderer.TURN
 }
@@ -163,8 +156,6 @@ enum class TurnoutType {
     abstract fun getRenderer(): GridCellRenderer
 }
 
-@Serializable
-@SerialName("turnout")
 class TurnoutGridCell(override val gridX: Int, override val gridY: Int, override val rot: Rotation, val turnoutType: TurnoutType) : GridCell() {
     var turned = false
     override fun getRenderer() = turnoutType.getRenderer()
