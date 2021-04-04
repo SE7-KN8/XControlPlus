@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.github.se7_kn8"
-version = "1.0-SNAPSHOT"
+version = "0.0.0"
 
 val currentOs = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem()!!
 var platform = when {
@@ -62,4 +62,8 @@ tasks.withType<KotlinCompile> {
 }
 
 jlink {
+    options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
+    launcher {
+        name = "XControlPlus"
+    }
 }
