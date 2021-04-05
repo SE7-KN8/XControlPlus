@@ -1,42 +1,45 @@
 package com.github.se7_kn8.xcontrolplus.app
 
-import com.github.se7_kn8.xcontrolplus.app.grid.GRID_SIZE
-import com.github.se7_kn8.xcontrolplus.app.grid.GridRenderer
+import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.grid.GridState
+import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolboxMode
+import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.application.Application
 import javafx.beans.binding.Bindings
-import javafx.beans.property.SimpleIntegerProperty
-import javafx.geometry.Point2D
 import javafx.geometry.Pos
 import javafx.scene.Scene
-import javafx.scene.canvas.Canvas
 import javafx.scene.control.*
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.*
 import javafx.stage.Stage
-import kotlin.math.max
-import kotlin.math.min
 
 class XControlPlus : Application() {
-    private val gridState = GridState()
-    private lateinit var canvas: Canvas
-    private lateinit var gridRenderer: GridRenderer
+
+
+    //private lateinit var canvas: Canvas
+    //private lateinit var gridRenderer: GridRenderer
     private lateinit var scene: Scene
 
     override fun start(stage: Stage) {
 
-        canvas = Canvas(0.0, 0.0)
-        gridRenderer = GridRenderer(canvas, gridState)
-        gridRenderer.start()
+        //canvas = Canvas(0.0, 0.0)
+        //gridRenderer = GridRenderer(canvas, gridState)
+        //gridRenderer.start()
+
+        val gridView = GridView<BaseCell>()
+        val gridState = GridState(gridView)
+        val toolRenderer = ToolRenderer(gridView, gridState)
 
         val zoomSlider = Slider(0.1, 5.0, 1.0)
+        gridView.minScaleProperty().bind(zoomSlider.minProperty())
+        gridView.maxScaleProperty().bind(zoomSlider.maxProperty())
         zoomSlider.blockIncrement = 0.1
         zoomSlider.isSnapToTicks = true
         zoomSlider.isShowTickMarks = true
         zoomSlider.minorTickCount = 0
         zoomSlider.majorTickUnit = 0.2
-        zoomSlider.valueProperty().bindBidirectional(gridRenderer.zoomProperty)
+        zoomSlider.valueProperty().bindBidirectional(gridView.scaleProperty())
         zoomSlider.setOnMouseClicked {
             if (it.button == MouseButton.SECONDARY) {
                 zoomSlider.value = 1.0
@@ -44,17 +47,13 @@ class XControlPlus : Application() {
         }
 
         val mousePosInfo = Label()
-        mousePosInfo.textProperty().bind(Bindings.concat("X:", gridRenderer.mouseGridXProperty, " Y: ", gridRenderer.mouseGridYProperty))
-
-        val fpsInfo = Label()
-        fpsInfo.textProperty().bind(Bindings.concat("FPS: ", gridRenderer.lastFpsProperty))
+        mousePosInfo.textProperty().bind(Bindings.concat("X:", gridView.mouseGridXProperty(), " Y: ", gridView.mouseGridYProperty()))
 
         val showGrid = CheckBox()
-        showGrid.selectedProperty().bindBidirectional(gridRenderer.showGridProperty)
+        showGrid.selectedProperty().bindBidirectional(gridView.renderGridProperty())
 
         val bottom = HBox()
         bottom.children.add(showGrid)
-        bottom.children.add(fpsInfo)
         bottom.children.add(mousePosInfo)
         bottom.children.add(zoomSlider)
         bottom.spacing = 10.0
@@ -72,7 +71,7 @@ class XControlPlus : Application() {
         for (mode in ToolboxMode.values()) {
             val button = ToggleButton(mode.name)
             button.setOnMouseClicked {
-                gridRenderer.toolboxMode = mode
+                toolRenderer.currentTool.set(mode)
                 scene.cursor = mode.getCursor()
 
             }
@@ -91,9 +90,9 @@ class XControlPlus : Application() {
         root.right = right
         root.center = Pane().apply {
             setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE)
-            canvas.widthProperty().bind(widthProperty())
-            canvas.heightProperty().bind(heightProperty())
-            children.add(canvas)
+            gridView.widthProperty().bind(widthProperty())
+            gridView.heightProperty().bind(heightProperty())
+            children.add(gridView)
         }
 
         scene = Scene(root, 800.0, 600.0)
@@ -101,7 +100,11 @@ class XControlPlus : Application() {
         scene.setOnKeyTyped {
             when (it.character.toUpperCase()) {
                 "R" -> {
-                    gridRenderer.rotation = gridRenderer.rotation.next()
+                    if (it.isShiftDown) {
+                        toolRenderer.rotation = toolRenderer.rotation.rotateCCW()
+                    } else {
+                        toolRenderer.rotation = toolRenderer.rotation.rotateCW()
+                    }
                 }
                 else -> {
                     println("Unknown key typed: ${it.character}")

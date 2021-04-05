@@ -32,6 +32,7 @@ repositories {
 
 dependencies {
     // we can't use the plugin, see https://github.com/openjfx/javafx-gradle-plugin/issues/89
+    implementation(project("gridview"))
     implementation("org.openjfx:javafx-base:16:${platform}")
     implementation("org.openjfx:javafx-controls:16:${platform}")
     implementation("org.openjfx:javafx-graphics:16:${platform}")
@@ -65,5 +66,11 @@ jlink {
     options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
     launcher {
         name = "XControlPlus"
+    }
+}
+
+subprojects {
+    repositories {
+        mavenCentral()
     }
 }

@@ -1,6 +1,10 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolboxMode
+import com.github.se7_kn8.xcontrolplus.app.util.fillCircle
+import com.github.se7_kn8.xcontrolplus.app.util.rotated
+import com.github.se7_kn8.xcontrolplus.gridview.CellRotation
+import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.animation.AnimationTimer
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
@@ -37,7 +41,7 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
     private var mouseStartPos = Point2D(0.0, 0.0)
 
     var toolboxMode = ToolboxMode.MOUSE
-    var rotation = Rotation.D0
+    var rotation = CellRotation.D0
 
     val mouseGridXProperty = SimpleIntegerProperty(0)
     val mouseGridYProperty = SimpleIntegerProperty(0)
@@ -134,8 +138,8 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
     private fun renderCells() {
         gc.stroke = Colors.track
         gc.fill = Colors.track
-
-        for (cell in gridState.cells) {
+/*
+        for (cell in gridState.getCells()) {
             gc.rotated(cell.rot.degree, cell.getMidPosX().toDouble(), cell.getMidPosY().toDouble()) {
                 cell.getRenderer().drawBackground(cell.gridX, cell.gridY, gc, cell)
             }
@@ -143,22 +147,22 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
 
 
         gc.fill = Colors.trackHighlight
-        for (cell in gridState.cells) {
+        for (cell in gridState.getCells()) {
             gc.rotated(cell.rot.degree, cell.getMidPosX().toDouble(), cell.getMidPosY().toDouble()) {
                 cell.getRenderer().drawForeground(cell.gridX, cell.gridY, gc, cell)
             }
-        }
+        }*/
     }
 
-    private fun renderTool() {
+    private fun renderTool() {/*
         gc.fill = Colors.track
         gc.rotated(
             rotation.degree,
             (mouseGridXProperty.get() * GRID_SIZE + GRID_SIZE / 2).toDouble(),
             (mouseGridYProperty.get() * GRID_SIZE + GRID_SIZE / 2).toDouble()
         ) {
-            toolboxMode.draw(mouseGridXProperty.get(), mouseGridYProperty.get(), gc)
-        }
+            toolboxMode.draw(mouseGridXProperty.get(), mouseGridYProperty.get(), gc, GridView())
+        }*/
     }
 
     private fun clearScreen() {
@@ -223,25 +227,4 @@ class GridRenderer(private val canvas: Canvas, private val gridState: GridState)
         mouseGridXProperty.value = x.toInt()
         mouseGridYProperty.value = y.toInt()
     }
-}
-
-fun GraphicsContext.rotateAround(degree: Double, midPosX: Double, midPosY: Double) {
-    transform = transform.apply {
-        appendRotation(
-            degree,
-            midPosX,
-            midPosY
-        )
-    }
-}
-
-fun GraphicsContext.rotated(degree: Double, midPosX: Double, midPosY: Double, handler: () -> Unit) {
-    save()
-    rotateAround(degree, midPosX, midPosY)
-    handler()
-    restore()
-}
-
-fun GraphicsContext.fillCircle(x: Double, y: Double, r: Double) {
-    fillOval(x - r, y - r, 2 * r, 2 * r)
 }

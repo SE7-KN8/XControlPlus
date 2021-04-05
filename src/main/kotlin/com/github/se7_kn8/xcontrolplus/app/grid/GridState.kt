@@ -1,5 +1,6 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
+import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import javafx.stage.FileChooser
@@ -37,24 +38,29 @@ class AbstractClassAdapter<T : Any> : JsonSerializer<T>, JsonDeserializer<T> {
 
 }
 
-class GridState {
+class GridState(private val gridView: GridView<BaseCell>) {
 
     private val gson = GsonBuilder()
-        .registerTypeAdapter(GridCell::class.java, AbstractClassAdapter<GridCell>())
+        .registerTypeAdapter(BaseCell::class.java, AbstractClassAdapter<BaseCell>())
         .setPrettyPrinting()
         .create()
-    val cells = ArrayList<GridCell>()
 
-    val type = object : TypeToken<ArrayList<GridCell>>() {}.type
+    val type = object : TypeToken<ArrayList<BaseCell>>() {}.type
+
+    fun getCells(): List<BaseCell> = gridView.cells
+
+    fun removeCell(baseCell: BaseCell) = gridView.cells.remove(baseCell)
+
+    fun addCell(baseCell: BaseCell) = gridView.cells.add(baseCell)
 
     fun loadCells(from: String) {
-        val newData = gson.fromJson<ArrayList<GridCell>>(from, type)
-        cells.clear()
-        cells.addAll(newData)
+        val newData = gson.fromJson<ArrayList<BaseCell>>(from, type)
+        gridView.cells.clear()
+        gridView.cells.addAll(newData)
     }
 
     fun saveCells(): String {
-        val data: ArrayList<GridCell> = cells
+        val data: ArrayList<BaseCell> = ArrayList(gridView.cells)
         return gson.toJson(data, type)
     }
 
