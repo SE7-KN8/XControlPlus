@@ -155,7 +155,7 @@ enum class TurnoutType {
     abstract fun getRenderer(): GridCellRenderer
 }
 
-class TurnoutGridCell(x: Int, y: Int, rot: CellRotation, val turnoutType: TurnoutType) : BaseCell(x, y, rot) {
+class TurnoutGridCell(x: Int, y: Int, rot: CellRotation, private val turnoutType: TurnoutType) : BaseCell(x, y, rot) {
     var turned = false
     override fun getRenderer() = turnoutType.getRenderer()
 }

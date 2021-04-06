@@ -16,16 +16,9 @@ import javafx.stage.Stage
 
 class XControlPlus : Application() {
 
-
-    //private lateinit var canvas: Canvas
-    //private lateinit var gridRenderer: GridRenderer
     private lateinit var scene: Scene
 
     override fun start(stage: Stage) {
-
-        //canvas = Canvas(0.0, 0.0)
-        //gridRenderer = GridRenderer(canvas, gridState)
-        //gridRenderer.start()
 
         val gridView = GridView<BaseCell>()
         val gridState = GridState(gridView)
