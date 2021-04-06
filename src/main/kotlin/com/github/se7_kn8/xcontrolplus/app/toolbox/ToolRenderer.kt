@@ -13,6 +13,7 @@ class ToolRenderer(private val gridView: GridView<BaseCell>, private val gridSta
     var rotation = CellRotation.D0
 
     init {
+        gridView.isClickAndDrag = true
         gridView.setForegroundCallback { _, renderer ->
             renderer.gc.rotated(
                 rotation.rotation(),

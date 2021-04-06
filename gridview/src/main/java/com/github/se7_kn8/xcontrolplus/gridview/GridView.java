@@ -40,7 +40,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		setGridWidth(gridWidth);
 		setGridHeight(gridHeight);
 
-		renderer = new GridRenderer<T>(this);
+		renderer = new GridRenderer<>(this);
 
 		translationXProperty().addListener((o, oV, newValue) -> getGridTransform().setTx(newValue.doubleValue()));
 		translationYProperty().addListener((o, oV, newValue) -> getGridTransform().setTy(newValue.doubleValue()));
@@ -78,6 +78,9 @@ public class GridView<T extends GridCell> extends Canvas {
 			double translationY = event.getY() - mouseStartPosY + moveOffsetY;
 			setTranslationX(translationX);
 			setTranslationY(translationY);
+		} else if (isClickAndDrag() && event.getButton() == getClickMouseButton()) {
+			updateMousePos(event.getX(), event.getY());
+			getClickCallback().handle(event);
 		}
 	}
 
@@ -112,7 +115,7 @@ public class GridView<T extends GridCell> extends Canvas {
 			y -= 1.0;
 		}
 
-		if (!isAllowOutside()) {
+		if (!isOutsideGridPlacement()) {
 			x = Math.min(getGridWidth() - 1, x);
 			x = Math.max(getGridStartX(), x);
 
@@ -235,7 +238,6 @@ public class GridView<T extends GridCell> extends Canvas {
 	public void setRenderGrid(boolean renderGrid) {
 		this.renderGrid.set(renderGrid);
 	}
-
 
 	private final IntegerProperty mouseGridX = new SimpleIntegerProperty(0);
 
@@ -440,18 +442,18 @@ public class GridView<T extends GridCell> extends Canvas {
 		return clickCallback;
 	}
 
-	private BooleanProperty allowOutside = new SimpleBooleanProperty(false);
+	private BooleanProperty outsideGridPlacement = new SimpleBooleanProperty(false);
 
-	public void setAllowOutside(boolean allowOutside) {
-		this.allowOutside.set(allowOutside);
+	public void setOutsideGridPlacement(boolean outsideGridPlacement) {
+		this.outsideGridPlacement.set(outsideGridPlacement);
 	}
 
-	public boolean isAllowOutside() {
-		return allowOutside.get();
+	public boolean isOutsideGridPlacement() {
+		return outsideGridPlacement.get();
 	}
 
-	public BooleanProperty allowOutsideProperty() {
-		return allowOutside;
+	private BooleanProperty outsideGridPlacementProperty() {
+		return outsideGridPlacement;
 	}
 
 	private DoubleProperty gridStartX = new SimpleDoubleProperty(0.0);
@@ -480,5 +482,19 @@ public class GridView<T extends GridCell> extends Canvas {
 
 	public DoubleProperty gridStartYProperty() {
 		return gridStartY;
+	}
+
+	private BooleanProperty clickAndDrag = new SimpleBooleanProperty(false);
+
+	public void setClickAndDrag(boolean clickAndDrag) {
+		this.clickAndDrag.set(clickAndDrag);
+	}
+
+	public boolean isClickAndDrag() {
+		return clickAndDrag.get();
+	}
+
+	public BooleanProperty clickAndDragProperty() {
+		return clickAndDrag;
 	}
 }
