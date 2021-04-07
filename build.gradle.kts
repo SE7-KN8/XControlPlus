@@ -31,8 +31,9 @@ repositories {
 }
 
 dependencies {
-    // we can't use the plugin, see https://github.com/openjfx/javafx-gradle-plugin/issues/89
     implementation(project("gridview"))
+    implementation(project("protocol"))
+    // we can't use the plugin, see https://github.com/openjfx/javafx-gradle-plugin/issues/89
     implementation("org.openjfx:javafx-base:16:${platform}")
     implementation("org.openjfx:javafx-controls:16:${platform}")
     implementation("org.openjfx:javafx-graphics:16:${platform}")

@@ -1,9 +1,13 @@
 module xcontrolplus {
+	requires xcontrolplus.gridview;
+	requires xcontrolplus.protocol;
+
 	requires javafx.controls;
 	requires javafx.graphics;
+
 	requires kotlin.stdlib;
+
 	requires com.google.gson;
-	requires xcontrolplus.gridview;
 
 	// Required for javafx to start
 	exports com.github.se7_kn8.xcontrolplus.app to javafx.graphics;

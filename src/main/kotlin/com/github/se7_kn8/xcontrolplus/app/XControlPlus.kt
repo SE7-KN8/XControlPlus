@@ -5,6 +5,11 @@ import com.github.se7_kn8.xcontrolplus.app.grid.GridState
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolboxMode
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
+import com.github.se7_kn8.xcontrolplus.protocol.Connection
+import com.github.se7_kn8.xcontrolplus.protocol.ConnectionHandler
+import com.github.se7_kn8.xcontrolplus.protocol.ConnectionType
+import com.github.se7_kn8.xcontrolplus.protocol.packet.EchoPacket
+import com.github.se7_kn8.xcontrolplus.protocol.packet.Packet
 import javafx.application.Application
 import javafx.beans.binding.Bindings
 import javafx.geometry.Pos
@@ -13,15 +18,16 @@ import javafx.scene.control.*
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.*
 import javafx.stage.Stage
+import javafx.util.StringConverter
 
 class XControlPlus : Application() {
 
     private lateinit var scene: Scene
 
     override fun start(stage: Stage) {
-
         val gridView = GridView<BaseCell>()
         val gridState = GridState(gridView)
+        val connectionHandler = ConnectionHandler()
         val toolRenderer = ToolRenderer(gridView, gridState)
 
         val zoomSlider = Slider(0.1, 5.0, 1.0)
@@ -56,6 +62,59 @@ class XControlPlus : Application() {
         left.children.addAll(
             Button("Save").apply { setOnMouseClicked { gridState.saveToFile(stage) } },
             Button("Load").apply { setOnMouseClicked { gridState.loadFromFile(stage) } })
+
+        val connectionTypeBox = ComboBox<ConnectionType>()
+        val typeName = Label(connectionHandler.currentType.name)
+        val connName = Label()
+        val connectionBox = ComboBox<Connection>()
+        val testConn = Button("Test conn")
+        connectionBox.isVisible = false
+        connName.visibleProperty().bind(connectionBox.visibleProperty())
+        testConn.visibleProperty().bind(connectionBox.visibleProperty())
+        connectionTypeBox.items.addAll(ConnectionHandler.getTypes())
+        connectionTypeBox.converter = object : StringConverter<ConnectionType>() {
+            override fun toString(`object`: ConnectionType?): String? {
+                return `object`?.name
+            }
+
+            override fun fromString(string: String?): ConnectionType {
+                throw NotImplementedError("Should be not necessary")
+            }
+
+        }
+        connectionBox.converter = object : StringConverter<Connection>() {
+            override fun toString(`object`: Connection?): String? {
+                return `object`?.name
+            }
+
+            override fun fromString(string: String?): Connection {
+                throw NotImplementedError("Should be not necessary")
+            }
+
+        }
+        connectionTypeBox.selectionModel.selectFirst()
+        connectionTypeBox.selectionModel.selectedItemProperty().addListener { observable, oldValue, newValue ->
+            typeName.text = newValue.name
+            val connections = newValue.listConnections()
+            connectionBox.isVisible = connections.size > 0
+            connectionBox.items.clear()
+            connectionBox.items.addAll(connections)
+            connectionBox.selectionModel.selectFirst()
+        }
+
+        connectionBox.selectionModel.selectedItemProperty().addListener { observable, oldValue, newValue ->
+            oldValue?.closeConnection()
+            newValue?.openConnection()
+            connName.text = newValue?.name
+        }
+
+        testConn.setOnAction {
+            connectionBox.selectionModel.selectedItem.openConnection()
+            val bool = connectionBox.selectionModel.selectedItem.testConnection(5000)
+            println("Success: $bool")
+        }
+
+        left.children.addAll(connectionTypeBox, typeName, connectionBox, connName, testConn)
 
         val toolboxButtonGroup = ToggleGroup()
 

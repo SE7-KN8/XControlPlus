@@ -79,8 +79,12 @@ public class GridView<T extends GridCell> extends Canvas {
 			setTranslationX(translationX);
 			setTranslationY(translationY);
 		} else if (isClickAndDrag() && event.getButton() == getClickMouseButton()) {
+			int oldMousePosX = getMouseGridX();
+			int oldMousePosY = getMouseGridY();
 			updateMousePos(event.getX(), event.getY());
-			getClickCallback().handle(event);
+			if (oldMousePosX != getMouseGridX() || oldMousePosY != getMouseGridY()) {
+				getClickCallback().handle(event);
+			}
 		}
 	}
 
