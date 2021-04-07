@@ -85,7 +85,7 @@ public class SerialConnection implements Connection {
 		HashMap<String, String> data = DefaultPacketFactory.INSTANCE.<T>getFactoryById(packet.getId()).toData(packet);
 		StringBuilder sb = new StringBuilder();
 		sb.append("C;");
-		sb.append(packet.getId().getId());
+		sb.append(packet.getId());
 		sb.append(";");
 		data.forEach((key, value) -> {
 			sb.append(key);

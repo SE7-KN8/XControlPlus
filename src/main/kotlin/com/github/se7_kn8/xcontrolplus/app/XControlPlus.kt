@@ -93,7 +93,7 @@ class XControlPlus : Application() {
 
         }
         connectionTypeBox.selectionModel.selectFirst()
-        connectionTypeBox.selectionModel.selectedItemProperty().addListener { observable, oldValue, newValue ->
+        connectionTypeBox.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
             typeName.text = newValue.name
             val connections = newValue.listConnections()
             connectionBox.isVisible = connections.size > 0
