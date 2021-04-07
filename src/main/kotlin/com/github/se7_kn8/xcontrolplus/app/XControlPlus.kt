@@ -164,6 +164,7 @@ class XControlPlus : Application() {
             }
         }
 
+        gridView.pauseProperty().bind(stage.iconifiedProperty())
         stage.scene = scene
         stage.minWidth = 1280.0
         stage.minHeight = 720.0

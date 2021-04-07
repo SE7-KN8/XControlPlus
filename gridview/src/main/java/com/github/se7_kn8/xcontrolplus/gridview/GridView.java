@@ -45,7 +45,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		translationXProperty().addListener((o, oV, newValue) -> getGridTransform().setTx(newValue.doubleValue()));
 		translationYProperty().addListener((o, oV, newValue) -> getGridTransform().setTy(newValue.doubleValue()));
 
-		scaleProperty().addListener((observable, oldValue, newValue) -> {
+		scaleProperty().addListener((o, oldValue, newValue) -> {
 			double scaleChangeFactor = oldValue.doubleValue() / newValue.doubleValue();
 			Point2D midPoint = transformScreenToGrid(getWidth() / 2.0, getHeight() / 2.0);
 			getGridTransform().appendScale(scaleChangeFactor, scaleChangeFactor, midPoint.getX(), midPoint.getY());
@@ -57,6 +57,14 @@ public class GridView<T extends GridCell> extends Canvas {
 		setOnMouseDragged(this::onMouseDragged);
 		setOnScroll(this::onScroll);
 		setOnMouseMoved(this::onMouseMoved);
+
+		pauseProperty().addListener((o, oV, newValue) -> {
+			if (newValue) {
+				renderer.stop();
+			}else{
+				renderer.start();
+			}
+		});
 
 		renderer.start();
 		getStyleClass().setAll("grid-view");
@@ -500,5 +508,19 @@ public class GridView<T extends GridCell> extends Canvas {
 
 	public BooleanProperty clickAndDragProperty() {
 		return clickAndDrag;
+	}
+
+	private BooleanProperty pause = new SimpleBooleanProperty(false);
+
+	public void setPause(boolean pause) {
+		this.pause.set(pause);
+	}
+
+	public boolean isPause() {
+		return pause.get();
+	}
+
+	public BooleanProperty pauseProperty() {
+		return pause;
 	}
 }
