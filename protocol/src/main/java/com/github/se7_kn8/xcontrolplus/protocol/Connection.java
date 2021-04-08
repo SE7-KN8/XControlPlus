@@ -3,6 +3,7 @@ package com.github.se7_kn8.xcontrolplus.protocol;
 import com.github.se7_kn8.xcontrolplus.protocol.packet.Packet;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 public interface Connection {
 
@@ -12,9 +13,9 @@ public interface Connection {
 
 	void closeConnection();
 
-	<T extends Packet> void sendPacket(T packet);
+	void setOnPacketReceived(Consumer<? extends Packet> packetConsumer);
 
-	<T extends Packet> T receivePacket();
+	<T extends Packet> void sendPacket(T packet);
 
 	String getName();
 

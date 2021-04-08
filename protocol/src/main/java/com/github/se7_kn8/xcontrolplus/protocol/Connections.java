@@ -5,7 +5,7 @@ import com.github.se7_kn8.xcontrolplus.protocol.impl.serial.SerialConnectionType
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConnectionHandler {
+public class Connections {
 
 	private static final class EmptyConnectionType implements ConnectionType {
 
@@ -26,21 +26,13 @@ public class ConnectionHandler {
 		}
 	}
 
+	private Connections() {
+
+	}
+
+	private static List<ConnectionType> types = List.of(EmptyConnectionType.INSTANCE, new SerialConnectionType());
+
 	public static List<ConnectionType> getTypes() {
-		return List.of(EmptyConnectionType.INSTANCE, new SerialConnectionType());
-	}
-
-	private ConnectionType currentType = EmptyConnectionType.INSTANCE;
-
-	public void switchType(ConnectionType newBackend) {
-		currentType = newBackend;
-	}
-
-	public List<Connection> getConnections() {
-		return currentType.listConnections();
-	}
-
-	public ConnectionType getCurrentType() {
-		return currentType;
+		return types;
 	}
 }

@@ -6,10 +6,8 @@ import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolboxMode
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import com.github.se7_kn8.xcontrolplus.protocol.Connection
-import com.github.se7_kn8.xcontrolplus.protocol.ConnectionHandler
+import com.github.se7_kn8.xcontrolplus.protocol.Connections
 import com.github.se7_kn8.xcontrolplus.protocol.ConnectionType
-import com.github.se7_kn8.xcontrolplus.protocol.packet.EchoPacket
-import com.github.se7_kn8.xcontrolplus.protocol.packet.Packet
 import javafx.application.Application
 import javafx.beans.binding.Bindings
 import javafx.geometry.Pos
@@ -23,11 +21,11 @@ import javafx.util.StringConverter
 class XControlPlus : Application() {
 
     private lateinit var scene: Scene
+    private var connection: Connection? = null
 
     override fun start(stage: Stage) {
         val gridView = GridView<BaseCell>()
         val gridState = GridState(gridView)
-        val connectionHandler = ConnectionHandler()
         val toolRenderer = ToolRenderer(gridView, gridState)
 
         val zoomSlider = Slider(0.1, 5.0, 1.0)
@@ -64,14 +62,14 @@ class XControlPlus : Application() {
             Button("Load").apply { setOnMouseClicked { gridState.loadFromFile(stage) } })
 
         val connectionTypeBox = ComboBox<ConnectionType>()
-        val typeName = Label(connectionHandler.currentType.name)
+        val typeName = Label()
         val connName = Label()
         val connectionBox = ComboBox<Connection>()
         val testConn = Button("Test conn")
         connectionBox.isVisible = false
         connName.visibleProperty().bind(connectionBox.visibleProperty())
         testConn.visibleProperty().bind(connectionBox.visibleProperty())
-        connectionTypeBox.items.addAll(ConnectionHandler.getTypes())
+        connectionTypeBox.items.addAll(Connections.getTypes())
         connectionTypeBox.converter = object : StringConverter<ConnectionType>() {
             override fun toString(`object`: ConnectionType?): String? {
                 return `object`?.name
@@ -105,6 +103,10 @@ class XControlPlus : Application() {
         connectionBox.selectionModel.selectedItemProperty().addListener { observable, oldValue, newValue ->
             oldValue?.closeConnection()
             newValue?.openConnection()
+            connection = newValue
+            newValue?.setOnPacketReceived {
+                println("Received packet: $it")
+            }
             connName.text = newValue?.name
         }
 
@@ -169,6 +171,11 @@ class XControlPlus : Application() {
         stage.minWidth = 1280.0
         stage.minHeight = 720.0
         stage.show()
+    }
+
+    override fun stop() {
+        super.stop()
+        connection?.closeConnection()
     }
 
 }
