@@ -1,27 +1,27 @@
 package com.github.se7_kn8.xcontrolplus.app
 
+import com.github.se7_kn8.xcontrolplus.app.connection.ConnectionHandler
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.grid.GridState
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolboxMode
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
-import com.github.se7_kn8.xcontrolplus.protocol.Connection
-import com.github.se7_kn8.xcontrolplus.protocol.Connections
-import com.github.se7_kn8.xcontrolplus.protocol.ConnectionType
 import javafx.application.Application
 import javafx.beans.binding.Bindings
 import javafx.geometry.Pos
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.input.MouseButton
-import javafx.scene.layout.*
+import javafx.scene.layout.BorderPane
+import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
+import javafx.scene.layout.VBox
 import javafx.stage.Stage
-import javafx.util.StringConverter
 
 class XControlPlus : Application() {
 
     private lateinit var scene: Scene
-    private var connection: Connection? = null
+    val connectionHandler = ConnectionHandler()
 
     override fun start(stage: Stage) {
         val gridView = GridView<BaseCell>()
@@ -49,10 +49,15 @@ class XControlPlus : Application() {
         val showGrid = CheckBox()
         showGrid.selectedProperty().bindBidirectional(gridView.renderGridProperty())
 
+        val connectionInfo = Label()
+        connectionHandler.connection.addListener { _, _, newValue ->
+            if (newValue != null) {
+                connectionInfo.text = "Connected to: " + newValue.name
+            }
+        }
+
         val bottom = HBox()
-        bottom.children.add(showGrid)
-        bottom.children.add(mousePosInfo)
-        bottom.children.add(zoomSlider)
+        bottom.children.addAll(connectionInfo, showGrid, mousePosInfo, zoomSlider)
         bottom.spacing = 10.0
         bottom.alignment = Pos.CENTER_RIGHT
 
@@ -61,62 +66,13 @@ class XControlPlus : Application() {
             Button("Save").apply { setOnMouseClicked { gridState.saveToFile(stage) } },
             Button("Load").apply { setOnMouseClicked { gridState.loadFromFile(stage) } })
 
-        val connectionTypeBox = ComboBox<ConnectionType>()
-        val typeName = Label()
-        val connName = Label()
-        val connectionBox = ComboBox<Connection>()
-        val testConn = Button("Test conn")
-        connectionBox.isVisible = false
-        connName.visibleProperty().bind(connectionBox.visibleProperty())
-        testConn.visibleProperty().bind(connectionBox.visibleProperty())
-        connectionTypeBox.items.addAll(Connections.getTypes())
-        connectionTypeBox.converter = object : StringConverter<ConnectionType>() {
-            override fun toString(`object`: ConnectionType?): String? {
-                return `object`?.name
-            }
+        val chooseConnection = Button("Choose connection");
 
-            override fun fromString(string: String?): ConnectionType {
-                throw NotImplementedError("Should be not necessary")
-            }
-
-        }
-        connectionBox.converter = object : StringConverter<Connection>() {
-            override fun toString(`object`: Connection?): String? {
-                return `object`?.name
-            }
-
-            override fun fromString(string: String?): Connection {
-                throw NotImplementedError("Should be not necessary")
-            }
-
-        }
-        connectionTypeBox.selectionModel.selectFirst()
-        connectionTypeBox.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-            typeName.text = newValue.name
-            val connections = newValue.listConnections()
-            connectionBox.isVisible = connections.size > 0
-            connectionBox.items.clear()
-            connectionBox.items.addAll(connections)
-            connectionBox.selectionModel.selectFirst()
+        chooseConnection.setOnAction {
+            connectionHandler.showConnectionSelectDialog()
         }
 
-        connectionBox.selectionModel.selectedItemProperty().addListener { observable, oldValue, newValue ->
-            oldValue?.closeConnection()
-            newValue?.openConnection()
-            connection = newValue
-            newValue?.setOnPacketReceived {
-                println("Received packet: $it")
-            }
-            connName.text = newValue?.name
-        }
-
-        testConn.setOnAction {
-            connectionBox.selectionModel.selectedItem.openConnection()
-            val bool = connectionBox.selectionModel.selectedItem.testConnection(5000)
-            println("Success: $bool")
-        }
-
-        left.children.addAll(connectionTypeBox, typeName, connectionBox, connName, testConn)
+        left.children.addAll(chooseConnection)
 
         val toolboxButtonGroup = ToggleGroup()
 
@@ -175,7 +131,7 @@ class XControlPlus : Application() {
 
     override fun stop() {
         super.stop()
-        connection?.closeConnection()
+        connectionHandler.connection.value?.closeConnection()
     }
 
 }
