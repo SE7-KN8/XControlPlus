@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class GridView<T extends GridCell> extends Canvas {
@@ -61,7 +62,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		pauseProperty().addListener((o, oV, newValue) -> {
 			if (newValue) {
 				renderer.stop();
-			}else{
+			} else {
 				renderer.start();
 			}
 		});
@@ -75,7 +76,10 @@ public class GridView<T extends GridCell> extends Canvas {
 		moveOffsetY = getTranslationY();
 		mouseStartPosX = event.getX();
 		mouseStartPosY = event.getY();
-		if (event.getButton() == getClickMouseButton()) {
+		if (event.getButton() != getMoveMouseButton()) {
+			if (isHighlightSelectedCell()) {
+				findCell(getMouseGridX(), getMouseGridY()).ifPresent(this::setSelectedCell);
+			}
 			getClickCallback().handle(event);
 		}
 	}
@@ -86,7 +90,7 @@ public class GridView<T extends GridCell> extends Canvas {
 			double translationY = event.getY() - mouseStartPosY + moveOffsetY;
 			setTranslationX(translationX);
 			setTranslationY(translationY);
-		} else if (isClickAndDrag() && event.getButton() == getClickMouseButton()) {
+		} else if (isClickAndDrag() && event.getButton() != getMoveMouseButton()) {
 			int oldMousePosX = getMouseGridX();
 			int oldMousePosY = getMouseGridY();
 			updateMousePos(event.getX(), event.getY());
@@ -146,6 +150,16 @@ public class GridView<T extends GridCell> extends Canvas {
 			e.printStackTrace();
 		}
 		return Point2D.ZERO;
+	}
+
+	public Optional<T> findCell(int x, int y) {
+		for (T cell : cells) {
+			if (cell.getGridX() == x && cell.getGridY() == y) {
+				return Optional.of(cell);
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	public ObservableList<T> getCells() {
@@ -271,11 +285,11 @@ public class GridView<T extends GridCell> extends Canvas {
 		return mouseGridY;
 	}
 
-	public GridRenderer getRenderer() {
+	public GridRenderer<T> getRenderer() {
 		return renderer;
 	}
 
-	private DoubleProperty gridLineWidth = new SimpleDoubleProperty(2.0);
+	private final DoubleProperty gridLineWidth = new SimpleDoubleProperty(2.0);
 
 	public void setGridLineWidth(double gridLineWidth) {
 		this.gridLineWidth.set(gridLineWidth);
@@ -289,7 +303,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return gridLineWidth;
 	}
 
-	private ReadOnlyObjectProperty<Affine> gridTransform = new SimpleObjectProperty<>(new Affine());
+	private final ReadOnlyObjectProperty<Affine> gridTransform = new SimpleObjectProperty<>(new Affine());
 
 	public Affine getGridTransform() {
 		return gridTransform.get();
@@ -299,7 +313,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return gridTransform;
 	}
 
-	private ObjectProperty<BiConsumer<Long, GridRenderer<T>>> backgroundCallback = new SimpleObjectProperty<>(EMPTY_CALLBACK);
+	private final ObjectProperty<BiConsumer<Long, GridRenderer<T>>> backgroundCallback = new SimpleObjectProperty<>(EMPTY_CALLBACK);
 
 	public void setBackgroundCallback(BiConsumer<Long, GridRenderer<T>> backgroundCallback) {
 		this.backgroundCallback.set(backgroundCallback);
@@ -313,7 +327,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return backgroundCallback;
 	}
 
-	private ObjectProperty<BiConsumer<Long, GridRenderer<T>>> foregroundCallback = new SimpleObjectProperty<>(EMPTY_CALLBACK);
+	private final ObjectProperty<BiConsumer<Long, GridRenderer<T>>> foregroundCallback = new SimpleObjectProperty<>(EMPTY_CALLBACK);
 
 	public void setForegroundCallback(BiConsumer<Long, GridRenderer<T>> foregroundCallback) {
 		this.foregroundCallback.set(foregroundCallback);
@@ -327,7 +341,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return foregroundCallback;
 	}
 
-	private ObjectProperty<BiConsumer<Long, GridRenderer<T>>> overlayCallback = new SimpleObjectProperty<>(EMPTY_CALLBACK);
+	private final ObjectProperty<BiConsumer<Long, GridRenderer<T>>> overlayCallback = new SimpleObjectProperty<>(EMPTY_CALLBACK);
 
 	public void setOverlayCallback(BiConsumer<Long, GridRenderer<T>> overlayCallback) {
 		this.overlayCallback.set(overlayCallback);
@@ -341,7 +355,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return overlayCallback;
 	}
 
-	private ObjectProperty<Color> gridColor = new SimpleObjectProperty<>(Color.GREY);
+	private final ObjectProperty<Color> gridColor = new SimpleObjectProperty<>(Color.GREY);
 
 	public void setGridColor(Color gridColor) {
 		this.gridColor.set(gridColor);
@@ -355,7 +369,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return gridColor;
 	}
 
-	private ObjectProperty<Color> clearColor = new SimpleObjectProperty<>(Color.WHITE);
+	private final ObjectProperty<Color> clearColor = new SimpleObjectProperty<>(Color.WHITE);
 
 	public void setClearColor(Color clearColor) {
 		this.clearColor.set(clearColor);
@@ -369,21 +383,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return clearColor;
 	}
 
-	private ObjectProperty<MouseButton> clickMouseButton = new SimpleObjectProperty<>(MouseButton.PRIMARY);
-
-	public void setClickMouseButton(MouseButton clickMouseButton) {
-		this.clickMouseButton.set(clickMouseButton);
-	}
-
-	public MouseButton getClickMouseButton() {
-		return clickMouseButton.get();
-	}
-
-	public ObjectProperty<MouseButton> clickMouseButtonProperty() {
-		return clickMouseButton;
-	}
-
-	private ObjectProperty<MouseButton> moveMouseButton = new SimpleObjectProperty<>(MouseButton.MIDDLE);
+	private final ObjectProperty<MouseButton> moveMouseButton = new SimpleObjectProperty<>(MouseButton.MIDDLE);
 
 	public void setMoveMouseButton(MouseButton moveMouseButton) {
 		this.moveMouseButton.set(moveMouseButton);
@@ -397,7 +397,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return moveMouseButton;
 	}
 
-	private DoubleProperty zoomFactor = new SimpleDoubleProperty(1.0);
+	private final DoubleProperty zoomFactor = new SimpleDoubleProperty(1.0);
 
 	public void setZoomFactor(double zoomFactor) {
 		this.zoomFactor.set(zoomFactor);
@@ -411,7 +411,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return zoomFactor;
 	}
 
-	private DoubleProperty minScale = new SimpleDoubleProperty(0.5);
+	private final DoubleProperty minScale = new SimpleDoubleProperty(0.5);
 
 	public void setMinScale(double minScale) {
 		this.minScale.set(minScale);
@@ -425,7 +425,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return minScale;
 	}
 
-	private DoubleProperty maxScale = new SimpleDoubleProperty(2.0);
+	private final DoubleProperty maxScale = new SimpleDoubleProperty(2.0);
 
 	public void setMaxScale(double maxScale) {
 		this.maxScale.set(maxScale);
@@ -439,7 +439,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return maxScale;
 	}
 
-	private ObjectProperty<EventHandler<MouseEvent>> clickCallback = new SimpleObjectProperty<>(event -> {
+	private final ObjectProperty<EventHandler<MouseEvent>> clickCallback = new SimpleObjectProperty<>(event -> {
 	});
 
 	public void setClickCallback(EventHandler<MouseEvent> clickCallback) {
@@ -454,7 +454,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return clickCallback;
 	}
 
-	private BooleanProperty outsideGridPlacement = new SimpleBooleanProperty(false);
+	private final BooleanProperty outsideGridPlacement = new SimpleBooleanProperty(false);
 
 	public void setOutsideGridPlacement(boolean outsideGridPlacement) {
 		this.outsideGridPlacement.set(outsideGridPlacement);
@@ -468,7 +468,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return outsideGridPlacement;
 	}
 
-	private DoubleProperty gridStartX = new SimpleDoubleProperty(0.0);
+	private final DoubleProperty gridStartX = new SimpleDoubleProperty(0.0);
 
 	public double getGridStartX() {
 		return gridStartX.get();
@@ -482,7 +482,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return gridStartX;
 	}
 
-	private DoubleProperty gridStartY = new SimpleDoubleProperty(0.0);
+	private final DoubleProperty gridStartY = new SimpleDoubleProperty(0.0);
 
 	public double getGridStartY() {
 		return gridStartY.get();
@@ -496,7 +496,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return gridStartY;
 	}
 
-	private BooleanProperty clickAndDrag = new SimpleBooleanProperty(false);
+	private final BooleanProperty clickAndDrag = new SimpleBooleanProperty(false);
 
 	public void setClickAndDrag(boolean clickAndDrag) {
 		this.clickAndDrag.set(clickAndDrag);
@@ -510,7 +510,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return clickAndDrag;
 	}
 
-	private BooleanProperty pause = new SimpleBooleanProperty(false);
+	private final BooleanProperty pause = new SimpleBooleanProperty(false);
 
 	public void setPause(boolean pause) {
 		this.pause.set(pause);
@@ -522,5 +522,47 @@ public class GridView<T extends GridCell> extends Canvas {
 
 	public BooleanProperty pauseProperty() {
 		return pause;
+	}
+
+	private final BooleanProperty highlightSelectedCell = new SimpleBooleanProperty(false);
+
+	public void setHighlightSelectedCell(boolean highlightSelectedCell) {
+		this.highlightSelectedCell.set(highlightSelectedCell);
+	}
+
+	public boolean isHighlightSelectedCell() {
+		return highlightSelectedCell.get();
+	}
+
+	public BooleanProperty highlightSelectedCellProperty() {
+		return highlightSelectedCell;
+	}
+
+	private final ObjectProperty<T> selectedCell = new SimpleObjectProperty<>();
+
+	public T getSelectedCell() {
+		return selectedCell.get();
+	}
+
+	public ObjectProperty<T> selectedCellProperty() {
+		return selectedCell;
+	}
+
+	public void setSelectedCell(T value) {
+		selectedCell.set(value);
+	}
+
+	private final ObjectProperty<Color> highlightColor = new SimpleObjectProperty<>(Color.BLUE);
+
+	public void setHighlightColor(Color color) {
+		this.highlightColor.set(color);
+	}
+
+	public Color getHighlightColor() {
+		return highlightColor.get();
+	}
+
+	public ObjectProperty<Color> highlightColorProperty() {
+		return highlightColor;
 	}
 }

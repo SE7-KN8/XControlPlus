@@ -29,9 +29,21 @@ public class GridRenderer<T extends GridCell> extends AnimationTimer {
 
 		renderCells(now);
 
+		if (view.isHighlightSelectedCell()) {
+			renderHighlight();
+		}
+
 		view.getForegroundCallback().accept(now, this);
 		gc.restore();
 		view.getOverlayCallback().accept(now, this);
+	}
+
+	private void renderHighlight() {
+		if (view.getSelectedCell() != null) {
+			gc.setLineWidth(view.getGridLineWidth() * 1.5);
+			gc.setStroke(view.getHighlightColor());
+			gc.strokeRect(getPosX(view.getSelectedCell().getGridX()), getPosY(view.getSelectedCell().getGridY()), view.getGridSize(), view.getGridSize());
+		}
 	}
 
 	private void renderCells(long now) {
