@@ -7,6 +7,7 @@ import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolboxMode
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.application.Application
+import javafx.application.Platform
 import javafx.beans.binding.Bindings
 import javafx.geometry.Pos
 import javafx.scene.Scene
@@ -27,6 +28,9 @@ class XControlPlus : Application() {
         val gridView = GridView<BaseCell>()
         val gridState = GridState(gridView)
         val toolRenderer = ToolRenderer(gridView, gridState)
+
+
+        gridView.isHighlightSelectedCell = true
 
         val zoomSlider = Slider(0.1, 5.0, 1.0)
         gridView.minScaleProperty().bind(zoomSlider.minProperty())
@@ -75,15 +79,28 @@ class XControlPlus : Application() {
         left.children.addAll(chooseConnection)
 
         val toolboxButtonGroup = ToggleGroup()
+        toolboxButtonGroup.selectedToggleProperty().addListener { _, oldValue, newValue ->
+            if (newValue == null) {
+                toolboxButtonGroup.selectToggle(oldValue)
+            }
+        }
 
         val right = VBox()
 
         for (mode in ToolboxMode.values()) {
             val button = ToggleButton(mode.name)
             button.setOnMouseClicked {
+                gridView.isHighlightSelectedCell = mode == ToolboxMode.MOUSE
+                gridView.selectedCell = null
                 toolRenderer.currentTool.set(mode)
                 scene.cursor = mode.getCursor()
 
+            }
+            if (mode == ToolboxMode.MOUSE) {
+                Platform.runLater {
+                    toolboxButtonGroup.selectToggle(button)
+                    button.requestFocus()
+                }
             }
             button.toggleGroup = toolboxButtonGroup
             right.children.add(button)
@@ -111,9 +128,9 @@ class XControlPlus : Application() {
             when (it.character.toUpperCase()) {
                 "R" -> {
                     if (it.isShiftDown) {
-                        toolRenderer.rotation = toolRenderer.rotation.rotateCCW()
+                        gridState.userRotation = gridState.userRotation.rotateCCW()
                     } else {
-                        toolRenderer.rotation = toolRenderer.rotation.rotateCW()
+                        gridState.userRotation = gridState.userRotation.rotateCW()
                     }
                 }
                 else -> {

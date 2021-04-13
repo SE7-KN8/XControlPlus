@@ -1,9 +1,8 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
-import com.github.se7_kn8.xcontrolplus.gridview.CellRotation
-import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell
 import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
+import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell
 import javafx.scene.canvas.GraphicsContext
 
 enum class GridCellRenderer {
@@ -127,7 +126,8 @@ enum class GridCellRenderer {
 
 }
 
-abstract class BaseCell(gridX: Int, gridY: Int, rot: CellRotation) : GridCell(gridX, gridY, rot) {
+abstract class BaseCell(currentGridState: GridState) :
+    GridCell(currentGridState.mouseGridX(), currentGridState.mouseGridY(), currentGridState.userRotation) {
     override fun render(now: Long, gc: GraphicsContext, renderer: GridRenderer<out GridCell>) {
         getRenderer().draw(gridX, gridY, gc, renderer, this)
     }
@@ -135,11 +135,11 @@ abstract class BaseCell(gridX: Int, gridY: Int, rot: CellRotation) : GridCell(gr
     abstract fun getRenderer(): GridCellRenderer
 }
 
-class StraightGridCell(x: Int, y: Int, rot: CellRotation) : BaseCell(x, y, rot) {
+class StraightGridCell(gridState: GridState) : BaseCell(gridState) {
     override fun getRenderer() = GridCellRenderer.STRAIGHT
 }
 
-class TurnGridCell(x: Int, y: Int, rot: CellRotation) : BaseCell(x, y, rot) {
+class TurnGridCell(gridState: GridState) : BaseCell(gridState) {
     override fun getRenderer() = GridCellRenderer.TURN
 }
 
@@ -155,7 +155,7 @@ enum class TurnoutType {
     abstract fun getRenderer(): GridCellRenderer
 }
 
-class TurnoutGridCell(x: Int, y: Int, rot: CellRotation, private val turnoutType: TurnoutType) : BaseCell(x, y, rot) {
+class TurnoutGridCell(gridState: GridState, private val turnoutType: TurnoutType) : BaseCell(gridState) {
     var turned = false
     override fun getRenderer() = turnoutType.getRenderer()
 }

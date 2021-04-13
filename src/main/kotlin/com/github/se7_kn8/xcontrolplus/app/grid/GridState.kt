@@ -1,5 +1,6 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
+import com.github.se7_kn8.xcontrolplus.gridview.CellRotation
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
@@ -7,7 +8,6 @@ import javafx.stage.FileChooser
 import javafx.stage.Stage
 import java.io.FileReader
 import java.io.PrintWriter
-import java.lang.Exception
 import java.lang.reflect.Type
 
 // From: https://stackoverflow.com/a/9550086/10648509
@@ -38,12 +38,16 @@ class AbstractClassAdapter<T : Any> : JsonSerializer<T>, JsonDeserializer<T> {
 
 }
 
-class GridState(private val gridView: GridView<BaseCell>) {
+class GridState(val gridView: GridView<BaseCell>) {
 
     private val gson = GsonBuilder()
         .registerTypeAdapter(BaseCell::class.java, AbstractClassAdapter<BaseCell>())
         .setPrettyPrinting()
         .create()
+
+    val contextMenu = GridContextMenu(this)
+
+    var userRotation = CellRotation.D0
 
     val type = object : TypeToken<ArrayList<BaseCell>>() {}.type
 
@@ -52,6 +56,13 @@ class GridState(private val gridView: GridView<BaseCell>) {
     fun removeCell(baseCell: BaseCell) = gridView.cells.remove(baseCell)
 
     fun addCell(baseCell: BaseCell) = gridView.cells.add(baseCell)
+
+    fun getCell(x: Int, y: Int) = gridView.findCell(x, y)
+
+    fun getCurrentCell() = gridView.findCell(mouseGridX(), mouseGridY())
+
+    fun mouseGridX() = gridView.mouseGridX
+    fun mouseGridY() = gridView.mouseGridY
 
     fun loadCells(from: String) {
         val newData = gson.fromJson<ArrayList<BaseCell>>(from, type)

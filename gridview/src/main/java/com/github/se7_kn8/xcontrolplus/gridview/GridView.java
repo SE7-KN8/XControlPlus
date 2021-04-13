@@ -5,7 +5,6 @@ import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseButton;
@@ -78,9 +77,9 @@ public class GridView<T extends GridCell> extends Canvas {
 		mouseStartPosY = event.getY();
 		if (event.getButton() != getMoveMouseButton()) {
 			if (isHighlightSelectedCell()) {
-				findCell(getMouseGridX(), getMouseGridY()).ifPresent(this::setSelectedCell);
+				findCell(getMouseGridX(), getMouseGridY()).ifPresentOrElse(this::setSelectedCell, () -> this.setSelectedCell(null));
 			}
-			getClickCallback().handle(event);
+			getClickCallback().accept(event, false);
 		}
 	}
 
@@ -95,7 +94,7 @@ public class GridView<T extends GridCell> extends Canvas {
 			int oldMousePosY = getMouseGridY();
 			updateMousePos(event.getX(), event.getY());
 			if (oldMousePosX != getMouseGridX() || oldMousePosY != getMouseGridY()) {
-				getClickCallback().handle(event);
+				getClickCallback().accept(event, true);
 			}
 		}
 	}
@@ -439,18 +438,18 @@ public class GridView<T extends GridCell> extends Canvas {
 		return maxScale;
 	}
 
-	private final ObjectProperty<EventHandler<MouseEvent>> clickCallback = new SimpleObjectProperty<>(event -> {
+	private final ObjectProperty<BiConsumer<MouseEvent, Boolean>> clickCallback = new SimpleObjectProperty<>((event, drag) -> {
 	});
 
-	public void setClickCallback(EventHandler<MouseEvent> clickCallback) {
+	public void setClickCallback(BiConsumer<MouseEvent, Boolean> clickCallback) {
 		this.clickCallback.set(clickCallback);
 	}
 
-	public EventHandler<MouseEvent> getClickCallback() {
+	public BiConsumer<MouseEvent, Boolean> getClickCallback() {
 		return clickCallback.get();
 	}
 
-	public ObjectProperty<EventHandler<MouseEvent>> clickCallbackProperty() {
+	public ObjectProperty<BiConsumer<MouseEvent, Boolean>> clickCallbackProperty() {
 		return clickCallback;
 	}
 

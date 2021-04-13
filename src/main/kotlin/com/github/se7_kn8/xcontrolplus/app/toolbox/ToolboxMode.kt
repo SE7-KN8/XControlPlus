@@ -1,10 +1,11 @@
 package com.github.se7_kn8.xcontrolplus.app.toolbox
 
 import com.github.se7_kn8.xcontrolplus.app.grid.*
-import com.github.se7_kn8.xcontrolplus.gridview.CellRotation
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.scene.Cursor
 import javafx.scene.canvas.GraphicsContext
+import javafx.scene.input.MouseButton
+import javafx.scene.input.MouseEvent
 
 enum class ToolboxMode {
 
@@ -13,15 +14,29 @@ enum class ToolboxMode {
             // Do nothing
         }
 
-        override fun getCursor(): Cursor = Cursor.DEFAULT
+        override fun onClick(event: MouseEvent, state: GridState) {
+            when (event.button) {
+                MouseButton.PRIMARY -> {
+                    state.getCurrentCell().ifPresent {
+                        if (it is TurnoutGridCell) {
+                            it.turned = !it.turned
+                        }
+                    }
+                }
 
-        override fun onClick(gridX: Int, gridY: Int, rot: CellRotation, state: GridState) {
-            for (cell in state.getCells()) {
-                if (cell.gridX == gridX && cell.gridY == gridY && cell is TurnoutGridCell) {
-                    cell.turned = !cell.turned
+                MouseButton.SECONDARY -> {
+                    state.getCurrentCell().ifPresent {
+                        state.contextMenu.show(event)
+                    }
+                }
+                else -> {
+                    //NOP
                 }
             }
         }
+
+        override fun allowDrag() = false
+
     },
     STRAIGHT {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
@@ -30,9 +45,11 @@ enum class ToolboxMode {
 
         override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
-        override fun onClick(gridX: Int, gridY: Int, rot: CellRotation, state: GridState) {
-            removeCellAtSamePos(gridX, gridY, state)
-            state.addCell(StraightGridCell(gridX, gridY, rot))
+        override fun onClick(event: MouseEvent, state: GridState) {
+            if (event.button == MouseButton.PRIMARY) {
+                removeCellAtSamePos(state)
+                state.addCell(StraightGridCell(state))
+            }
         }
     },
     TURN {
@@ -42,9 +59,11 @@ enum class ToolboxMode {
 
         override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
-        override fun onClick(gridX: Int, gridY: Int, rot: CellRotation, state: GridState) {
-            removeCellAtSamePos(gridX, gridY, state)
-            state.addCell(TurnGridCell(gridX, gridY, rot))
+        override fun onClick(event: MouseEvent, state: GridState) {
+            if (event.button == MouseButton.PRIMARY) {
+                removeCellAtSamePos(state)
+                state.addCell(TurnGridCell(state))
+            }
         }
     },
 
@@ -55,9 +74,11 @@ enum class ToolboxMode {
 
         override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
-        override fun onClick(gridX: Int, gridY: Int, rot: CellRotation, state: GridState) {
-            removeCellAtSamePos(gridX, gridY, state)
-            state.addCell(TurnoutGridCell(gridX, gridY, rot, TurnoutType.LEFT))
+        override fun onClick(event: MouseEvent, state: GridState) {
+            if (event.button == MouseButton.PRIMARY) {
+                removeCellAtSamePos(state)
+                state.addCell(TurnoutGridCell(state, TurnoutType.LEFT))
+            }
         }
     },
 
@@ -68,9 +89,11 @@ enum class ToolboxMode {
 
         override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
-        override fun onClick(gridX: Int, gridY: Int, rot: CellRotation, state: GridState) {
-            removeCellAtSamePos(gridX, gridY, state)
-            state.addCell(TurnoutGridCell(gridX, gridY, rot, TurnoutType.RIGHT))
+        override fun onClick(event: MouseEvent, state: GridState) {
+            if (event.button == MouseButton.PRIMARY) {
+                removeCellAtSamePos(state)
+                state.addCell(TurnoutGridCell(state, TurnoutType.RIGHT))
+            }
         }
     },
 
@@ -84,8 +107,10 @@ enum class ToolboxMode {
 
         override fun getCursor(): Cursor = Cursor.OPEN_HAND
 
-        override fun onClick(gridX: Int, gridY: Int, rot: CellRotation, state: GridState) {
-            removeCellAtSamePos(gridX, gridY, state)
+        override fun onClick(event: MouseEvent, state: GridState) {
+            if (event.button == MouseButton.PRIMARY) {
+                removeCellAtSamePos(state)
+            }
         }
 
     },
@@ -93,20 +118,15 @@ enum class ToolboxMode {
 
     abstract fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>)
 
-    abstract fun getCursor(): Cursor
+    abstract fun onClick(event: MouseEvent, state: GridState)
 
-    abstract fun onClick(gridX: Int, gridY: Int, rot: CellRotation, state: GridState)
+    open fun getCursor(): Cursor = Cursor.DEFAULT
 
-    fun removeCellAtSamePos(gridX: Int, gridY: Int, state: GridState) {
-        var foundCell: BaseCell? = null
-        for (cell in state.getCells()) {
-            if (cell.gridX == gridX && cell.gridY == gridY) {
-                foundCell = cell
-                break
-            }
-        }
-        if (foundCell != null) {
-            state.removeCell(foundCell)
+    open fun allowDrag() = true
+
+    fun removeCellAtSamePos(state: GridState) {
+        state.getCurrentCell().ifPresent {
+            state.removeCell(it)
         }
     }
 
