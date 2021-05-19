@@ -1,4 +1,3 @@
-import org.gradle.kotlin.dsl.support.compileKotlinScriptModuleTo
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
