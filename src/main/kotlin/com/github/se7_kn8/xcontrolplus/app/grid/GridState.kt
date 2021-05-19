@@ -1,5 +1,6 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
+import com.github.se7_kn8.xcontrolplus.app.actions.Action
 import com.github.se7_kn8.xcontrolplus.gridview.CellRotation
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import com.google.gson.*
@@ -9,6 +10,7 @@ import javafx.stage.Stage
 import java.io.FileReader
 import java.io.PrintWriter
 import java.lang.reflect.Type
+import java.util.*
 
 // From: https://stackoverflow.com/a/9550086/10648509
 class AbstractClassAdapter<T : Any> : JsonSerializer<T>, JsonDeserializer<T> {
@@ -55,11 +57,19 @@ class GridState(val gridView: GridView<BaseCell>) {
 
     fun removeCell(baseCell: BaseCell) = gridView.cells.remove(baseCell)
 
-    fun addCell(baseCell: BaseCell) = gridView.cells.add(baseCell)
+
+    fun addCell(baseCell: BaseCell) {
+        getCell(baseCell.gridX, baseCell.gridY).ifPresent {
+            removeCell(it)
+        }
+        gridView.cells.add(baseCell)
+    }
 
     fun getCell(x: Int, y: Int) = gridView.findCell(x, y)
 
-    fun getCurrentCell() = gridView.findCell(mouseGridX(), mouseGridY())
+    fun getHoveredCell() = gridView.findCell(mouseGridX(), mouseGridY())
+
+    fun getSelectedCell() = Optional.of(gridView.selectedCell)
 
     fun mouseGridX() = gridView.mouseGridX
     fun mouseGridY() = gridView.mouseGridY
@@ -73,6 +83,10 @@ class GridState(val gridView: GridView<BaseCell>) {
     fun saveCells(): String {
         val data: ArrayList<BaseCell> = ArrayList(gridView.cells)
         return gson.toJson(data, type)
+    }
+
+    fun doAction(action: Action) {
+        action.doAction(this)
     }
 
     fun saveToFile(stage: Stage) {

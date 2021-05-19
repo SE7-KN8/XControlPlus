@@ -4,6 +4,7 @@ import com.github.se7_kn8.xcontrolplus.app.util.rotated
 import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
 import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell
 import javafx.scene.canvas.GraphicsContext
+import javafx.scene.control.MenuItem
 
 enum class GridCellRenderer {
     STRAIGHT {
@@ -133,6 +134,9 @@ abstract class BaseCell(currentGridState: GridState) :
     }
 
     abstract fun getRenderer(): GridCellRenderer
+
+    open fun getContextOptions(): List<MenuItem> = emptyList()
+
 }
 
 class StraightGridCell(gridState: GridState) : BaseCell(gridState) {
@@ -158,5 +162,14 @@ enum class TurnoutType {
 class TurnoutGridCell(gridState: GridState, private val turnoutType: TurnoutType) : BaseCell(gridState) {
     var turned = false
     override fun getRenderer() = turnoutType.getRenderer()
+
+    override fun getContextOptions(): List<MenuItem> {
+        val item = MenuItem("Turn")
+        item.setOnAction {
+            this.turned = !this.turned
+        }
+        return listOf(item)
+    }
+
 }
 

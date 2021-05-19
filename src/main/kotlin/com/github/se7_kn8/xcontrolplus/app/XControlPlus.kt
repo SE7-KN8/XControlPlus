@@ -2,6 +2,7 @@ package com.github.se7_kn8.xcontrolplus.app
 
 import com.github.se7_kn8.xcontrolplus.app.connection.ConnectionHandler
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
+import com.github.se7_kn8.xcontrolplus.app.grid.GridShortcuts
 import com.github.se7_kn8.xcontrolplus.app.grid.GridState
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolboxMode
@@ -22,12 +23,14 @@ import javafx.stage.Stage
 class XControlPlus : Application() {
 
     private lateinit var scene: Scene
-    val connectionHandler = ConnectionHandler()
+    private val connectionHandler = ConnectionHandler()
 
     override fun start(stage: Stage) {
         val gridView = GridView<BaseCell>()
         val gridState = GridState(gridView)
-        val toolRenderer = ToolRenderer(gridView, gridState)
+
+        val shortcuts = GridShortcuts(gridState)
+        val toolRenderer = ToolRenderer(gridState)
 
 
         gridView.isHighlightSelectedCell = true
@@ -70,7 +73,7 @@ class XControlPlus : Application() {
             Button("Save").apply { setOnMouseClicked { gridState.saveToFile(stage) } },
             Button("Load").apply { setOnMouseClicked { gridState.loadFromFile(stage) } })
 
-        val chooseConnection = Button("Choose connection");
+        val chooseConnection = Button("Choose connection")
 
         chooseConnection.setOnAction {
             connectionHandler.showConnectionSelectDialog()
@@ -123,21 +126,6 @@ class XControlPlus : Application() {
         }
 
         scene = Scene(root, 800.0, 600.0)
-
-        scene.setOnKeyTyped {
-            when (it.character.toUpperCase()) {
-                "R" -> {
-                    if (it.isShiftDown) {
-                        gridState.userRotation = gridState.userRotation.rotateCCW()
-                    } else {
-                        gridState.userRotation = gridState.userRotation.rotateCW()
-                    }
-                }
-                else -> {
-                    println("Unknown key typed: ${it.character}")
-                }
-            }
-        }
 
         gridView.pauseProperty().bind(stage.iconifiedProperty())
         stage.scene = scene

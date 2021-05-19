@@ -71,6 +71,7 @@ public class GridView<T extends GridCell> extends Canvas {
 	}
 
 	private void onMousePressed(MouseEvent event) {
+		requestFocus();
 		moveOffsetX = getTranslationX();
 		moveOffsetY = getTranslationY();
 		mouseStartPosX = event.getX();

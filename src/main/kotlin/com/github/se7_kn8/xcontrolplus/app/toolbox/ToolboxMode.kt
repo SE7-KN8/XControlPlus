@@ -1,5 +1,6 @@
 package com.github.se7_kn8.xcontrolplus.app.toolbox
 
+import com.github.se7_kn8.xcontrolplus.app.actions.Actions
 import com.github.se7_kn8.xcontrolplus.app.grid.*
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.scene.Cursor
@@ -17,16 +18,11 @@ enum class ToolboxMode {
         override fun onClick(event: MouseEvent, state: GridState) {
             when (event.button) {
                 MouseButton.PRIMARY -> {
-                    state.getCurrentCell().ifPresent {
-                        if (it is TurnoutGridCell) {
-                            it.turned = !it.turned
-                        }
-                    }
                 }
 
                 MouseButton.SECONDARY -> {
-                    state.getCurrentCell().ifPresent {
-                        state.contextMenu.show(event)
+                    state.getHoveredCell().ifPresent {
+                        state.contextMenu.show(event, it)
                     }
                 }
                 else -> {
@@ -47,7 +43,6 @@ enum class ToolboxMode {
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
-                removeCellAtSamePos(state)
                 state.addCell(StraightGridCell(state))
             }
         }
@@ -61,7 +56,6 @@ enum class ToolboxMode {
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
-                removeCellAtSamePos(state)
                 state.addCell(TurnGridCell(state))
             }
         }
@@ -76,7 +70,6 @@ enum class ToolboxMode {
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
-                removeCellAtSamePos(state)
                 state.addCell(TurnoutGridCell(state, TurnoutType.LEFT))
             }
         }
@@ -91,7 +84,6 @@ enum class ToolboxMode {
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
-                removeCellAtSamePos(state)
                 state.addCell(TurnoutGridCell(state, TurnoutType.RIGHT))
             }
         }
@@ -109,7 +101,7 @@ enum class ToolboxMode {
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
-                removeCellAtSamePos(state)
+                state.doAction(Actions.SelectedCell.delete)
             }
         }
 
@@ -123,11 +115,5 @@ enum class ToolboxMode {
     open fun getCursor(): Cursor = Cursor.DEFAULT
 
     open fun allowDrag() = true
-
-    fun removeCellAtSamePos(state: GridState) {
-        state.getCurrentCell().ifPresent {
-            state.removeCell(it)
-        }
-    }
 
 }
