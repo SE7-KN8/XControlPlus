@@ -69,7 +69,7 @@ class GridState(val gridView: GridView<BaseCell>) {
 
     fun getHoveredCell() = gridView.findCell(mouseGridX(), mouseGridY())
 
-    fun getSelectedCell() = Optional.of(gridView.selectedCell)
+    fun getSelectedCell() = Optional.ofNullable(gridView.selectedCell)
 
     fun mouseGridX() = gridView.mouseGridX
     fun mouseGridY() = gridView.mouseGridY
