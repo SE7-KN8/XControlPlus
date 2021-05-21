@@ -15,6 +15,7 @@ import javafx.beans.binding.Bindings
 import javafx.geometry.Pos
 import javafx.scene.Scene
 import javafx.scene.control.*
+import javafx.scene.image.Image
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
@@ -167,6 +168,15 @@ class XControlPlus : Application() {
                 }
             }
         }
+
+
+        //FIXME Currently not working with intellij because: https://youtrack.jetbrains.com/issue/IDEA-197469
+        stage.icons.addAll(
+            Image(javaClass.getResourceAsStream("/logo/large.png")),
+            Image(javaClass.getResourceAsStream("/logo/medium.png")),
+            Image(javaClass.getResourceAsStream("/logo/small.png"))
+        )
+
         stage.show()
     }
 
