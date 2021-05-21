@@ -1,14 +1,12 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
 import com.github.se7_kn8.xcontrolplus.app.actions.Action
+import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
 import com.github.se7_kn8.xcontrolplus.gridview.CellRotation
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
-import javafx.stage.FileChooser
 import javafx.stage.Stage
-import java.io.FileReader
-import java.io.PrintWriter
 import java.lang.reflect.Type
 import java.util.*
 
@@ -40,6 +38,7 @@ class AbstractClassAdapter<T : Any> : JsonSerializer<T>, JsonDeserializer<T> {
 
 }
 
+// Maybe split this class into smaller classes and use DI?
 class GridState(val gridView: GridView<BaseCell>) {
 
     private val gson = GsonBuilder()
@@ -47,11 +46,11 @@ class GridState(val gridView: GridView<BaseCell>) {
         .setPrettyPrinting()
         .create()
 
+    private val type = object : TypeToken<ArrayList<BaseCell>>() {}.type!!
+
     val contextMenu = GridContextMenu(this)
 
     var userRotation = CellRotation.D0
-
-    val type = object : TypeToken<ArrayList<BaseCell>>() {}.type
 
     fun getCells(): List<BaseCell> = gridView.cells
 
@@ -90,33 +89,19 @@ class GridState(val gridView: GridView<BaseCell>) {
     }
 
     fun saveToFile(stage: Stage) {
-        val chooser = createFileChooser()
-        val file = chooser.showSaveDialog(stage)
-        if (file != null) {
-            val writer = PrintWriter(file)
-            writer.write(saveCells())
-            writer.flush()
-            writer.close()
+        FileUtil.saveFileChooser(stage, FileUtil.PROJECT_FILE) {
+            val content = saveCells()
+            FileUtil.writeStringToFile(it, content)
         }
     }
 
     fun loadFromFile(stage: Stage) {
-        val chooser = createFileChooser()
-        val file = chooser.showOpenDialog(stage)
-        if (file != null && file.exists()) {
-            val reader = FileReader(file)
-            val data = reader.readText()
-            reader.close()
-            loadCells(data)
+        FileUtil.openFileChooser(stage, FileUtil.PROJECT_FILE) { path ->
+            FileUtil.readFileToString(path)?.also {
+                loadCells(it)
+            }
+
         }
-    }
-
-
-    private fun createFileChooser(): FileChooser {
-        val chooser = FileChooser()
-        val filter = FileChooser.ExtensionFilter("X-Control Plus Files (*.xctrlp)", "*.xctrlp")
-        chooser.extensionFilters.add(filter)
-        return chooser
     }
 
 }

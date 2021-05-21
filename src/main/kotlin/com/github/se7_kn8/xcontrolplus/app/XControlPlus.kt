@@ -4,6 +4,8 @@ import com.github.se7_kn8.xcontrolplus.app.connection.ConnectionHandler
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.grid.GridShortcuts
 import com.github.se7_kn8.xcontrolplus.app.grid.GridState
+import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
+import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolboxMode
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
@@ -24,6 +26,8 @@ class XControlPlus : Application() {
 
     private lateinit var scene: Scene
     private val connectionHandler = ConnectionHandler()
+    private val appSettings = ApplicationSettings.INSTANCE
+    private val userSettings = UserSettings.INSTANCE
 
     override fun start(stage: Stage) {
         val gridView = GridView<BaseCell>()
@@ -131,12 +135,46 @@ class XControlPlus : Application() {
         stage.scene = scene
         stage.minWidth = 1280.0
         stage.minHeight = 720.0
+
+
+        stage.isMaximized = appSettings[ApplicationSettings.START_MAXIMIZED]
+        stage.x = appSettings[ApplicationSettings.WINDOW_X].toDouble()
+        stage.y = appSettings[ApplicationSettings.WINDOW_Y].toDouble()
+        stage.width = appSettings[ApplicationSettings.WINDOW_WIDTH].toDouble()
+        stage.height = appSettings[ApplicationSettings.WINDOW_HEIGHT].toDouble()
+
+        stage.maximizedProperty().addListener { _, _, newValue -> appSettings[ApplicationSettings.START_MAXIMIZED] = newValue }
+        stage.xProperty().addListener { _, _, newValue -> appSettings[ApplicationSettings.WINDOW_X] = newValue.toDouble() }
+        stage.yProperty().addListener { _, _, newValue -> appSettings[ApplicationSettings.WINDOW_Y] = newValue.toDouble() }
+        stage.widthProperty().addListener { _, _, newValue -> appSettings[ApplicationSettings.WINDOW_WIDTH] = newValue.toDouble() }
+        stage.heightProperty().addListener { _, _, newValue -> appSettings[ApplicationSettings.WINDOW_HEIGHT] = newValue.toDouble() }
+
+        stage.setOnCloseRequest { event ->
+            if (userSettings[UserSettings.ASK_BEFORE_EXIT]) {
+                val dialog = Alert(Alert.AlertType.CONFIRMATION, "Do you really want to exit?", ButtonType.OK, ButtonType.CANCEL)
+                dialog.initOwner(stage)
+                val result = dialog.showAndWait()
+                var dontExit = true
+
+                result.ifPresent {
+                    if (it == ButtonType.OK) {
+                        dontExit = false
+                    }
+                }
+
+                if (dontExit) {
+                    event.consume()
+                }
+            }
+        }
         stage.show()
     }
 
     override fun stop() {
         super.stop()
         connectionHandler.connection.value?.closeConnection()
+        userSettings.save()
+        appSettings.save()
     }
 
 }

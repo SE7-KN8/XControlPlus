@@ -8,6 +8,7 @@ module xcontrolplus {
 	requires kotlin.stdlib;
 
 	requires com.google.gson;
+	requires kotlin.stdlib.jdk8;
 
 	// Required for javafx to start
 	exports com.github.se7_kn8.xcontrolplus.app to javafx.graphics;
