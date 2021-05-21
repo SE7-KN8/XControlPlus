@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.4.32"
+    kotlin("jvm") version "1.5.0"
     id("application")
     id("org.beryx.jlink") version "2.23.5"
 }
@@ -57,8 +57,7 @@ compileJava.destinationDir = compileKotlin.destinationDir
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "15"
-        useIR = true
+        jvmTarget = "16"
     }
 }
 
