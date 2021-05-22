@@ -3,27 +3,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.5.0"
     id("application")
+    id("org.openjfx.javafxplugin") version "0.0.10"
     id("org.beryx.jlink") version "2.23.5"
 }
 
 group = "com.github.se7_kn8"
 version = "0.0.0"
-
-val currentOs = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem()!!
-var platform = when {
-    currentOs.isWindows -> {
-        "win"
-    }
-    currentOs.isLinux -> {
-        "linux"
-    }
-    currentOs.isMacOsX -> {
-        "mac"
-    }
-    else -> {
-        "UNKNOWN_PLATFORM"
-    }
-}
 
 repositories {
     mavenCentral()
@@ -32,14 +17,14 @@ repositories {
 dependencies {
     implementation(project("gridview"))
     implementation(project("protocol"))
-    // we can't use the plugin, see https://github.com/openjfx/javafx-gradle-plugin/issues/89
-    implementation("org.openjfx:javafx-base:16:${platform}")
-    implementation("org.openjfx:javafx-controls:16:${platform}")
-    implementation("org.openjfx:javafx-graphics:16:${platform}")
-
-    // kotlinx.serialization is currently not compatible with JPMS so we use gson
     implementation("com.google.code.gson:gson:2.8.6")
 }
+
+javafx {
+    version = "16"
+    modules = listOf("javafx.controls")
+}
+
 
 java {
     modularity.inferModulePath.set(true)
@@ -49,11 +34,6 @@ application {
     mainModule.set("xcontrolplus")
     mainClass.set("com.github.se7_kn8.xcontrolplus.MainKt")
 }
-
-// Workaround: Java compiler won't compile empty modules
-val compileKotlin: KotlinCompile by tasks
-val compileJava: JavaCompile by tasks
-compileJava.destinationDir = compileKotlin.destinationDir
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
