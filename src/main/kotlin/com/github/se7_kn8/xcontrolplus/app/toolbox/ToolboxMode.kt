@@ -102,6 +102,7 @@ enum class ToolboxMode {
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
+                state.selectHoveredCell()
                 state.doAction(DeleteSelectedCellAction())
             }
         }

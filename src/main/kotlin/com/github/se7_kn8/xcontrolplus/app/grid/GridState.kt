@@ -106,4 +106,13 @@ class GridState(val gridView: GridView<BaseCell>) {
         }
     }
 
+    fun selectHoveredCell() {
+        val cell = gridView.findCell(gridView.mouseGridX, gridView.mouseGridY)
+        if (cell.isPresent) {
+            gridView.selectedCell = cell.get()
+        } else {
+            gridView.selectedCell = null
+        }
+    }
+
 }

@@ -12,9 +12,13 @@ class GridShortcuts(gridState: GridState) {
         gridState.gridView.setOnKeyPressed {
             when (it.code) {
                 KeyCode.R -> {
-                    gridState.doAction(RotateSelectedCellAction(if (it.isShiftDown) RotationDirection.COUNTER_CLOCKWISE else RotationDirection.CLOCKWISE))
+                    gridState.selectHoveredCell()
+                    val rotationDirection = if (it.isShiftDown) RotationDirection.COUNTER_CLOCKWISE else RotationDirection.CLOCKWISE
+                    gridState.userRotation = gridState.userRotation.rotate(rotationDirection)
+                    gridState.doAction(RotateSelectedCellAction(rotationDirection))
                 }
                 KeyCode.DELETE -> {
+                    gridState.selectHoveredCell()
                     gridState.doAction(DeleteSelectedCellAction())
                 }
                 else -> {

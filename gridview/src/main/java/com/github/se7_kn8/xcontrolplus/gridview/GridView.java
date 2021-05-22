@@ -57,6 +57,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		setOnMouseDragged(this::onMouseDragged);
 		setOnScroll(this::onScroll);
 		setOnMouseMoved(this::onMouseMoved);
+		setOnMouseEntered(this::onMouseEntered);
 
 		pauseProperty().addListener((o, oV, newValue) -> {
 			if (newValue) {
@@ -70,16 +71,17 @@ public class GridView<T extends GridCell> extends Canvas {
 		getStyleClass().setAll("grid-view");
 	}
 
-	private void onMousePressed(MouseEvent event) {
+	private void onMouseEntered(MouseEvent event) {
 		requestFocus();
+	}
+
+	private void onMousePressed(MouseEvent event) {
 		moveOffsetX = getTranslationX();
 		moveOffsetY = getTranslationY();
 		mouseStartPosX = event.getX();
 		mouseStartPosY = event.getY();
 		if (event.getButton() != getMoveMouseButton()) {
-			if (isHighlightSelectedCell()) {
-				findCell(getMouseGridX(), getMouseGridY()).ifPresentOrElse(this::setSelectedCell, () -> this.setSelectedCell(null));
-			}
+			findCell(getMouseGridX(), getMouseGridY()).ifPresentOrElse(this::setSelectedCell, () -> this.setSelectedCell(null));
 			getClickCallback().accept(event, false);
 		}
 	}

@@ -36,6 +36,7 @@ class DeleteSelectedCellAction() : SelectedCellAction() {
         cell?.let {
             state.removeCell(it)
         }
+        state.selectHoveredCell()
     }
 
     override fun undoAction(state: GridState) {
@@ -59,6 +60,7 @@ class AddCellAction(private val cell: BaseCell) : Action {
 
     override fun undoAction(state: GridState) {
         state.removeCell(cell)
+        state.selectHoveredCell()
     }
 
 }
