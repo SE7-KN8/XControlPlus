@@ -1,6 +1,7 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
 import com.github.se7_kn8.xcontrolplus.app.actions.DeleteSelectedCellAction
+import com.github.se7_kn8.xcontrolplus.app.actions.EditSelectedCellParameterAction
 import com.github.se7_kn8.xcontrolplus.app.actions.RotateSelectedCellAction
 import com.github.se7_kn8.xcontrolplus.gridview.RotationDirection
 import javafx.scene.control.ContextMenu
@@ -41,6 +42,16 @@ class GridContextMenu(private val state: GridState) {
         menu.hide()
         menu.items.clear()
         menu.items.addAll(defaultItems)
+
+        val parameter = selectedCell.getParameters()
+        if (parameter.keys.isNotEmpty()) {
+            menu.items.addAll(SeparatorMenuItem())
+            menu.items.addAll(MenuItem("Edit parameter").apply {
+                setOnAction { state.doAction(EditSelectedCellParameterAction()) }
+                accelerator = KeyCombination.keyCombination("e")
+            })
+        }
+
         val options = selectedCell.getContextOptions()
         if (options.isNotEmpty()) {
             menu.items.add(SeparatorMenuItem())

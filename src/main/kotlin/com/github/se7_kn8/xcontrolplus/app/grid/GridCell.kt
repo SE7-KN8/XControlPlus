@@ -3,6 +3,8 @@ package com.github.se7_kn8.xcontrolplus.app.grid
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
 import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
 import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell
+import javafx.beans.property.Property
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.MenuItem
 
@@ -137,6 +139,8 @@ abstract class BaseCell(currentGridState: GridState) :
 
     open fun getContextOptions(): List<MenuItem> = emptyList()
 
+    open fun getParameters(): Map<String, Property<*>> = emptyMap()
+
 }
 
 class StraightGridCell(gridState: GridState) : BaseCell(gridState) {
@@ -161,6 +165,8 @@ enum class TurnoutType {
 
 class TurnoutGridCell(gridState: GridState, private val turnoutType: TurnoutType) : BaseCell(gridState) {
     var turned = false
+    private val id = SimpleIntegerProperty(0)
+
     override fun getRenderer() = turnoutType.getRenderer()
 
     override fun getContextOptions(): List<MenuItem> {
@@ -170,6 +176,9 @@ class TurnoutGridCell(gridState: GridState, private val turnoutType: TurnoutType
         }
         return listOf(item)
     }
+
+    override fun getParameters() = mapOf(Pair("ID: ", id))
+
 
 }
 

@@ -2,6 +2,7 @@ package com.github.se7_kn8.xcontrolplus.app.grid
 
 
 import com.github.se7_kn8.xcontrolplus.app.actions.DeleteSelectedCellAction
+import com.github.se7_kn8.xcontrolplus.app.actions.EditSelectedCellParameterAction
 import com.github.se7_kn8.xcontrolplus.app.actions.RotateSelectedCellAction
 import com.github.se7_kn8.xcontrolplus.gridview.RotationDirection
 import javafx.scene.input.KeyCode
@@ -20,6 +21,10 @@ class GridShortcuts(gridState: GridState) {
                 KeyCode.DELETE -> {
                     gridState.selectHoveredCell()
                     gridState.doAction(DeleteSelectedCellAction())
+                }
+                KeyCode.E -> {
+                    gridState.selectHoveredCell()
+                    gridState.doAction(EditSelectedCellParameterAction())
                 }
                 else -> {
                     println("Unknown key pressed: ${it.code.name}")

@@ -1,5 +1,6 @@
 package com.github.se7_kn8.xcontrolplus.app.actions
 
+import com.github.se7_kn8.xcontrolplus.app.dialog.CellParameterEditDialog
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.grid.GridState
 import com.github.se7_kn8.xcontrolplus.gridview.RotationDirection
@@ -48,8 +49,11 @@ class DeleteSelectedCellAction() : SelectedCellAction() {
 }
 
 class AddCellAction(private val cell: BaseCell) : Action {
-    override fun init(state: GridState) {
 
+    override fun init(state: GridState) {
+        if (cell.getParameters().keys.isNotEmpty()) {
+            CellParameterEditDialog(cell).showAndWait()
+        }
     }
 
     override fun valid(state: GridState) = true
@@ -61,6 +65,22 @@ class AddCellAction(private val cell: BaseCell) : Action {
     override fun undoAction(state: GridState) {
         state.removeCell(cell)
         state.selectHoveredCell()
+    }
+
+}
+
+class EditSelectedCellParameterAction : SelectedCellAction() {
+
+    override fun valid(state: GridState) = super.valid(state) && cell?.getParameters()?.keys?.isNotEmpty() == true
+
+    override fun doAction(state: GridState) {
+        cell?.let {
+            CellParameterEditDialog(it).showDialog()
+        }
+    }
+
+    override fun undoAction(state: GridState) {
+        TODO("Not yet implemented")
     }
 
 }
