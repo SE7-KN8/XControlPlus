@@ -1,29 +1,22 @@
 package com.github.se7_kn8.xcontrolplus.app.settings
 
+import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
-import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 
 class SettingsEntry<T>(val saveName: String, val defaultValue: T)
 
-abstract class Settings(fileName: String, vararg entries: SettingsEntry<*>) {
-    companion object {
-        private val gson = GsonBuilder()
-            .setPrettyPrinting()
-            .create()
-
-        private val type = object : TypeToken<HashMap<String, Any>>() {}.type!!
-
-        private val settingsPath = FileUtil.getSpecificPath("settings")
-    }
-
+abstract class Settings(fileName: String, private val entries: List<SettingsEntry<*>>) {
+    private val type = object : TypeToken<HashMap<String, Any>>() {}.type!!
     val settings = HashMap<String, Any>()
     private var hasChanged = false
 
-    private val filePath = settingsPath.resolve("${fileName}.json")
+    private val filePath = FileUtil.getSpecificPath("settings").resolve("${fileName}.json")
 
-    init {
-        load()
+    fun load() {
+        val newData = loadFileIntoMap()
+        settings.clear()
+        settings.putAll(newData)
 
         // If settings are missing add them to the config file with default values
         var shouldSave = false
@@ -38,12 +31,6 @@ abstract class Settings(fileName: String, vararg entries: SettingsEntry<*>) {
         }
     }
 
-    fun load() {
-        val newData = loadFileIntoMap()
-        settings.clear()
-        settings.putAll(newData)
-    }
-
     fun save(forceSave: Boolean = false) {
         if (hasChanged || forceSave) {
             saveMapIntoFile()
@@ -52,13 +39,13 @@ abstract class Settings(fileName: String, vararg entries: SettingsEntry<*>) {
 
     private fun loadFileIntoMap(): HashMap<String, Any> {
         FileUtil.readFileToString(filePath)?.also {
-            return gson.fromJson(it, type)
+            return ApplicationContext.get().gson.fromJson(it, type)
         }
         return HashMap()
     }
 
     private fun saveMapIntoFile() {
-        val json = gson.toJson(settings, type)
+        val json = ApplicationContext.get().gson.toJson(settings, type)
         FileUtil.writeStringToFile(filePath, json)
     }
 
@@ -81,13 +68,15 @@ abstract class Settings(fileName: String, vararg entries: SettingsEntry<*>) {
 // Application settings will be not visible to the user
 class ApplicationSettings : Settings(
     "application",
-    LATEST_OPEN_PATH,
-    LATEST_SAVE_PATH,
-    START_MAXIMIZED,
-    WINDOW_X,
-    WINDOW_Y,
-    WINDOW_WIDTH,
-    WINDOW_HEIGHT
+    listOf(
+        LATEST_OPEN_PATH,
+        LATEST_SAVE_PATH,
+        START_MAXIMIZED,
+        WINDOW_X,
+        WINDOW_Y,
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT
+    )
 ) {
     companion object {
         val LATEST_OPEN_PATH = SettingsEntry("latestOpenPath", "")
@@ -97,21 +86,17 @@ class ApplicationSettings : Settings(
         val WINDOW_Y = SettingsEntry("windowY", 0.0)
         val WINDOW_WIDTH = SettingsEntry("windowWidth", 0.0)
         val WINDOW_HEIGHT = SettingsEntry("windowHeight", 0.0)
-
-        // Maybe remove this and switch to DI
-        val INSTANCE by lazy { ApplicationSettings() }
     }
 }
 
 // User settings are displayed in the settings menu and can be edited by the user
 class UserSettings : Settings(
     "user",
-    ASK_BEFORE_EXIT
+    listOf(
+        ASK_BEFORE_EXIT
+    )
 ) {
     companion object {
         val ASK_BEFORE_EXIT = SettingsEntry("askBeforeExit", true)
-
-        // Maybe remove this and switch to DI
-        val INSTANCE by lazy { UserSettings() }
     }
 }

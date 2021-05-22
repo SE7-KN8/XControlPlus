@@ -1,5 +1,6 @@
 package com.github.se7_kn8.xcontrolplus.app.connection
 
+import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.protocol.Connection
 import com.github.se7_kn8.xcontrolplus.protocol.ConnectionType
 import com.github.se7_kn8.xcontrolplus.protocol.Connections
@@ -140,6 +141,7 @@ class ConnectionChoiceDialog : Dialog<Connection>() {
         grid.add(progressBar, 0, 5, 2, 1)
 
         dialogPane.content = grid
+        initOwner(WindowContext.get().primaryStage)
 
         setResultConverter {
             if (it.buttonData == ButtonBar.ButtonData.OK_DONE) {

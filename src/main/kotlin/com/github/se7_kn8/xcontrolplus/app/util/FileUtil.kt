@@ -1,8 +1,9 @@
 package com.github.se7_kn8.xcontrolplus.app.util
 
+import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
+import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import javafx.stage.FileChooser
-import javafx.stage.Stage
 import java.io.File
 import java.nio.charset.Charset
 import java.nio.file.Files
@@ -42,38 +43,38 @@ object FileUtil {
 
     fun getSpecificPath(name: String) = getBasePath().resolve(name).also { Files.createDirectories(it) }
 
-    fun openFileChooser(stage: Stage, vararg extensions: FileChooser.ExtensionFilter, onFile: (Path) -> Unit) {
+    fun openFileChooser(vararg extensions: FileChooser.ExtensionFilter, onFile: (Path) -> Unit) {
         val chooser = FileChooser()
         chooser.extensionFilters.addAll(extensions)
-        chooser.initialDirectory = File(ApplicationSettings.INSTANCE[ApplicationSettings.LATEST_OPEN_PATH]).let {
+        chooser.initialDirectory = File(ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_OPEN_PATH]).let {
             if (it.isDirectory) {
                 it
             } else {
                 File(System.getProperty("user.home"))
             }
         }
-        val result = chooser.showOpenDialog(stage)
+        val result = chooser.showOpenDialog(WindowContext.get().primaryStage)
         if (result != null) {
             val path = result.toPath()
-            ApplicationSettings.INSTANCE[ApplicationSettings.LATEST_OPEN_PATH] = path.parent.toString()
+            ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_OPEN_PATH] = path.parent.toString()
             onFile(path)
         }
     }
 
-    fun saveFileChooser(stage: Stage, vararg extensions: FileChooser.ExtensionFilter, onFile: (Path) -> Unit) {
+    fun saveFileChooser(vararg extensions: FileChooser.ExtensionFilter, onFile: (Path) -> Unit) {
         val chooser = FileChooser()
         chooser.extensionFilters.addAll(extensions)
-        chooser.initialDirectory = File(ApplicationSettings.INSTANCE[ApplicationSettings.LATEST_SAVE_PATH]).let {
+        chooser.initialDirectory = File(ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_SAVE_PATH]).let {
             if (it.isDirectory) {
                 it
             } else {
                 File(System.getProperty("user.home"))
             }
         }
-        val result = chooser.showOpenDialog(stage)
+        val result = chooser.showOpenDialog(WindowContext.get().primaryStage)
         if (result != null) {
             val path = result.toPath()
-            ApplicationSettings.INSTANCE[ApplicationSettings.LATEST_SAVE_PATH] = path.parent.toString()
+            ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_SAVE_PATH] = path.parent.toString()
             onFile(path)
         }
 
