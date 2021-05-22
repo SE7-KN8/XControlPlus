@@ -1,6 +1,8 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
-import com.github.se7_kn8.xcontrolplus.app.actions.Actions
+import com.github.se7_kn8.xcontrolplus.app.actions.DeleteSelectedCellAction
+import com.github.se7_kn8.xcontrolplus.app.actions.RotateSelectedCellAction
+import com.github.se7_kn8.xcontrolplus.gridview.RotationDirection
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
 import javafx.scene.control.SeparatorMenuItem
@@ -15,15 +17,15 @@ class GridContextMenu(private val state: GridState) {
 
     init {
         val rotateCW = MenuItem("Rotate").apply {
-            setOnAction { state.doAction(Actions.SelectedCell.rotateClockwise) }
+            setOnAction { state.doAction(RotateSelectedCellAction(RotationDirection.CLOCKWISE)) }
             accelerator = KeyCombination.keyCombination("r")
         }
         val rotateCCW = MenuItem("Inverse Rotate").apply {
-            setOnAction { state.doAction(Actions.SelectedCell.rotateCounterClockwise) }
+            setOnAction { state.doAction(RotateSelectedCellAction(RotationDirection.COUNTER_CLOCKWISE)) }
             accelerator = KeyCombination.keyCombination("shift+r")
         }
         val delete = MenuItem("Delete").apply {
-            setOnAction { state.doAction(Actions.SelectedCell.delete) }
+            setOnAction { state.doAction(DeleteSelectedCellAction()) }
             accelerator = KeyCombination.keyCombination("delete")
         }
 

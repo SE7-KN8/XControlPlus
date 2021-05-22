@@ -8,7 +8,6 @@ import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import javafx.stage.Stage
 import java.lang.reflect.Type
-import java.util.*
 
 // From: https://stackoverflow.com/a/9550086/10648509
 class AbstractClassAdapter<T : Any> : JsonSerializer<T>, JsonDeserializer<T> {
@@ -68,7 +67,7 @@ class GridState(val gridView: GridView<BaseCell>) {
 
     fun getHoveredCell() = gridView.findCell(mouseGridX(), mouseGridY())
 
-    fun getSelectedCell() = Optional.ofNullable(gridView.selectedCell)
+    fun getSelectedCell(): BaseCell? = gridView.selectedCell
 
     fun mouseGridX() = gridView.mouseGridX
     fun mouseGridY() = gridView.mouseGridY
@@ -85,7 +84,10 @@ class GridState(val gridView: GridView<BaseCell>) {
     }
 
     fun doAction(action: Action) {
-        action.doAction(this)
+        action.init(this)
+        if (action.valid(this)) {
+            action.doAction(this)
+        }
     }
 
     fun saveToFile(stage: Stage) {

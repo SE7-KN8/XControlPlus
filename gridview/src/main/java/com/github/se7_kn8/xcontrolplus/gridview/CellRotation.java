@@ -38,6 +38,14 @@ public enum CellRotation {
 		return before;
 	}
 
+	public CellRotation rotate(RotationDirection direction) {
+		return switch (direction) {
+			case CLOCKWISE -> next;
+			case COUNTER_CLOCKWISE -> before;
+			case HALF -> next.next;
+		};
+	}
+
 	public double rotation() {
 		return rotation;
 	}

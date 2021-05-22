@@ -1,6 +1,7 @@
 package com.github.se7_kn8.xcontrolplus.app.toolbox
 
-import com.github.se7_kn8.xcontrolplus.app.actions.Actions
+import com.github.se7_kn8.xcontrolplus.app.actions.AddCellAction
+import com.github.se7_kn8.xcontrolplus.app.actions.DeleteSelectedCellAction
 import com.github.se7_kn8.xcontrolplus.app.grid.*
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.scene.Cursor
@@ -43,7 +44,7 @@ enum class ToolboxMode {
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
-                state.addCell(StraightGridCell(state))
+                state.doAction(AddCellAction(StraightGridCell(state)))
             }
         }
     },
@@ -56,7 +57,7 @@ enum class ToolboxMode {
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
-                state.addCell(TurnGridCell(state))
+                state.doAction(AddCellAction(TurnGridCell(state)))
             }
         }
     },
@@ -70,7 +71,7 @@ enum class ToolboxMode {
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
-                state.addCell(TurnoutGridCell(state, TurnoutType.LEFT))
+                state.doAction(AddCellAction(TurnoutGridCell(state, TurnoutType.LEFT)))
             }
         }
     },
@@ -84,7 +85,7 @@ enum class ToolboxMode {
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
-                state.addCell(TurnoutGridCell(state, TurnoutType.RIGHT))
+                state.doAction(AddCellAction(TurnoutGridCell(state, TurnoutType.RIGHT)))
             }
         }
     },
@@ -101,7 +102,7 @@ enum class ToolboxMode {
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
-                state.doAction(Actions.SelectedCell.delete)
+                state.doAction(DeleteSelectedCellAction())
             }
         }
 
