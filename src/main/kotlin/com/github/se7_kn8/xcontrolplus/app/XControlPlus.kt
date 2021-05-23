@@ -4,6 +4,7 @@ import com.github.se7_kn8.xcontrolplus.app.connection.ConnectionHandler
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.ExitConfirmationDialog
+import com.github.se7_kn8.xcontrolplus.app.dialog.SettingsDialog
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.grid.GridShortcuts
 import com.github.se7_kn8.xcontrolplus.app.grid.GridState
@@ -149,6 +150,8 @@ class XControlPlus : Application() {
         fileMenu.items.addAll(
             MenuItem("Load Project").apply { setOnAction { gridState.loadFromFile() } },
             MenuItem("Save Project").apply { setOnAction { gridState.saveToFile() } },
+            SeparatorMenuItem(),
+            MenuItem("Settings").apply { setOnAction { SettingsDialog().showDialog() } },
             SeparatorMenuItem(),
             MenuItem("Exit").apply {
                 setOnAction {

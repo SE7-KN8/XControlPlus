@@ -6,7 +6,7 @@ import com.google.gson.reflect.TypeToken
 
 class SettingsEntry<T>(val saveName: String, val defaultValue: T)
 
-abstract class Settings(fileName: String, private val entries: List<SettingsEntry<*>>) {
+abstract class Settings(fileName: String, val entries: List<SettingsEntry<*>>) {
     private val type = object : TypeToken<HashMap<String, Any>>() {}.type!!
     val settings = HashMap<String, Any>()
     private var hasChanged = false
@@ -57,9 +57,18 @@ abstract class Settings(fileName: String, private val entries: List<SettingsEntr
         return entry.defaultValue
     }
 
+    fun getAny(entry: SettingsEntry<*>): Any {
+        return settings.getOrPut(entry.saveName) { entry.defaultValue as Any }
+    }
+
 
     operator fun <T> set(entry: SettingsEntry<T>, value: T) {
         settings[entry.saveName] = value as Any
+        hasChanged = true
+    }
+
+    fun setAny(entry: SettingsEntry<*>, value: Any) {
+        settings[entry.saveName] = value
         hasChanged = true
     }
 
@@ -79,13 +88,13 @@ class ApplicationSettings : Settings(
     )
 ) {
     companion object {
-        val LATEST_OPEN_PATH = SettingsEntry("latestOpenPath", "")
-        val LATEST_SAVE_PATH = SettingsEntry("latestSavePath", "")
-        val START_MAXIMIZED = SettingsEntry("startMaximized", false)
-        val WINDOW_X = SettingsEntry("windowX", 0.0)
-        val WINDOW_Y = SettingsEntry("windowY", 0.0)
-        val WINDOW_WIDTH = SettingsEntry("windowWidth", 0.0)
-        val WINDOW_HEIGHT = SettingsEntry("windowHeight", 0.0)
+        val LATEST_OPEN_PATH = SettingsEntry("latest_open_path", "")
+        val LATEST_SAVE_PATH = SettingsEntry("latest_save_path", "")
+        val START_MAXIMIZED = SettingsEntry("start_maximized", false)
+        val WINDOW_X = SettingsEntry("window_x", 0.0)
+        val WINDOW_Y = SettingsEntry("window_y", 0.0)
+        val WINDOW_WIDTH = SettingsEntry("window_width", 0.0)
+        val WINDOW_HEIGHT = SettingsEntry("window_height", 0.0)
     }
 }
 
@@ -97,6 +106,6 @@ class UserSettings : Settings(
     )
 ) {
     companion object {
-        val ASK_BEFORE_EXIT = SettingsEntry("askBeforeExit", true)
+        val ASK_BEFORE_EXIT = SettingsEntry("ask_before_exit", true)
     }
 }
