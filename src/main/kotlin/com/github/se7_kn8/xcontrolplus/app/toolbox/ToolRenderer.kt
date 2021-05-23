@@ -22,7 +22,7 @@ class ToolRenderer(private val gridState: GridState) {
 
         gridState.gridView.setClickCallback { event, drag ->
             gridState.contextMenu.hide()
-            if (drag && currentTool.value.allowDrag()) {
+            if (drag && currentTool.value.allowDrag) {
                 currentTool.value.onClick(event, gridState)
             } else if (!drag) {
                 currentTool.value.onClick(event, gridState)

@@ -3,13 +3,15 @@ package com.github.se7_kn8.xcontrolplus.app.toolbox
 import com.github.se7_kn8.xcontrolplus.app.action.AddCellAction
 import com.github.se7_kn8.xcontrolplus.app.action.DeleteSelectedCellAction
 import com.github.se7_kn8.xcontrolplus.app.grid.*
+import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.scene.Cursor
 import javafx.scene.canvas.GraphicsContext
+import javafx.scene.image.Image
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 
-enum class ToolboxMode {
+enum class ToolboxMode(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = false) {
 
     MOUSE {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
@@ -32,87 +34,84 @@ enum class ToolboxMode {
             }
         }
 
-        override fun allowDrag() = false
+        override fun getImage() = FileUtil.getImage("tool/cursor.png")
 
     },
-    STRAIGHT {
+    STRAIGHT(Cursor.CROSSHAIR, true) {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             GridCellRenderer.STRAIGHT.draw(gridX, gridY, gc, gridView.renderer)
         }
-
-        override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
                 state.doAction(AddCellAction(StraightGridCell(state)))
             }
         }
+
+        override fun getImage() = FileUtil.getImage("tool/straight.png")
     },
-    TURN {
+    TURN(Cursor.CROSSHAIR, true) {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             GridCellRenderer.TURN.draw(gridX, gridY, gc, gridView.renderer)
         }
-
-        override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
                 state.doAction(AddCellAction(TurnGridCell(state)))
             }
         }
+
+        override fun getImage() = FileUtil.getImage("tool/turn.png")
     },
 
-    LEFT_TURNOUT {
+    LEFT_TURNOUT(Cursor.CROSSHAIR) {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             GridCellRenderer.LEFT_TURNOUT.draw(gridX, gridY, gc, gridView.renderer)
         }
-
-        override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
                 state.doAction(AddCellAction(TurnoutGridCell(state, TurnoutType.LEFT)))
             }
         }
-    },
 
-    RIGHT_TURNOUT {
+        override fun getImage() = FileUtil.getImage("tool/left_turnout.png")
+    },
+    RIGHT_TURNOUT(Cursor.CROSSHAIR) {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             GridCellRenderer.RIGHT_TURNOUT.draw(gridX, gridY, gc, gridView.renderer)
         }
-
-        override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
                 state.doAction(AddCellAction(TurnoutGridCell(state, TurnoutType.RIGHT)))
             }
         }
+
+        override fun getImage() = FileUtil.getImage("tool/right_turnout.png")
     },
 
-    TEXT {
+    TEXT(Cursor.CROSSHAIR) {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             GridCellRenderer.TEXT.draw(gridX, gridY, gc, gridView.renderer)
         }
-
-        override fun getCursor(): Cursor = Cursor.CROSSHAIR
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
                 state.doAction(AddCellAction(TextGridCell(state)))
             }
         }
+
+        override fun getImage()= FileUtil.getImage("tool/text.png")
     },
 
-    DELETE {
+    DELETE(Cursor.OPEN_HAND, true) {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             gc.fill = Colors.track
             gc.fillRect(
                 gridX * gridView.gridSize, gridY * gridView.gridSize, gridView.gridSize, gridView.gridSize
             )
         }
-
-        override fun getCursor(): Cursor = Cursor.OPEN_HAND
 
         override fun onClick(event: MouseEvent, state: GridState) {
             if (event.button == MouseButton.PRIMARY) {
@@ -121,6 +120,7 @@ enum class ToolboxMode {
             }
         }
 
+        override fun getImage()= FileUtil.getImage("tool/delete.png")
     },
     ;
 
@@ -128,8 +128,6 @@ enum class ToolboxMode {
 
     abstract fun onClick(event: MouseEvent, state: GridState)
 
-    open fun getCursor(): Cursor = Cursor.DEFAULT
-
-    open fun allowDrag() = true
+    abstract fun getImage(): Image
 
 }

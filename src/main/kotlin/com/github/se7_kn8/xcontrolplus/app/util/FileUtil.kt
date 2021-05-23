@@ -3,6 +3,7 @@ package com.github.se7_kn8.xcontrolplus.app.util
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
+import javafx.scene.image.Image
 import javafx.stage.FileChooser
 import java.io.File
 import java.nio.charset.Charset
@@ -77,7 +78,12 @@ object FileUtil {
             ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_SAVE_PATH] = path.parent.toString()
             onFile(path)
         }
-
     }
+
+    fun getAsset(path: String) = FileUtil::class.java.getResource("/assets/$path")
+
+    fun getAssetAsStream(path: String) = FileUtil::class.java.getResourceAsStream("/assets/$path")
+
+    fun getImage(path: String) = Image(getAssetAsStream(path))
 
 }
