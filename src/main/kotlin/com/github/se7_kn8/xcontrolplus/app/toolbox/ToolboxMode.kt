@@ -90,6 +90,20 @@ enum class ToolboxMode {
         }
     },
 
+    TEXT {
+        override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
+            GridCellRenderer.TEXT.draw(gridX, gridY, gc, gridView.renderer)
+        }
+
+        override fun getCursor(): Cursor = Cursor.CROSSHAIR
+
+        override fun onClick(event: MouseEvent, state: GridState) {
+            if (event.button == MouseButton.PRIMARY) {
+                state.doAction(AddCellAction(TextGridCell(state)))
+            }
+        }
+    },
+
     DELETE {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             gc.fill = Colors.track

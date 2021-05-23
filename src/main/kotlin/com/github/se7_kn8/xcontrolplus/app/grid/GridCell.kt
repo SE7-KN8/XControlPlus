@@ -5,8 +5,10 @@ import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
 import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.MenuItem
+import javafx.scene.text.Font
 
 enum class GridCellRenderer {
     STRAIGHT {
@@ -114,6 +116,25 @@ enum class GridCellRenderer {
         }
 
     },
+
+    TEXT {
+        override fun drawBackground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
+            // NOP
+        }
+
+        override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
+            gc.fill = Colors.text
+            if (cell is TextGridCell) {
+                gc.font = Font.font(cell.fontSize.doubleValue())
+                gc.fillText(cell.text.get(), (gridX + 0.1) * renderer.gridSize, (gridY + 0.5) * renderer.gridSize)
+            } else {
+                gc.font = Font.font(10.0)
+                gc.fillText("Text", (gridX + 0.1) * renderer.gridSize, (gridY + 0.5) * renderer.gridSize)
+            }
+        }
+
+    }
+
     ;
 
 
@@ -178,7 +199,14 @@ class TurnoutGridCell(gridState: GridState, private val turnoutType: TurnoutType
     }
 
     override fun getParameters() = mapOf(Pair("ID: ", id))
+}
 
+class TextGridCell(gridState: GridState) : BaseCell(gridState) {
+    val fontSize = SimpleIntegerProperty(10)
+    val text = SimpleStringProperty("")
 
+    override fun getRenderer() = GridCellRenderer.TEXT
+
+    override fun getParameters(): Map<String, Property<*>> = mapOf(Pair("Text: ", text), Pair("Size: ", fontSize))
 }
 
