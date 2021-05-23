@@ -71,7 +71,7 @@ object FileUtil {
                 File(System.getProperty("user.home"))
             }
         }
-        val result = chooser.showOpenDialog(WindowContext.get().primaryStage)
+        val result = chooser.showSaveDialog(WindowContext.get().primaryStage)
         if (result != null) {
             val path = result.toPath()
             ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_SAVE_PATH] = path.parent.toString()

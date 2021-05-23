@@ -77,7 +77,7 @@ class XControlPlus : Application() {
         stage.minWidth = 800.0
         stage.minHeight = 600.0
 
-        // Save latest window posistion and size
+        // Save latest window position and size
         with(ApplicationContext.get().applicationSettings) {
             stage.isMaximized = this[ApplicationSettings.START_MAXIMIZED]
             stage.x = this[ApplicationSettings.WINDOW_X].toDouble()
