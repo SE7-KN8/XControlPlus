@@ -13,7 +13,7 @@ class GridState(val gridView: GridView<BaseCell>) {
 
     val contextMenu = GridContextMenu(this)
 
-    var userRotation = CellRotation.D0
+    var toolRotation = CellRotation.D0
 
     fun getCells(): List<BaseCell> = gridView.cells
 

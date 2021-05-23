@@ -11,7 +11,7 @@ import javafx.scene.image.Image
 import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 
-enum class ToolboxMode(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = false) {
+enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = false) {
 
     MOUSE {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {

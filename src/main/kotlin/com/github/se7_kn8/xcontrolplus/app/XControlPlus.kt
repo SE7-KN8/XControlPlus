@@ -9,8 +9,8 @@ import com.github.se7_kn8.xcontrolplus.app.grid.GridShortcuts
 import com.github.se7_kn8.xcontrolplus.app.grid.GridState
 import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
+import com.github.se7_kn8.xcontrolplus.app.toolbox.Tool
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
-import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolboxMode
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.application.Application
 import javafx.application.Platform
@@ -224,7 +224,7 @@ class XControlPlus : Application() {
                 toolboxButtonGroup.selectToggle(oldValue)
             }
         }
-        val buttons = HashMap<ToolboxMode, Toggle>()
+        val buttons = HashMap<Tool, Toggle>()
         toolRenderer.currentTool.addListener { _, _, newValue ->
             scene.cursor = newValue.cursor
             toolboxButtonGroup.selectToggle(buttons[newValue])
@@ -232,7 +232,7 @@ class XControlPlus : Application() {
 
 
         // Add button for each tool
-        for (mode in ToolboxMode.values()) {
+        for (mode in Tool.values()) {
             val button = ToggleButton("", ImageView(mode.getImage()).apply {
                 fitWidth = 25.0
                 fitHeight = 25.0
@@ -240,13 +240,13 @@ class XControlPlus : Application() {
             buttons[mode] = button
             button.tooltip = Tooltip(mode.name)
             button.setOnMouseClicked {
-                gridView.isHighlightSelectedCell = mode == ToolboxMode.MOUSE
+                gridView.isHighlightSelectedCell = mode == Tool.MOUSE
                 gridView.selectedCell = null
                 toolRenderer.currentTool.set(mode)
             }
 
             // Select mouse by default
-            if (mode == ToolboxMode.MOUSE) {
+            if (mode == Tool.MOUSE) {
                 Platform.runLater {
                     toolboxButtonGroup.selectToggle(button)
                 }

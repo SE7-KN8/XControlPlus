@@ -151,7 +151,7 @@ enum class GridCellRenderer {
 }
 
 abstract class BaseCell(currentGridState: GridState) :
-    GridCell(currentGridState.mouseGridX(), currentGridState.mouseGridY(), currentGridState.userRotation) {
+    GridCell(currentGridState.mouseGridX(), currentGridState.mouseGridY(), currentGridState.toolRotation) {
     override fun render(now: Long, gc: GraphicsContext, renderer: GridRenderer<out GridCell>) {
         getRenderer().draw(gridX, gridY, gc, renderer, this)
     }

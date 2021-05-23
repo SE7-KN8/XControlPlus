@@ -6,13 +6,13 @@ import javafx.beans.property.SimpleObjectProperty
 
 class ToolRenderer(private val gridState: GridState) {
 
-    val currentTool = SimpleObjectProperty(ToolboxMode.MOUSE)
+    val currentTool = SimpleObjectProperty(Tool.MOUSE)
 
     init {
         gridState.gridView.isClickAndDrag = true
         gridState.gridView.setForegroundCallback { _, renderer ->
             renderer.gc.rotated(
-                gridState.userRotation.rotation(),
+                gridState.toolRotation.rotation(),
                 renderer.getMidX(gridState.mouseGridX().toDouble()),
                 renderer.getMidY(gridState.mouseGridY().toDouble())
             ) {
