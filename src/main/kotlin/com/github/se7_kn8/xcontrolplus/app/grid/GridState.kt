@@ -1,6 +1,6 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
-import com.github.se7_kn8.xcontrolplus.app.actions.Action
+import com.github.se7_kn8.xcontrolplus.app.action.Action
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
 import com.github.se7_kn8.xcontrolplus.gridview.CellRotation

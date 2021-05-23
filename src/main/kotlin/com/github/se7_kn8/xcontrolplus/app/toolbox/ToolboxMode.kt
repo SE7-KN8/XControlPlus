@@ -1,7 +1,7 @@
 package com.github.se7_kn8.xcontrolplus.app.toolbox
 
-import com.github.se7_kn8.xcontrolplus.app.actions.AddCellAction
-import com.github.se7_kn8.xcontrolplus.app.actions.DeleteSelectedCellAction
+import com.github.se7_kn8.xcontrolplus.app.action.AddCellAction
+import com.github.se7_kn8.xcontrolplus.app.action.DeleteSelectedCellAction
 import com.github.se7_kn8.xcontrolplus.app.grid.*
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.scene.Cursor

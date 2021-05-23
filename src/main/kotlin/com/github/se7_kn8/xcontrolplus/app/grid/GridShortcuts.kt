@@ -1,9 +1,9 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
 
-import com.github.se7_kn8.xcontrolplus.app.actions.DeleteSelectedCellAction
-import com.github.se7_kn8.xcontrolplus.app.actions.EditSelectedCellParameterAction
-import com.github.se7_kn8.xcontrolplus.app.actions.RotateSelectedCellAction
+import com.github.se7_kn8.xcontrolplus.app.action.DeleteSelectedCellAction
+import com.github.se7_kn8.xcontrolplus.app.action.EditSelectedCellParameterAction
+import com.github.se7_kn8.xcontrolplus.app.action.RotateSelectedCellAction
 import com.github.se7_kn8.xcontrolplus.gridview.RotationDirection
 import javafx.scene.input.KeyCode
 

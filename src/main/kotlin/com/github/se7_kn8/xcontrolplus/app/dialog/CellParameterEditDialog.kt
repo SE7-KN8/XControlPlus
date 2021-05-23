@@ -9,7 +9,7 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.GridPane
 
-class CellParameterEditDialog(private val cell: BaseCell) : Alert(AlertType.NONE, "Edit parameter of $cell", ButtonType.OK), AppDialog {
+class CellParameterEditDialog(private val cell: BaseCell) : Alert(AlertType.NONE, "", ButtonType.OK), AppDialog<Unit> {
 
     init {
         initOwner(WindowContext.get().primaryStage)
@@ -42,6 +42,7 @@ class CellParameterEditDialog(private val cell: BaseCell) : Alert(AlertType.NONE
             pos += 1
         }
 
+        dialogPane.headerText = "Edit parameters of $cell"
         dialogPane.content = root
     }
 

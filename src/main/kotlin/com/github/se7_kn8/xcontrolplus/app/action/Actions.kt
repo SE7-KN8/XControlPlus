@@ -1,4 +1,4 @@
-package com.github.se7_kn8.xcontrolplus.app.actions
+package com.github.se7_kn8.xcontrolplus.app.action
 
 import com.github.se7_kn8.xcontrolplus.app.dialog.CellParameterEditDialog
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
