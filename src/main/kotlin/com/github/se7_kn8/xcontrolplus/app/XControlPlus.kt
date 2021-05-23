@@ -45,8 +45,8 @@ class XControlPlus : Application() {
         gridView.pauseProperty().bind(stage.iconifiedProperty())
         val gridState = GridState(gridView)
 
-        val shortcuts = GridShortcuts(gridState)
         val toolRenderer = ToolRenderer(gridState)
+        val shortcuts = GridShortcuts(gridState, toolRenderer)
 
 
         gridView.isHighlightSelectedCell = true
@@ -118,7 +118,6 @@ class XControlPlus : Application() {
                 }
             }
         }
-
 
         // Set window icons
         //FIXME Currently not working with intellij because: https://youtrack.jetbrains.com/issue/IDEA-197469
@@ -225,6 +224,11 @@ class XControlPlus : Application() {
                 toolboxButtonGroup.selectToggle(oldValue)
             }
         }
+        val buttons = HashMap<ToolboxMode, Toggle>()
+        toolRenderer.currentTool.addListener { _, _, newValue ->
+            scene.cursor = newValue.cursor
+            toolboxButtonGroup.selectToggle(buttons[newValue])
+        }
 
 
         // Add button for each tool
@@ -233,18 +237,18 @@ class XControlPlus : Application() {
                 fitWidth = 25.0
                 fitHeight = 25.0
             })
+            buttons[mode] = button
             button.tooltip = Tooltip(mode.name)
             button.setOnMouseClicked {
                 gridView.isHighlightSelectedCell = mode == ToolboxMode.MOUSE
                 gridView.selectedCell = null
                 toolRenderer.currentTool.set(mode)
-                scene.cursor = mode.cursor
-
             }
+
+            // Select mouse by default
             if (mode == ToolboxMode.MOUSE) {
                 Platform.runLater {
                     toolboxButtonGroup.selectToggle(button)
-                    button.requestFocus()
                 }
             }
             button.toggleGroup = toolboxButtonGroup
