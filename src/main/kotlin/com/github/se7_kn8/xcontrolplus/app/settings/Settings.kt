@@ -84,7 +84,8 @@ class ApplicationSettings : Settings(
         WINDOW_X,
         WINDOW_Y,
         WINDOW_WIDTH,
-        WINDOW_HEIGHT
+        WINDOW_HEIGHT,
+        LATEST_PROJECT_PATH,
     )
 ) {
     companion object {
@@ -95,6 +96,7 @@ class ApplicationSettings : Settings(
         val WINDOW_Y = SettingsEntry("window_y", 0.0)
         val WINDOW_WIDTH = SettingsEntry("window_width", 0.0)
         val WINDOW_HEIGHT = SettingsEntry("window_height", 0.0)
+        val LATEST_PROJECT_PATH = SettingsEntry("latest_project_path", "")
     }
 }
 
@@ -102,10 +104,12 @@ class ApplicationSettings : Settings(
 class UserSettings : Settings(
     "user",
     listOf(
-        ASK_BEFORE_EXIT
+        ASK_BEFORE_EXIT,
+        OPEN_LATEST_PROJECT
     )
 ) {
     companion object {
         val ASK_BEFORE_EXIT = SettingsEntry("ask_before_exit", true)
+        val OPEN_LATEST_PROJECT = SettingsEntry("open_latest_project", true)
     }
 }

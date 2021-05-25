@@ -216,6 +216,12 @@ class XControlPlus : Application() {
         }
         // Show the window
         stage.title = "XControlPlus"
+
+        // TODO to init(), but currently not possible because the property listeners are added in start()
+        if (ApplicationContext.get().userSettings[UserSettings.OPEN_LATEST_PROJECT]) {
+            projectManager.loadLatestProject()
+        }
+
         stage.show()
     }
 

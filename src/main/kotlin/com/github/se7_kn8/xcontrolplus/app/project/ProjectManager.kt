@@ -2,12 +2,15 @@ package com.github.se7_kn8.xcontrolplus.app.project
 
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
+import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.beans.property.SimpleObjectProperty
 import java.io.FileOutputStream
 import java.io.InputStreamReader
 import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
@@ -26,34 +29,46 @@ class ProjectManager {
 
     fun loadProject() {
         // TODO check for unsaved project
-        val charset = Charset.forName("UTF-8")
         FileUtil.openFileChooser(FileUtil.PROJECT_FILE) { path ->
+            loadProject(path.toString())
+        }
+    }
 
-            val file = ZipFile(path.toFile())
-            val entries = file.entries().toList().sortedBy { it.name }.associateBy { it.name }.toMutableMap()
-            val metadataEntry = entries[metadataFileName] ?: throw IllegalStateException("Project file is invalid")
-            InputStreamReader(file.getInputStream(metadataEntry)).use { metadataReader ->
-                val metadata = ApplicationContext.get().gson.fromJson(metadataReader, ProjectMetadata::class.java)
-                if (metadata.version != ProjectMetadata().version) {
-                    throw IllegalStateException("Unsupported save version")
-                }
-                val project = Project(path.toString())
-                entries.remove(metadataFileName)
-                for (entry in entries.values) {
-                    InputStreamReader(file.getInputStream(entry)).use { sheetReader ->
-                        val sheet = Sheet.load(sheetReader.readText())
-                        project.sheets.add(sheet)
-                    }
-                }
-                activeProject.set(project)
+    fun loadLatestProject() {
+        val path = Path.of(ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_PROJECT_PATH])
+        if (path.toString().isNotBlank() && Files.exists(path) && Files.isReadable(path)) {
+            loadProject(ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_PROJECT_PATH])
+        }
+    }
+
+    private fun loadProject(path: String) {
+        val charset = Charset.forName("UTF-8")
+        ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_PROJECT_PATH] = path.toString()
+        val file = ZipFile(path)
+        val entries = file.entries().toList().sortedBy { it.name }.associateBy { it.name }.toMutableMap()
+        val metadataEntry = entries[metadataFileName] ?: throw IllegalStateException("Project file is invalid")
+        InputStreamReader(file.getInputStream(metadataEntry)).use { metadataReader ->
+            val metadata = ApplicationContext.get().gson.fromJson(metadataReader, ProjectMetadata::class.java)
+            if (metadata.version != ProjectMetadata().version) {
+                throw IllegalStateException("Unsupported save version")
             }
+            val project = Project(path.toString())
+            entries.remove(metadataFileName)
+            for (entry in entries.values) {
+                InputStreamReader(file.getInputStream(entry)).use { sheetReader ->
+                    val sheet = Sheet.load(sheetReader.readText())
+                    project.sheets.add(sheet)
+                }
+            }
+            activeProject.set(project)
         }
     }
 
     fun saveProject() {
-        val charset = Charset.forName("UTF-8")
         activeProject.get()?.let { project ->
+            val charset = Charset.forName("UTF-8")
             FileUtil.saveFileChooser(FileUtil.PROJECT_FILE) { path ->
+                ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_PROJECT_PATH] = path.toString()
                 ZipOutputStream(FileOutputStream(path.toFile())).use { zip ->
                     val metadataEntry = ZipEntry(metadataFileName)
                     zip.putNextEntry(metadataEntry)
