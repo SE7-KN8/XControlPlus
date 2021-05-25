@@ -1,31 +1,37 @@
 package com.github.se7_kn8.xcontrolplus.app.toolbox
 
-import com.github.se7_kn8.xcontrolplus.app.grid.GridState
+import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
 import javafx.beans.property.SimpleObjectProperty
 
-class ToolRenderer(private val gridState: GridState) {
+class ToolRenderer {
 
     val currentTool = SimpleObjectProperty(Tool.MOUSE)
 
-    init {
-        gridState.gridView.isClickAndDrag = true
-        gridState.gridView.setForegroundCallback { _, renderer ->
+    fun detach(gridHelper: GridHelper) {
+        gridHelper.gridView.foregroundCallback = null
+        gridHelper.gridView.clickCallback = null
+    }
+
+    fun attach(gridHelper: GridHelper) {
+        gridHelper.gridView.isClickAndDrag = true
+        gridHelper.gridView.isHighlightSelectedCell = true
+        gridHelper.gridView.setForegroundCallback { _, renderer ->
             renderer.gc.rotated(
-                gridState.toolRotation.rotation(),
-                renderer.getMidX(gridState.mouseGridX().toDouble()),
-                renderer.getMidY(gridState.mouseGridY().toDouble())
+                gridHelper.toolRotation.rotation(),
+                renderer.getMidX(gridHelper.mouseGridX().toDouble()),
+                renderer.getMidY(gridHelper.mouseGridY().toDouble())
             ) {
-                currentTool.value.draw(gridState.mouseGridX(), gridState.mouseGridY(), renderer.gc, gridState.gridView)
+                currentTool.value.draw(gridHelper.mouseGridX(), gridHelper.mouseGridY(), renderer.gc, gridHelper.gridView)
             }
         }
 
-        gridState.gridView.setClickCallback { event, drag ->
-            gridState.contextMenu.hide()
+        gridHelper.gridView.setClickCallback { event, drag ->
+            gridHelper.contextMenu.hide()
             if (drag && currentTool.value.allowDrag) {
-                currentTool.value.onClick(event, gridState)
+                currentTool.value.onClick(event, gridHelper)
             } else if (!drag) {
-                currentTool.value.onClick(event, gridState)
+                currentTool.value.onClick(event, gridHelper)
             }
         }
     }

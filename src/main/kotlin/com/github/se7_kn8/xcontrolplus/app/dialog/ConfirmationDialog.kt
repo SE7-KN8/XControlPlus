@@ -4,17 +4,19 @@ import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
 
-class ExitConfirmationDialog : Alert(AlertType.CONFIRMATION, "Do you really want to exit?", ButtonType.OK, ButtonType.CANCEL), AppDialog<Boolean> {
-
+open class ConfirmationDialog(content: String) : Alert(AlertType.CONFIRMATION, content, ButtonType.YES, ButtonType.NO),
+    AppDialog<Boolean> {
     init {
         initOwner(WindowContext.get().primaryStage)
     }
 
     override fun showDialog(): Boolean {
         val result = showAndWait()
-        if (result.isPresent && result.get() == ButtonType.OK) {
+        if (result.isPresent && result.get() == ButtonType.YES) {
             return true
         }
         return false
     }
 }
+
+class ExitConfirmationDialog : ConfirmationDialog("Do really want to exit?")

@@ -10,7 +10,7 @@ import javafx.scene.control.SeparatorMenuItem
 import javafx.scene.input.KeyCombination
 import javafx.scene.input.MouseEvent
 
-class GridContextMenu(private val state: GridState) {
+class GridContextMenu(private val helper: GridHelper) {
 
     private val menu = ContextMenu()
 
@@ -18,15 +18,15 @@ class GridContextMenu(private val state: GridState) {
 
     init {
         val rotateCW = MenuItem("Rotate").apply {
-            setOnAction { state.doAction(RotateSelectedCellAction(RotationDirection.CLOCKWISE)) }
+            setOnAction { helper.doAction(RotateSelectedCellAction(RotationDirection.CLOCKWISE)) }
             accelerator = KeyCombination.keyCombination("r")
         }
         val rotateCCW = MenuItem("Inverse Rotate").apply {
-            setOnAction { state.doAction(RotateSelectedCellAction(RotationDirection.COUNTER_CLOCKWISE)) }
+            setOnAction { helper.doAction(RotateSelectedCellAction(RotationDirection.COUNTER_CLOCKWISE)) }
             accelerator = KeyCombination.keyCombination("shift+r")
         }
         val delete = MenuItem("Delete").apply {
-            setOnAction { state.doAction(DeleteSelectedCellAction()) }
+            setOnAction { helper.doAction(DeleteSelectedCellAction()) }
             accelerator = KeyCombination.keyCombination("delete")
         }
 
@@ -47,7 +47,7 @@ class GridContextMenu(private val state: GridState) {
         if (parameter.keys.isNotEmpty()) {
             menu.items.addAll(SeparatorMenuItem())
             menu.items.addAll(MenuItem("Edit parameter").apply {
-                setOnAction { state.doAction(EditSelectedCellParameterAction()) }
+                setOnAction { helper.doAction(EditSelectedCellParameterAction()) }
                 accelerator = KeyCombination.keyCombination("e")
             })
         }
@@ -57,7 +57,7 @@ class GridContextMenu(private val state: GridState) {
             menu.items.add(SeparatorMenuItem())
             menu.items.addAll(selectedCell.getContextOptions())
         }
-        menu.show(state.gridView, event.screenX, event.screenY)
+        menu.show(helper.gridView, event.screenX, event.screenY)
     }
 
     fun hide() {

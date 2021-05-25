@@ -5,27 +5,31 @@ import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.ExitConfirmationDialog
 import com.github.se7_kn8.xcontrolplus.app.dialog.SettingsDialog
-import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
+import com.github.se7_kn8.xcontrolplus.app.dialog.TextInputDialog
+import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
 import com.github.se7_kn8.xcontrolplus.app.grid.GridShortcuts
-import com.github.se7_kn8.xcontrolplus.app.grid.GridState
+import com.github.se7_kn8.xcontrolplus.app.project.ProjectManager
+import com.github.se7_kn8.xcontrolplus.app.project.Sheet
+import com.github.se7_kn8.xcontrolplus.app.project.SheetTab
 import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
 import com.github.se7_kn8.xcontrolplus.app.toolbox.Tool
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
-import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.beans.binding.Bindings
+import javafx.beans.property.SimpleObjectProperty
+import javafx.collections.ListChangeListener
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
+import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
 
@@ -33,6 +37,9 @@ class XControlPlus : Application() {
 
     private lateinit var scene: Scene
     private val connectionHandler = ConnectionHandler()
+    private val projectManager = ProjectManager()
+    private val currentTab = SimpleObjectProperty<SheetTab>()
+    private val currentGridHelper = SimpleObjectProperty<GridHelper>()
 
     override fun init() {
         ApplicationContext.init()
@@ -42,36 +49,111 @@ class XControlPlus : Application() {
 
     override fun start(stage: Stage) {
         WindowContext.init(stage)
-        val gridView = GridView<BaseCell>()
-        gridView.pauseProperty().bind(stage.iconifiedProperty())
-        val gridState = GridState(gridView)
 
-        val toolRenderer = ToolRenderer(gridState)
-        val shortcuts = GridShortcuts(gridState, toolRenderer)
+        val toolRenderer = ToolRenderer()
+        val shortcuts = GridShortcuts(toolRenderer)
 
+        currentTab.addListener { _, _, newValue ->
+            newValue?.let {
+                currentGridHelper.set(it.sheet.gridHelper)
+            }
+        }
 
-        gridView.isHighlightSelectedCell = true
+        currentGridHelper.addListener { _, oldValue, newValue ->
+            oldValue?.let {
+                toolRenderer.detach(oldValue)
+                shortcuts.detach(oldValue)
+            }
+            toolRenderer.attach(newValue)
+            shortcuts.attach(newValue)
+        }
 
         val left = getLeftNode()
-        val right = getRightNode(gridView, toolRenderer)
-        val top = getTopNode(gridState)
-        val bottom = getBottomNode(gridView)
-
+        val right = getRightNode(toolRenderer)
+        val top = getTopNode()
+        val bottom = getBottomNode()
 
         // Setup root node
+        val createProjectLabel = Label("Create a new project via File -> New Project")
         val root = BorderPane()
         root.left = left
         root.right = right
         root.top = top
         root.bottom = bottom
-        root.center = Pane().apply {
-            // Set canvas size to largest possible size
-            setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE)
-            gridView.widthProperty().bind(widthProperty())
-            gridView.heightProperty().bind(heightProperty())
-            children.add(gridView)
+        root.center = createProjectLabel
+
+        root.right.isVisible = false
+        root.bottom.isVisible = false
+        root.left.isVisible = false
+
+        val addMoreTab = Tab("+").apply {
+            isClosable = false
+            tooltip = Tooltip("Add sheet")
         }
 
+        projectManager.activeProject.addListener { _, _, newProject ->
+            if (newProject == null) {
+                // No active project
+                root.center = createProjectLabel
+                // Disable toolbar
+                root.right.isVisible = false
+                root.left.isVisible = false
+                root.bottom.isVisible = false
+                stage.title = "XControlPlus"
+            } else {
+                // A project has been loaded / created
+                val projectRoot = TabPane()
+                projectRoot.isFocusTraversable = true
+                val sheetToTab = HashMap<Sheet, SheetTab>()
+                projectRoot.tabs.add(addMoreTab)
+                root.center = projectRoot
+                // Enable toolbar
+                root.right.isVisible = true
+                root.left.isVisible = true
+                root.bottom.isVisible = true
+                stage.title = "XControlPlus - ${newProject.name}"
+
+                projectRoot.selectionModel.selectedItemProperty().addListener { _, oldTab, newTab ->
+                    if (newTab is SheetTab) {
+                        currentTab.set(newTab)
+                    }
+                    if (newTab == addMoreTab) {
+                        if (projectRoot.tabs.size == 1) {
+                            // Only this tab exist anymore, so the project can be closed
+                            projectManager.closeProject()
+                        } else {
+                            // Select first the old tab, so there is a selection even when the dialog is closed
+                            projectRoot.selectionModel.select(oldTab)
+                            TextInputDialog("Sheet name?").showDialog()?.let {
+                                // Create a new sheet with the name from the dialog
+                                newProject.newSheet(it)
+                            }
+                        }
+                    }
+                }
+
+                val addSheet: (Sheet) -> Unit = {
+                    val tab = SheetTab(it)
+                    projectRoot.tabs.add(projectRoot.tabs.size - 1, tab)
+                    projectRoot.selectionModel.select(tab)
+                    sheetToTab[it] = tab
+                }
+
+                // Add tab for each sheet that already exists
+                newProject.sheets.forEach(addSheet)
+
+                newProject.sheets.addListener { change: ListChangeListener.Change<out Sheet> ->
+                    while (change.next()) {
+                        change.removed.forEach {
+                            // Remove tab when sheet is delete
+                            projectRoot.tabs.remove(sheetToTab[it])
+                            sheetToTab.remove(it)
+                        }
+                        change.addedSubList.forEach(addSheet)
+                    }
+                }
+            }
+        }
 
         // Set scene and min size
         scene = Scene(root, 800.0, 600.0)
@@ -80,7 +162,8 @@ class XControlPlus : Application() {
         stage.minHeight = 600.0
 
         // Save latest window position and size
-        with(ApplicationContext.get().applicationSettings) {
+        with(ApplicationContext.get().applicationSettings)
+        {
             stage.isMaximized = this[ApplicationSettings.START_MAXIMIZED]
             stage.x = this[ApplicationSettings.WINDOW_X].toDouble()
             stage.y = this[ApplicationSettings.WINDOW_Y].toDouble()
@@ -128,7 +211,11 @@ class XControlPlus : Application() {
             Image(javaClass.getResourceAsStream("/assets/logo/small.png"))
         )
 
+        scene.addEventFilter(KeyEvent.ANY) {
+            println("Keyevent to: ${it.target}")
+        }
         // Show the window
+        stage.title = "XControlPlus"
         stage.show()
     }
 
@@ -139,7 +226,7 @@ class XControlPlus : Application() {
         ApplicationContext.get().userSettings.save()
     }
 
-    private fun getTopNode(gridState: GridState): Node {
+    private fun getTopNode(): Node {
         // Setup top node, which is the menu bar
         val top = VBox()
         val fileMenu = Menu("File")
@@ -148,8 +235,10 @@ class XControlPlus : Application() {
 
         // Setup menu items
         fileMenu.items.addAll(
-            MenuItem("Load Project").apply { setOnAction { gridState.loadFromFile() } },
-            MenuItem("Save Project").apply { setOnAction { gridState.saveToFile() } },
+            MenuItem("New project").apply { setOnAction { projectManager.newProject() } },
+            MenuItem("Load Project").apply { setOnAction { projectManager.loadProject() } },
+            MenuItem("Save Project").apply { setOnAction { projectManager.saveProject() } },
+            MenuItem("Close Project").apply { setOnAction { projectManager.closeProject() } },
             SeparatorMenuItem(),
             MenuItem("Settings").apply { setOnAction { SettingsDialog().showDialog() } },
             SeparatorMenuItem(),
@@ -164,7 +253,7 @@ class XControlPlus : Application() {
         return top
     }
 
-    private fun getBottomNode(gridView: GridView<*>): Node {
+    private fun getBottomNode(): Node {
 
         val bottom = HBox()
         bottom.spacing = 10.0
@@ -176,10 +265,8 @@ class XControlPlus : Application() {
             isShowTickMarks = true
             minorTickCount = 0
             majorTickUnit = 0.2
-            gridView.minScaleProperty().bind(minProperty())
-            gridView.maxScaleProperty().bind(maxProperty())
-            gridView.scaleProperty().bindBidirectional(valueProperty())
         }
+
         // Reset zoom on right click
         zoomSlider.setOnMouseClicked {
             if (it.button == MouseButton.SECONDARY) {
@@ -187,16 +274,37 @@ class XControlPlus : Application() {
             }
         }
 
-        val mousePosInfo = Label()
-        mousePosInfo.textProperty().bind(Bindings.concat("X:", gridView.mouseGridXProperty(), " Y: ", gridView.mouseGridYProperty()))
 
+        val mousePosInfo = Label()
         val showGrid = CheckBox()
-        showGrid.selectedProperty().bindBidirectional(gridView.renderGridProperty())
 
         val connectionInfo = Label()
         connectionHandler.connection.addListener { _, _, newValue ->
             if (newValue != null) {
                 connectionInfo.text = "Connected to: " + newValue.name
+            }
+        }
+
+        currentTab.addListener { _, oldValue, newValue ->
+            with(newValue.sheet.gridHelper.gridView) {
+                zoomSlider.min = minScale
+                zoomSlider.max = maxScale
+
+                if (oldValue != null) {
+                    scaleProperty().unbindBidirectional(zoomSlider.valueProperty())
+                    renderGridProperty().unbindBidirectional(showGrid.selectedProperty())
+                }
+
+                if (newValue != null) {
+                    zoomSlider.value = scale
+                    scaleProperty().bindBidirectional(zoomSlider.valueProperty())
+
+                    showGrid.isSelected = isRenderGrid
+                    renderGridProperty().bindBidirectional(showGrid.selectedProperty())
+                }
+
+                mousePosInfo.textProperty()
+                    .bind(Bindings.concat("X:", mouseGridXProperty(), " Y: ", mouseGridYProperty()))
             }
         }
 
@@ -216,7 +324,7 @@ class XControlPlus : Application() {
         return left
     }
 
-    private fun getRightNode(gridView: GridView<*>, toolRenderer: ToolRenderer): Node {
+    private fun getRightNode(toolRenderer: ToolRenderer): Node {
         // Setup right node
         val right = VBox()
 
@@ -243,8 +351,6 @@ class XControlPlus : Application() {
             buttons[mode] = button
             button.tooltip = Tooltip(mode.name)
             button.setOnMouseClicked {
-                gridView.isHighlightSelectedCell = mode == Tool.MOUSE
-                gridView.selectedCell = null
                 toolRenderer.currentTool.set(mode)
             }
 

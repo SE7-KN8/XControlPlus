@@ -16,4 +16,5 @@ module xcontrolplus {
 
 	// Required for gson
 	opens com.github.se7_kn8.xcontrolplus.app.grid to com.google.gson;
+	opens com.github.se7_kn8.xcontrolplus.app.project to com.google.gson;
 }

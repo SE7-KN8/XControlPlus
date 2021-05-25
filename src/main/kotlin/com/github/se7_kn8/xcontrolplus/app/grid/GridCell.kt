@@ -150,8 +150,8 @@ enum class GridCellRenderer {
 
 }
 
-abstract class BaseCell(currentGridState: GridState) :
-    GridCell(currentGridState.mouseGridX(), currentGridState.mouseGridY(), currentGridState.toolRotation) {
+abstract class BaseCell(currentGridHelper: GridHelper) :
+    GridCell(currentGridHelper.mouseGridX(), currentGridHelper.mouseGridY(), currentGridHelper.toolRotation) {
     override fun render(now: Long, gc: GraphicsContext, renderer: GridRenderer<out GridCell>) {
         getRenderer().draw(gridX, gridY, gc, renderer, this)
     }
@@ -164,11 +164,11 @@ abstract class BaseCell(currentGridState: GridState) :
 
 }
 
-class StraightGridCell(gridState: GridState) : BaseCell(gridState) {
+class StraightGridCell(gridHelper: GridHelper) : BaseCell(gridHelper) {
     override fun getRenderer() = GridCellRenderer.STRAIGHT
 }
 
-class TurnGridCell(gridState: GridState) : BaseCell(gridState) {
+class TurnGridCell(gridHelper: GridHelper) : BaseCell(gridHelper) {
     override fun getRenderer() = GridCellRenderer.TURN
 }
 
@@ -184,7 +184,7 @@ enum class TurnoutType {
     abstract fun getRenderer(): GridCellRenderer
 }
 
-class TurnoutGridCell(gridState: GridState, private val turnoutType: TurnoutType) : BaseCell(gridState) {
+class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutType) : BaseCell(gridHelper) {
     var turned = false
     private val id = SimpleIntegerProperty(0)
 
@@ -201,7 +201,7 @@ class TurnoutGridCell(gridState: GridState, private val turnoutType: TurnoutType
     override fun getParameters() = mapOf(Pair("ID: ", id))
 }
 
-class TextGridCell(gridState: GridState) : BaseCell(gridState) {
+class TextGridCell(gridHelper: GridHelper) : BaseCell(gridHelper) {
     val fontSize = SimpleIntegerProperty(10)
     val text = SimpleStringProperty("")
 

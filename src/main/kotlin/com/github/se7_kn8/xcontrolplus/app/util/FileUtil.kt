@@ -13,7 +13,7 @@ import java.nio.file.Paths
 
 object FileUtil {
 
-    val PROJECT_FILE = FileChooser.ExtensionFilter("X-Control Plus Project (*.xctrlp)", "*.xctrlp")
+    val PROJECT_FILE = FileChooser.ExtensionFilter("X-Control Plus Project (*.xcpp)", "*.xcpp")
 
     fun readFileToString(path: Path?): String? {
         try {

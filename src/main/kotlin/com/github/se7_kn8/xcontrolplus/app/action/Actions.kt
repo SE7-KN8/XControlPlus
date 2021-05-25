@@ -2,47 +2,47 @@ package com.github.se7_kn8.xcontrolplus.app.action
 
 import com.github.se7_kn8.xcontrolplus.app.dialog.CellParameterEditDialog
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
-import com.github.se7_kn8.xcontrolplus.app.grid.GridState
+import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
 import com.github.se7_kn8.xcontrolplus.gridview.RotationDirection
 
 interface Action {
-    fun init(state: GridState)
-    fun valid(state: GridState): Boolean
-    fun doAction(state: GridState)
-    fun undoAction(state: GridState)
+    fun init(helper: GridHelper)
+    fun valid(helper: GridHelper): Boolean
+    fun doAction(helper: GridHelper)
+    fun undoAction(helper: GridHelper)
 }
 
 abstract class SelectedCellAction : Action {
     protected var cell: BaseCell? = null
-    override fun init(state: GridState) {
-        cell = state.getSelectedCell()
+    override fun init(helper: GridHelper) {
+        cell = helper.getSelectedCell()
     }
 
-    override fun valid(state: GridState) = cell != null
+    override fun valid(helper: GridHelper) = cell != null
 }
 
 class RotateSelectedCellAction(private val direction: RotationDirection) : SelectedCellAction() {
 
-    override fun doAction(state: GridState) {
+    override fun doAction(helper: GridHelper) {
         cell?.rotation = cell?.rotation?.rotate(direction)
     }
 
-    override fun undoAction(state: GridState) {
+    override fun undoAction(helper: GridHelper) {
         cell?.rotation = cell?.rotation?.rotate(direction.invert())
     }
 }
 
 class DeleteSelectedCellAction() : SelectedCellAction() {
-    override fun doAction(state: GridState) {
+    override fun doAction(helper: GridHelper) {
         cell?.let {
-            state.removeCell(it)
+            helper.removeCell(it)
         }
-        state.selectHoveredCell()
+        helper.selectHoveredCell()
     }
 
-    override fun undoAction(state: GridState) {
+    override fun undoAction(helper: GridHelper) {
         cell?.let {
-            state.addCell(it)
+            helper.addCell(it)
         }
     }
 
@@ -50,36 +50,36 @@ class DeleteSelectedCellAction() : SelectedCellAction() {
 
 class AddCellAction(private val cell: BaseCell) : Action {
 
-    override fun init(state: GridState) {
+    override fun init(helper: GridHelper) {
         if (cell.getParameters().keys.isNotEmpty()) {
             CellParameterEditDialog(cell).showAndWait()
         }
     }
 
-    override fun valid(state: GridState) = true
+    override fun valid(helper: GridHelper) = true
 
-    override fun doAction(state: GridState) {
-        state.addCell(cell)
+    override fun doAction(helper: GridHelper) {
+        helper.addCell(cell)
     }
 
-    override fun undoAction(state: GridState) {
-        state.removeCell(cell)
-        state.selectHoveredCell()
+    override fun undoAction(helper: GridHelper) {
+        helper.removeCell(cell)
+        helper.selectHoveredCell()
     }
 
 }
 
 class EditSelectedCellParameterAction : SelectedCellAction() {
 
-    override fun valid(state: GridState) = super.valid(state) && cell?.getParameters()?.keys?.isNotEmpty() == true
+    override fun valid(helper: GridHelper) = super.valid(helper) && cell?.getParameters()?.keys?.isNotEmpty() == true
 
-    override fun doAction(state: GridState) {
+    override fun doAction(helper: GridHelper) {
         cell?.let {
             CellParameterEditDialog(it).showDialog()
         }
     }
 
-    override fun undoAction(state: GridState) {
+    override fun undoAction(helper: GridHelper) {
         TODO("Not yet implemented")
     }
 

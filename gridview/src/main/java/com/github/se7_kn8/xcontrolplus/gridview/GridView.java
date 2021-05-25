@@ -18,11 +18,6 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class GridView<T extends GridCell> extends Canvas {
-
-	private final BiConsumer<Long, GridRenderer<T>> EMPTY_CALLBACK = (now, gc) -> {
-		// NOP
-	};
-
 	private final GridRenderer<T> renderer;
 	private final ObservableList<T> cells = FXCollections.observableArrayList();
 
@@ -84,6 +79,8 @@ public class GridView<T extends GridCell> extends Canvas {
 			findCell(getMouseGridX(), getMouseGridY()).ifPresentOrElse(this::setSelectedCell, () -> this.setSelectedCell(null));
 			getClickCallback().accept(event, false);
 		}
+		// We need this here otherwise the TabPane will consume the event and request focus
+		event.consume();
 	}
 
 	private void onMouseDragged(MouseEvent event) {
@@ -315,7 +312,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return gridTransform;
 	}
 
-	private final ObjectProperty<BiConsumer<Long, GridRenderer<T>>> backgroundCallback = new SimpleObjectProperty<>(EMPTY_CALLBACK);
+	private final ObjectProperty<BiConsumer<Long, GridRenderer<T>>> backgroundCallback = new SimpleObjectProperty<>();
 
 	public void setBackgroundCallback(BiConsumer<Long, GridRenderer<T>> backgroundCallback) {
 		this.backgroundCallback.set(backgroundCallback);
@@ -329,7 +326,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return backgroundCallback;
 	}
 
-	private final ObjectProperty<BiConsumer<Long, GridRenderer<T>>> foregroundCallback = new SimpleObjectProperty<>(EMPTY_CALLBACK);
+	private final ObjectProperty<BiConsumer<Long, GridRenderer<T>>> foregroundCallback = new SimpleObjectProperty<>();
 
 	public void setForegroundCallback(BiConsumer<Long, GridRenderer<T>> foregroundCallback) {
 		this.foregroundCallback.set(foregroundCallback);
@@ -343,7 +340,7 @@ public class GridView<T extends GridCell> extends Canvas {
 		return foregroundCallback;
 	}
 
-	private final ObjectProperty<BiConsumer<Long, GridRenderer<T>>> overlayCallback = new SimpleObjectProperty<>(EMPTY_CALLBACK);
+	private final ObjectProperty<BiConsumer<Long, GridRenderer<T>>> overlayCallback = new SimpleObjectProperty<>();
 
 	public void setOverlayCallback(BiConsumer<Long, GridRenderer<T>> overlayCallback) {
 		this.overlayCallback.set(overlayCallback);

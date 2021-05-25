@@ -21,7 +21,10 @@ public class GridRenderer<T extends GridCell> extends AnimationTimer {
 		clearScreen();
 		gc.save();
 		gc.setTransform(view.getGridTransform());
-		view.getBackgroundCallback().accept(now, this);
+
+		if (view.getBackgroundCallback() != null) {
+			view.getBackgroundCallback().accept(now, this);
+		}
 
 		if (view.isRenderGrid()) {
 			renderGrid();
@@ -33,9 +36,15 @@ public class GridRenderer<T extends GridCell> extends AnimationTimer {
 			renderHighlight();
 		}
 
-		view.getForegroundCallback().accept(now, this);
+		if (view.getForegroundCallback() != null) {
+			view.getForegroundCallback().accept(now, this);
+		}
+
 		gc.restore();
-		view.getOverlayCallback().accept(now, this);
+
+		if (view.getOverlayCallback() != null) {
+			view.getOverlayCallback().accept(now, this);
+		}
 	}
 
 	private void renderHighlight() {

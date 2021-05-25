@@ -18,14 +18,14 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
             // Do nothing
         }
 
-        override fun onClick(event: MouseEvent, state: GridState) {
+        override fun onClick(event: MouseEvent, helper: GridHelper) {
             when (event.button) {
                 MouseButton.PRIMARY -> {
                 }
 
                 MouseButton.SECONDARY -> {
-                    state.getHoveredCell().ifPresent {
-                        state.contextMenu.show(event, it)
+                    helper.getHoveredCell().ifPresent {
+                        helper.contextMenu.show(event, it)
                     }
                 }
                 else -> {
@@ -42,9 +42,9 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
             GridCellRenderer.STRAIGHT.draw(gridX, gridY, gc, gridView.renderer)
         }
 
-        override fun onClick(event: MouseEvent, state: GridState) {
+        override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                state.doAction(AddCellAction(StraightGridCell(state)))
+                helper.doAction(AddCellAction(StraightGridCell(helper)))
             }
         }
 
@@ -55,9 +55,9 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
             GridCellRenderer.TURN.draw(gridX, gridY, gc, gridView.renderer)
         }
 
-        override fun onClick(event: MouseEvent, state: GridState) {
+        override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                state.doAction(AddCellAction(TurnGridCell(state)))
+                helper.doAction(AddCellAction(TurnGridCell(helper)))
             }
         }
 
@@ -69,9 +69,9 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
             GridCellRenderer.LEFT_TURNOUT.draw(gridX, gridY, gc, gridView.renderer)
         }
 
-        override fun onClick(event: MouseEvent, state: GridState) {
+        override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                state.doAction(AddCellAction(TurnoutGridCell(state, TurnoutType.LEFT)))
+                helper.doAction(AddCellAction(TurnoutGridCell(helper, TurnoutType.LEFT)))
             }
         }
 
@@ -82,9 +82,9 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
             GridCellRenderer.RIGHT_TURNOUT.draw(gridX, gridY, gc, gridView.renderer)
         }
 
-        override fun onClick(event: MouseEvent, state: GridState) {
+        override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                state.doAction(AddCellAction(TurnoutGridCell(state, TurnoutType.RIGHT)))
+                helper.doAction(AddCellAction(TurnoutGridCell(helper, TurnoutType.RIGHT)))
             }
         }
 
@@ -96,9 +96,9 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
             GridCellRenderer.TEXT.draw(gridX, gridY, gc, gridView.renderer)
         }
 
-        override fun onClick(event: MouseEvent, state: GridState) {
+        override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                state.doAction(AddCellAction(TextGridCell(state)))
+                helper.doAction(AddCellAction(TextGridCell(helper)))
             }
         }
 
@@ -113,10 +113,10 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
             )
         }
 
-        override fun onClick(event: MouseEvent, state: GridState) {
+        override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                state.selectHoveredCell()
-                state.doAction(DeleteSelectedCellAction())
+                helper.selectHoveredCell()
+                helper.doAction(DeleteSelectedCellAction())
             }
         }
 
@@ -126,7 +126,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
 
     abstract fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>)
 
-    abstract fun onClick(event: MouseEvent, state: GridState)
+    abstract fun onClick(event: MouseEvent, helper: GridHelper)
 
     abstract fun getImage(): Image
 
