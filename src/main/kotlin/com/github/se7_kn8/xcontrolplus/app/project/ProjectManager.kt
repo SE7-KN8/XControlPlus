@@ -46,7 +46,7 @@ class ProjectManager {
         ZipFile(path).use { file ->
             val entries = file.entries().toList().sortedBy { it.name }.associateBy { it.name }.toMutableMap()
             val metadataEntry = entries[metadataFileName] ?: throw IllegalStateException("Project file is invalid")
-            InputStreamReader(file.getInputStream(metadataEntry)).use { metadataReader ->
+            InputStreamReader(file.getInputStream(metadataEntry), Charsets.UTF_8).use { metadataReader ->
                 val metadata = ApplicationContext.get().gson.fromJson(metadataReader, ProjectMetadata::class.java)
                 if (metadata.version != ProjectMetadata().version) {
                     throw IllegalStateException("Unsupported save version")
@@ -54,7 +54,7 @@ class ProjectManager {
                 val project = Project(path)
                 entries.remove(metadataFileName)
                 for (entry in entries.values) {
-                    InputStreamReader(file.getInputStream(entry)).use { sheetReader ->
+                    InputStreamReader(file.getInputStream(entry), Charsets.UTF_8).use { sheetReader ->
                         val sheet = Sheet.load(sheetReader.readText())
                         project.sheets.add(sheet)
                     }

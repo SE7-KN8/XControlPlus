@@ -8,10 +8,10 @@ import javafx.beans.property.SimpleStringProperty
 
 private data class SaveWrapper(
     val name: String,
-    val cells: ArrayList<BaseCell>,
     val grid_translation_x: Double,
     val grid_translation_y: Double,
-    val grid_scale: Double
+    val grid_scale: Double,
+    val cells: ArrayList<BaseCell>
 )
 
 class Sheet(name: String, gridView: GridView<BaseCell>) {
@@ -23,10 +23,11 @@ class Sheet(name: String, gridView: GridView<BaseCell>) {
         val data: ArrayList<BaseCell> = ArrayList(gridHelper.getCells())
         return ApplicationContext.get().gson.toJson(
             SaveWrapper(
-                name.get(), data,
+                name.get(),
                 gridHelper.gridView.translationX,
                 gridHelper.gridView.translationY,
-                gridHelper.gridView.scale
+                gridHelper.gridView.scale,
+                data
             )
         )
     }
