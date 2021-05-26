@@ -132,7 +132,7 @@ class XControlPlus : Application() {
                 }
 
                 val addSheet: (Sheet) -> Unit = {
-                    val tab = SheetTab(it)
+                    val tab = SheetTab(newProject, it)
                     projectRoot.tabs.add(projectRoot.tabs.size - 1, tab)
                     projectRoot.selectionModel.select(tab)
                     sheetToTab[it] = tab

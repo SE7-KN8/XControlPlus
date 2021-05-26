@@ -8,7 +8,7 @@ import javafx.scene.control.MenuItem
 import javafx.scene.control.Tab
 import javafx.scene.layout.Pane
 
-class SheetTab(val sheet: Sheet) : Tab(sheet.name.get()) {
+class SheetTab(project: Project, val sheet: Sheet) : Tab(sheet.name.get()) {
 
     init {
         with(sheet.gridHelper.gridView) {
@@ -20,17 +20,19 @@ class SheetTab(val sheet: Sheet) : Tab(sheet.name.get()) {
             content = /*VBox().apply {
                 children.add(Button("Test"))
                 children.add(*/Pane().also {
-                    // Set canvas size to largest possible size
-                    isFocusTraversable = true
-                    it.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE)
-                    widthProperty().bind(it.widthProperty())
-                    heightProperty().bind(it.heightProperty())
-                    it.children.add(this)
+                // Set canvas size to largest possible size
+                isFocusTraversable = true
+                it.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE)
+                widthProperty().bind(it.widthProperty())
+                heightProperty().bind(it.heightProperty())
+                it.children.add(this)
                 //})
             }
         }
         setOnCloseRequest { closeEvent ->
-            if (!ConfirmationDialog("Delete this sheet?").showDialog()) {
+            if (ConfirmationDialog("Delete this sheet?").showDialog()) {
+                project.sheets.remove(sheet)
+            } else {
                 closeEvent.consume()
             }
         }
