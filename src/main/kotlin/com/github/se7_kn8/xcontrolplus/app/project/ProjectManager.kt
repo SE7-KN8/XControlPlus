@@ -42,25 +42,25 @@ class ProjectManager {
     }
 
     private fun loadProject(path: String) {
-        val charset = Charset.forName("UTF-8")
-        ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_PROJECT_PATH] = path.toString()
-        val file = ZipFile(path)
-        val entries = file.entries().toList().sortedBy { it.name }.associateBy { it.name }.toMutableMap()
-        val metadataEntry = entries[metadataFileName] ?: throw IllegalStateException("Project file is invalid")
-        InputStreamReader(file.getInputStream(metadataEntry)).use { metadataReader ->
-            val metadata = ApplicationContext.get().gson.fromJson(metadataReader, ProjectMetadata::class.java)
-            if (metadata.version != ProjectMetadata().version) {
-                throw IllegalStateException("Unsupported save version")
-            }
-            val project = Project(path.toString())
-            entries.remove(metadataFileName)
-            for (entry in entries.values) {
-                InputStreamReader(file.getInputStream(entry)).use { sheetReader ->
-                    val sheet = Sheet.load(sheetReader.readText())
-                    project.sheets.add(sheet)
+        ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_PROJECT_PATH] = path
+        ZipFile(path).use { file ->
+            val entries = file.entries().toList().sortedBy { it.name }.associateBy { it.name }.toMutableMap()
+            val metadataEntry = entries[metadataFileName] ?: throw IllegalStateException("Project file is invalid")
+            InputStreamReader(file.getInputStream(metadataEntry)).use { metadataReader ->
+                val metadata = ApplicationContext.get().gson.fromJson(metadataReader, ProjectMetadata::class.java)
+                if (metadata.version != ProjectMetadata().version) {
+                    throw IllegalStateException("Unsupported save version")
                 }
+                val project = Project(path)
+                entries.remove(metadataFileName)
+                for (entry in entries.values) {
+                    InputStreamReader(file.getInputStream(entry)).use { sheetReader ->
+                        val sheet = Sheet.load(sheetReader.readText())
+                        project.sheets.add(sheet)
+                    }
+                }
+                activeProject.set(project)
             }
-            activeProject.set(project)
         }
     }
 

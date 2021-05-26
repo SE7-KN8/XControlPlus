@@ -18,8 +18,9 @@ object FileUtil {
     fun readFileToString(path: Path?): String? {
         try {
             if (path != null && Files.exists(path)) {
-                val reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))
-                return reader.readText()
+                Files.newBufferedReader(path, Charset.forName("UTF-8")).use {
+                    return it.readText()
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()

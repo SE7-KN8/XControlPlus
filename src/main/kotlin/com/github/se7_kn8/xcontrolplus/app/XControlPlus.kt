@@ -297,8 +297,8 @@ class XControlPlus : Application() {
                 zoomSlider.max = maxScale
 
                 if (oldValue != null) {
-                    scaleProperty().unbindBidirectional(zoomSlider.valueProperty())
-                    renderGridProperty().unbindBidirectional(showGrid.selectedProperty())
+                    oldValue.sheet.gridHelper.gridView.scaleProperty().unbindBidirectional(zoomSlider.valueProperty())
+                    oldValue.sheet.gridHelper.gridView.renderGridProperty().unbindBidirectional(showGrid.selectedProperty())
                 }
 
                 if (newValue != null) {
