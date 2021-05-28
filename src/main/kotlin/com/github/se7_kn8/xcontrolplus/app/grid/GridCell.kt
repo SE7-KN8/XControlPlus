@@ -1,5 +1,6 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
+import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
 import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
 import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell
@@ -9,6 +10,7 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.MenuItem
 import javafx.scene.text.Font
+import java.util.function.Consumer
 
 enum class GridCellRenderer {
     STRAIGHT {
@@ -186,7 +188,19 @@ enum class TurnoutType {
 
 class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutType) : BaseCell(gridHelper) {
     var turned = false
-    private val id = SimpleIntegerProperty(0)
+    val id = SimpleIntegerProperty(0)
+
+    val onPacket = Consumer<Boolean> {
+        turned = it
+    }
+
+    init {
+        ApplicationContext.get().connectionHandler.addTurnout(id.get(), onPacket)
+        id.addListener { _, oldValue, newValue ->
+            ApplicationContext.get().connectionHandler.removeTurnout(oldValue.toInt(), onPacket)
+            ApplicationContext.get().connectionHandler.addTurnout(newValue.toInt(), onPacket)
+        }
+    }
 
     override fun getRenderer() = turnoutType.getRenderer()
 

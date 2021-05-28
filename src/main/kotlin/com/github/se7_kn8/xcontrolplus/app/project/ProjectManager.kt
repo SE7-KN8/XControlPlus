@@ -96,10 +96,6 @@ class ProjectManager {
 
     fun closeProject() {
         activeProject.set(null)
+        ApplicationContext.get().connectionHandler.clear()
     }
-
-    companion object {
-        const val metadataName = "d"
-    }
-
 }

@@ -1,6 +1,5 @@
 package com.github.se7_kn8.xcontrolplus.app
 
-import com.github.se7_kn8.xcontrolplus.app.connection.ConnectionHandler
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.ExitConfirmationDialog
@@ -35,7 +34,6 @@ import javafx.stage.Stage
 class XControlPlus : Application() {
 
     private lateinit var scene: Scene
-    private val connectionHandler = ConnectionHandler()
     private val projectManager = ProjectManager()
     private val currentTab = SimpleObjectProperty<SheetTab>()
     private val currentGridHelper = SimpleObjectProperty<GridHelper>()
@@ -91,16 +89,14 @@ class XControlPlus : Application() {
         }
 
         projectManager.activeProject.addListener { _, _, newProject ->
-            if (newProject == null) {
-                // No active project
+            if (newProject == null) { // No active project
                 root.center = createProjectLabel
                 // Disable toolbar
                 root.right.isVisible = false
                 root.left.isVisible = false
                 root.bottom.isVisible = false
                 stage.title = "XControlPlus"
-            } else {
-                // A project has been loaded / created
+            } else {  // A project has been loaded / created
                 val projectRoot = TabPane()
                 projectRoot.isFocusTraversable = true
                 val sheetToTab = HashMap<Sheet, SheetTab>()
@@ -147,6 +143,7 @@ class XControlPlus : Application() {
                             // Remove tab when sheet is delete
                             projectRoot.tabs.remove(sheetToTab[it])
                             sheetToTab.remove(it)
+                            ApplicationContext.get().connectionHandler.removeSheet(it)
                         }
                         change.addedSubList.forEach(addSheet)
                     }
@@ -223,7 +220,7 @@ class XControlPlus : Application() {
 
     override fun stop() {
         super.stop()
-        connectionHandler.connection.value?.closeConnection()
+        ApplicationContext.get().connectionHandler.closeConnection()
         ApplicationContext.get().applicationSettings.save()
         ApplicationContext.get().userSettings.save()
     }
@@ -281,7 +278,7 @@ class XControlPlus : Application() {
         val showGrid = CheckBox()
 
         val connectionInfo = Label()
-        connectionHandler.connection.addListener { _, _, newValue ->
+        ApplicationContext.get().connectionHandler.connection.addListener { _, _, newValue ->
             if (newValue != null) {
                 connectionInfo.text = "Connected to: " + newValue.name
             }
@@ -319,7 +316,7 @@ class XControlPlus : Application() {
         val chooseConnection = Button("Choose connection")
 
         chooseConnection.setOnAction {
-            connectionHandler.showConnectionSelectDialog()
+            ApplicationContext.get().connectionHandler.showConnectionSelectDialog()
         }
 
         left.children.addAll(chooseConnection)
