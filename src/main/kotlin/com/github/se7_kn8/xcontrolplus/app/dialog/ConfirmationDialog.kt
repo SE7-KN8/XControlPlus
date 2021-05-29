@@ -1,6 +1,7 @@
 package com.github.se7_kn8.xcontrolplus.app.dialog
 
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
+import com.github.se7_kn8.xcontrolplus.app.util.translate
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
 
@@ -19,4 +20,4 @@ open class ConfirmationDialog(content: String) : Alert(AlertType.CONFIRMATION, c
     }
 }
 
-class ExitConfirmationDialog : ConfirmationDialog("Do really want to exit?")
+class ExitConfirmationDialog : ConfirmationDialog(translate("dialog.exit_confirmation"))

@@ -1,6 +1,7 @@
 package com.github.se7_kn8.xcontrolplus.app.dialog
 
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
+import com.github.se7_kn8.xcontrolplus.app.util.translate
 import com.github.se7_kn8.xcontrolplus.protocol.Connection
 import com.github.se7_kn8.xcontrolplus.protocol.ConnectionType
 import com.github.se7_kn8.xcontrolplus.protocol.Connections
@@ -50,8 +51,8 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
             alignment = Pos.CENTER_LEFT
         }
 
-        title = "Connect..."
-        dialogPane.headerText = "Choose a connection"
+        title = translate("dialog.connection")
+        dialogPane.headerText = translate("dialog.connection")
         dialogPane.buttonTypes.addAll(ButtonType.OK, ButtonType.CANCEL)
 
         val connectionTypeBox = ComboBox<ConnectionType>().apply {
@@ -60,10 +61,8 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
             converter = ConnectionTypeStringConverter()
         }
 
-
-        val connectionTypeLabel = Label("Type:")
-
-        val connectionLabel = Label("Connection:")
+        val connectionTypeLabel = Label(translate("dialog.connection.type"))
+        val connectionLabel = Label(translate("dialog.connection.connection"))
         val connectionBox = ComboBox<Connection>().apply {
             converter = ConnectionStringConverter()
         }
@@ -71,7 +70,7 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
         val okButton = dialogPane.lookupButton(ButtonType.OK) as Button
         okButton.isDisable = true
 
-        val testButton = Button("Test connection")
+        val testButton = Button(translate("dialog.connection.test_connection"))
         testButton.isDisable = true
 
         val infoLabel = Label("")
@@ -87,16 +86,16 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
                 if (newValue == Worker.State.SUCCEEDED && task.value == true) {
                     okButton.isDisable = false
                     progressBar.isVisible = false
-                    infoLabel.text = "Successfully tested"
+                    infoLabel.text = translate("dialog.connection.testing_success")
                 } else if (newValue == Worker.State.FAILED || newValue == Worker.State.CANCELLED || (newValue == Worker.State.SUCCEEDED && task.value == false)) {
-                    Alert(Alert.AlertType.ERROR, "Error while testing connection").showAndWait()
-                    infoLabel.text = "Error while testing connection"
+                    Alert(Alert.AlertType.ERROR, translate("dialog.connection.testing_error")).showAndWait()
+                    infoLabel.text = translate("dialog.connection.testing_error")
                     okButton.isDisable = true
                     progressBar.isVisible = false
                 }
             }
             Thread(task).start()
-            infoLabel.text = "Testing connection"
+            infoLabel.text = translate("dialog.connection.testing_connection")
             progressBar.isVisible = true
         }
 
@@ -116,7 +115,7 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
                     connectionBox.items.addAll(connections)
                     if (connections.isNotEmpty()) {
                         testButton.isDisable = false
-                        infoLabel.text = "Found ${connections.size} possible connection\n"
+                        infoLabel.text = translate("dialog.connection.connections_found", connections.size)
                         connectionBox.selectionModel.selectFirst()
                     } else {
                         infoLabel.text = ""
@@ -124,13 +123,13 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
                         testButton.isDisable = true
                     }
                 } else if (newValue == Worker.State.FAILED || newValue == Worker.State.CANCELLED) {
-                    Alert(Alert.AlertType.ERROR, "Error while loading connections").showAndWait()
+                    Alert(Alert.AlertType.ERROR, translate("dialog.connection.loading_error")).showAndWait()
                     close()
                 }
             }
             Thread(task).start()
             progressBar.isVisible = true
-            infoLabel.text = "Scanning for connections"
+            infoLabel.text = translate("dialog.connection.scanning")
         }
 
         grid.add(connectionTypeBox, 1, 1)

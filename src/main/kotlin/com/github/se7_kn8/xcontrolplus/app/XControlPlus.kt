@@ -14,6 +14,7 @@ import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
 import com.github.se7_kn8.xcontrolplus.app.toolbox.Tool
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
+import com.github.se7_kn8.xcontrolplus.app.util.translate
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.beans.binding.Bindings
@@ -71,7 +72,7 @@ class XControlPlus : Application() {
         val bottom = getBottomNode()
 
         // Setup root node
-        val createProjectLabel = Label("Create a new project via File -> New Project")
+        val createProjectLabel = Label(translate("label.new_project_hint"))
         val root = BorderPane()
         root.left = left
         root.right = right
@@ -83,9 +84,9 @@ class XControlPlus : Application() {
         root.bottom.isVisible = false
         root.left.isVisible = false
 
-        val addMoreTab = Tab("+").apply {
+        val addMoreTab = Tab(translate("tab.add")).apply {
             isClosable = false
-            tooltip = Tooltip("Add sheet")
+            tooltip = Tooltip(translate("tooltip.add_sheet"))
         }
 
         projectManager.activeProject.addListener { _, _, newProject ->
@@ -95,7 +96,7 @@ class XControlPlus : Application() {
                 root.right.isVisible = false
                 root.left.isVisible = false
                 root.bottom.isVisible = false
-                stage.title = "XControlPlus"
+                stage.title = translate("stage.title")
             } else {  // A project has been loaded / created
                 val projectRoot = TabPane()
                 projectRoot.isFocusTraversable = true
@@ -106,7 +107,7 @@ class XControlPlus : Application() {
                 root.right.isVisible = true
                 root.left.isVisible = true
                 root.bottom.isVisible = true
-                stage.title = "XControlPlus - ${newProject.name}"
+                stage.title = "${translate("stage.title")} - ${newProject.name}"
 
                 projectRoot.selectionModel.selectedItemProperty().addListener { _, oldTab, newTab ->
                     if (newTab is SheetTab) {
@@ -119,7 +120,7 @@ class XControlPlus : Application() {
                         } else {
                             // Select first the old tab, so there is a selection even when the dialog is closed
                             projectRoot.selectionModel.select(oldTab)
-                            TextInputDialog("Sheet name?").showDialog()?.let {
+                            TextInputDialog(translate("dialog.sheet_name")).showDialog()?.let {
                                 // Create a new sheet with the name from the dialog
                                 newProject.newSheet(it)
                             }
@@ -208,7 +209,7 @@ class XControlPlus : Application() {
         )
 
         // Show the window
-        stage.title = "XControlPlus"
+        stage.title = translate("stage.title")
 
         // TODO to init(), but currently not possible because the property listeners are added in start()
         if (ApplicationContext.get().userSettings[UserSettings.OPEN_LATEST_PROJECT]) {
@@ -228,20 +229,20 @@ class XControlPlus : Application() {
     private fun getTopNode(): Node {
         // Setup top node, which is the menu bar
         val top = VBox()
-        val fileMenu = Menu("File")
+        val fileMenu = Menu(translate("menu.file"))
         val menuBar = MenuBar(fileMenu)
         top.children.addAll(menuBar)
 
         // Setup menu items
         fileMenu.items.addAll(
-            MenuItem("New project").apply { setOnAction { projectManager.newProject() } },
-            MenuItem("Load Project").apply { setOnAction { projectManager.loadProject() } },
-            MenuItem("Save Project").apply { setOnAction { projectManager.saveProject() } },
-            MenuItem("Close Project").apply { setOnAction { projectManager.closeProject() } },
+            MenuItem(translate("menu.file.new_project")).apply { setOnAction { projectManager.newProject() } },
+            MenuItem(translate("menu.file.load_project")).apply { setOnAction { projectManager.loadProject() } },
+            MenuItem(translate("menu.file.save_project")).apply { setOnAction { projectManager.saveProject() } },
+            MenuItem(translate("menu.file.close_project")).apply { setOnAction { projectManager.closeProject() } },
             SeparatorMenuItem(),
-            MenuItem("Settings").apply { setOnAction { SettingsDialog().showDialog() } },
+            MenuItem(translate("menu.file.settings")).apply { setOnAction { SettingsDialog().showDialog() } },
             SeparatorMenuItem(),
-            MenuItem("Exit").apply {
+            MenuItem(translate("menu.file.exit")).apply {
                 setOnAction {
                     if (ExitConfirmationDialog().showDialog()) {
                         WindowContext.get().primaryStage.close()
@@ -253,7 +254,6 @@ class XControlPlus : Application() {
     }
 
     private fun getBottomNode(): Node {
-
         val bottom = HBox()
         bottom.spacing = 10.0
         bottom.alignment = Pos.CENTER_RIGHT
@@ -280,7 +280,7 @@ class XControlPlus : Application() {
         val connectionInfo = Label()
         ApplicationContext.get().connectionHandler.connection.addListener { _, _, newValue ->
             if (newValue != null) {
-                connectionInfo.text = "Connected to: " + newValue.name
+                connectionInfo.text = translate("label.connected_to", newValue.name)
             }
         }
 
@@ -303,7 +303,7 @@ class XControlPlus : Application() {
                 }
 
                 mousePosInfo.textProperty()
-                    .bind(Bindings.concat("X:", mouseGridXProperty(), " Y: ", mouseGridYProperty()))
+                    .bind(Bindings.concat(translate("label.x"), mouseGridXProperty(), translate("label.y"), mouseGridYProperty()))
             }
         }
 
@@ -313,7 +313,7 @@ class XControlPlus : Application() {
 
     private fun getLeftNode(): Node {
         val left = VBox()
-        val chooseConnection = Button("Choose connection")
+        val chooseConnection = Button(translate("button.choose_connection"))
 
         chooseConnection.setOnAction {
             ApplicationContext.get().connectionHandler.showConnectionSelectDialog()
@@ -348,7 +348,7 @@ class XControlPlus : Application() {
                 fitHeight = 25.0
             })
             buttons[mode] = button
-            button.tooltip = Tooltip(mode.name)
+            button.tooltip = Tooltip(translate("tooltip.${mode.name.lowercase()}"))
             button.setOnMouseClicked {
                 toolRenderer.currentTool.set(mode)
             }

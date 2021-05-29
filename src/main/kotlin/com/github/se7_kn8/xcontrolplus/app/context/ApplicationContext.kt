@@ -4,6 +4,7 @@ import com.github.se7_kn8.xcontrolplus.app.connection.ConnectionHandler
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
+import com.github.se7_kn8.xcontrolplus.app.util.Translator
 import com.google.gson.*
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
@@ -55,7 +56,7 @@ class SimpleBooleanPropertyAdapter : JsonSerializer<SimpleBooleanProperty>, Json
     override fun deserialize(p0: JsonElement?, p1: Type?, p2: JsonDeserializationContext?) = SimpleBooleanProperty(p0?.asBoolean!!)
 }
 
-class ApplicationContext() {
+class ApplicationContext {
 
     val gson: Gson = GsonBuilder()
         .setPrettyPrinting()
@@ -69,6 +70,8 @@ class ApplicationContext() {
     val userSettings = UserSettings()
 
     val connectionHandler = ConnectionHandler()
+
+    val translator = Translator()
 
     companion object {
 

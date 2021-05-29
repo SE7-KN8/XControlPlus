@@ -3,6 +3,7 @@ package com.github.se7_kn8.xcontrolplus.app.dialog
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.settings.SettingsEntry
+import com.github.se7_kn8.xcontrolplus.app.util.translate
 import javafx.event.ActionEvent
 import javafx.geometry.HPos
 import javafx.scene.Node
@@ -17,7 +18,7 @@ class SettingsDialog : Dialog<ButtonType>(), AppDialog<Unit> {
 
     init {
         initOwner(WindowContext.get().primaryStage)
-        headerText = "Settings"
+        headerText = translate("dialog.settings")
 
         var rowCounter = 0
 
@@ -46,12 +47,12 @@ class SettingsDialog : Dialog<ButtonType>(), AppDialog<Unit> {
                 }
                 // TODO add more
                 else -> {
-                    Label("Unknown settings type")
+                    Label(translate("dialog.settings.unknown"))
                 }
             }
             GridPane.setHalignment(node, HPos.RIGHT)
             GridPane.setHgrow(node, Priority.ALWAYS)
-            root.add(Label(key.saveName), 0, rowCounter)
+            root.add(Label(translate("setting.${key.saveName}")), 0, rowCounter)
             root.add(node, 1, rowCounter)
             rowCounter += 1
         }

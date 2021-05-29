@@ -212,7 +212,7 @@ class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutTy
         return listOf(item)
     }
 
-    override fun getParameters() = mapOf(Pair("ID: ", id))
+    override fun getParameters() = mapOf(Pair("id", id))
 }
 
 class TextGridCell(gridHelper: GridHelper) : BaseCell(gridHelper) {
@@ -221,6 +221,6 @@ class TextGridCell(gridHelper: GridHelper) : BaseCell(gridHelper) {
 
     override fun getRenderer() = GridCellRenderer.TEXT
 
-    override fun getParameters(): Map<String, Property<*>> = mapOf(Pair("Text: ", text), Pair("Size: ", fontSize))
+    override fun getParameters(): Map<String, Property<*>> = mapOf(Pair("text", text), Pair("size", fontSize))
 }
 
