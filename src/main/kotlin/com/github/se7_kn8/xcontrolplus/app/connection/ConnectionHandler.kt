@@ -9,24 +9,16 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import java.util.function.Consumer
 
-class ConnectionHandler {
+class ConnectionHandler : Consumer<Packet> {
 
     val connection = SimpleObjectProperty<Connection?>()
     val turnoutMap = HashMap<Int, ArrayList<Consumer<Boolean>>>()
-
-    val onPacket = Consumer<Packet> { packet ->
-        when (packet) {
-            is TurnoutPacket -> {
-                Platform.runLater { turnoutMap[packet.turnoutId]?.forEach { it.accept(packet.turned) } }
-            }
-        }
-    }
 
     init {
         Packet.registerPacket(PacketIDs.TURNOUT_PACKET, TurnoutPacket.TurnoutPacketFactory())
         connection.addListener { _, oldValue, newValue ->
             oldValue?.closeConnection()
-            newValue?.setOnPacketReceived(onPacket)
+            newValue?.setOnPacketReceived(this)
         }
     }
 
@@ -54,6 +46,14 @@ class ConnectionHandler {
 
     fun clear() {
         turnoutMap.clear()
+    }
+
+    override fun accept(packet: Packet) {
+        when (packet) {
+            is TurnoutPacket -> {
+                Platform.runLater { turnoutMap[packet.turnoutId]?.forEach { it.accept(packet.turned) } }
+            }
+        }
     }
 
 
