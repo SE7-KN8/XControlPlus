@@ -18,6 +18,7 @@ class ConnectionHandler : Consumer<Packet> {
         Packet.registerPacket(PacketIDs.TURNOUT_PACKET, TurnoutPacket.TurnoutPacketFactory())
         connection.addListener { _, oldValue, newValue ->
             oldValue?.closeConnection()
+            newValue?.openConnection()
             newValue?.setOnPacketReceived(this)
         }
     }

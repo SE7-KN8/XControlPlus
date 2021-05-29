@@ -34,7 +34,9 @@ private class ListConnectionsTask(private val connectionType: ConnectionType) : 
 private class TestConnectionTask(private val connection: Connection) : Task<Boolean>() {
     override fun call(): Boolean {
         connection.openConnection()
-        return connection.testConnection(5000)
+        val result = connection.testConnection(5000)
+        connection.closeConnection()
+        return result
     }
 
 }
