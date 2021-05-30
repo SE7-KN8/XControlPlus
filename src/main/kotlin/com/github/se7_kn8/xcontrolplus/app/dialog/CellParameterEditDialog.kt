@@ -6,6 +6,7 @@ import com.github.se7_kn8.xcontrolplus.app.util.translate
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.IntegerProperty
 import javafx.beans.property.StringProperty
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.GridPane
@@ -14,7 +15,12 @@ class CellParameterEditDialog(private val cell: BaseCell) : Alert(AlertType.NONE
 
     init {
         initOwner(WindowContext.get().primaryStage)
-        val root = GridPane()
+        val root = GridPane().apply {
+            hgap = 10.0
+            vgap = 10.0
+            maxWidth = Double.MAX_VALUE
+            alignment = Pos.CENTER_LEFT
+        }
 
         var pos = 0
         cell.getParameters().forEach { parameter ->

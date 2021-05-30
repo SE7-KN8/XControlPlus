@@ -6,6 +6,7 @@ import com.github.se7_kn8.xcontrolplus.app.settings.SettingsEntry
 import com.github.se7_kn8.xcontrolplus.app.util.translate
 import javafx.event.ActionEvent
 import javafx.geometry.HPos
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.GridPane
@@ -22,7 +23,12 @@ class SettingsDialog : Dialog<ButtonType>(), AppDialog<Unit> {
 
         var rowCounter = 0
 
-        val root = GridPane()
+        val root = GridPane().apply {
+            hgap = 10.0
+            vgap = 10.0
+            maxWidth = Double.MAX_VALUE
+            alignment = Pos.CENTER_LEFT
+        }
         for (key in ApplicationContext.get().userSettings.entries) {
             val value = ApplicationContext.get().userSettings.getAny(key)
             settingsMap[key] = value
