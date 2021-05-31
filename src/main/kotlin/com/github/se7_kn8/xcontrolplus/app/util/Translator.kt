@@ -22,6 +22,6 @@ class Translator {
 
 }
 
-fun translate(key: String, vararg args: Any) = ApplicationContext.get().translator.format(key, args)
+fun translate(key: String, vararg args: Any) = ApplicationContext.get().translator.format(key, *args)
 
 fun translate(key: String) = ApplicationContext.get().translator[key]
