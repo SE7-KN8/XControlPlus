@@ -52,6 +52,9 @@ class XControlPlus : Application() {
             projectManager.loadLatestProject()
         }
 
+        // A little time to let the threads catch up
+        Thread.sleep(1000)
+
         debug("End of init")
     }
 
@@ -185,6 +188,7 @@ class XControlPlus : Application() {
         stage.scene = scene
         stage.minWidth = 800.0
         stage.minHeight = 600.0
+        stage.isIconified = false
 
 
         saveWindowSettings()

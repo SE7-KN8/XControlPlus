@@ -20,6 +20,7 @@ fun main(args: Array<String>) {
         info("Setting locale to $newLocale")
         Locale.setDefault(newLocale)
     }
+    System.setProperty("javafx.preloader", "com.github.se7_kn8.xcontrolplus.Preloader")
     Application.launch(XControlPlus::class.java, *args)
     debug("Stopping main thread")
 }

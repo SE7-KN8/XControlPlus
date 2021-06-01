@@ -13,11 +13,10 @@ module xcontrolplus {
 
 	requires kotlin.logging.jvm;
 
-	// Required for javafx to start
+	// Required for javafx to start and logging
+	exports com.github.se7_kn8.xcontrolplus to javafx.graphics, java.logging;
 	exports com.github.se7_kn8.xcontrolplus.app to javafx.graphics;
 
-	// Required for logging
-	exports com.github.se7_kn8.xcontrolplus to java.logging;
 
 	// Required for gson
 	opens com.github.se7_kn8.xcontrolplus.app.grid to com.google.gson;
