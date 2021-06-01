@@ -7,6 +7,7 @@ import com.github.se7_kn8.xcontrolplus.app.dialog.SettingsDialog
 import com.github.se7_kn8.xcontrolplus.app.dialog.TextInputDialog
 import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
 import com.github.se7_kn8.xcontrolplus.app.grid.GridShortcuts
+import com.github.se7_kn8.xcontrolplus.app.project.Project
 import com.github.se7_kn8.xcontrolplus.app.project.ProjectManager
 import com.github.se7_kn8.xcontrolplus.app.project.Sheet
 import com.github.se7_kn8.xcontrolplus.app.project.SheetTab
@@ -45,6 +46,12 @@ class XControlPlus : Application() {
         ApplicationContext.init()
         ApplicationContext.get().applicationSettings.load()
         ApplicationContext.get().userSettings.load()
+
+        // TODO to init(), but currently not possible because the property listeners are added in start()
+        if (ApplicationContext.get().userSettings[UserSettings.OPEN_LATEST_PROJECT]) {
+            projectManager.loadLatestProject()
+        }
+
         debug("End of init")
     }
 
@@ -87,77 +94,89 @@ class XControlPlus : Application() {
         root.bottom = bottom
         root.center = createProjectLabel
 
-        root.right.isVisible = false
-        root.bottom.isVisible = false
-        root.left.isVisible = false
-
         val addMoreTab = Tab(translate("tab.add")).apply {
             isClosable = false
             tooltip = Tooltip(translate("tooltip.add_sheet"))
         }
 
-        projectManager.activeProject.addListener { _, _, newProject ->
-            if (newProject == null) { // No active project
-                debug("Active project has been closed")
-                root.center = createProjectLabel
-                // Disable toolbar
-                root.right.isVisible = false
-                root.left.isVisible = false
-                root.bottom.isVisible = false
-                stage.title = translate("stage.title")
+        val clearProject: () -> Unit = {
+            debug("Clearing active project")
+            root.center = createProjectLabel
+            // Disable toolbar
+            root.right.isVisible = false
+            root.left.isVisible = false
+            root.bottom.isVisible = false
+            stage.title = translate("stage.title")
+        }
+
+        val newProject: (Project) -> Unit = { newProject ->
+            debug("New project")
+            val projectRoot = TabPane()
+            projectRoot.isFocusTraversable = true
+            val sheetToTab = HashMap<Sheet, SheetTab>()
+            projectRoot.tabs.add(addMoreTab)
+            root.center = projectRoot
+            // Enable toolbar
+            root.right.isVisible = true
+            root.left.isVisible = true
+            root.bottom.isVisible = true
+            stage.title = "${translate("stage.title")} - ${newProject.name}"
+
+            projectRoot.selectionModel.selectedItemProperty().addListener { _, oldTab, newTab ->
+                if (newTab is SheetTab) {
+                    currentTab.set(newTab)
+                }
+                if (newTab == addMoreTab) {
+                    if (projectRoot.tabs.size == 1) {
+                        // Only this tab exist anymore, so the project can be closed
+                        projectManager.closeProject()
+                    } else {
+                        // Select first the old tab, so there is a selection even when the dialog is closed
+                        projectRoot.selectionModel.select(oldTab)
+                        TextInputDialog(translate("dialog.sheet_name")).showDialog()?.let {
+                            // Create a new sheet with the name from the dialog
+                            newProject.newSheet(it)
+                        }
+                    }
+                }
+            }
+
+            val addSheet: (Sheet) -> Unit = {
+                val tab = SheetTab(newProject, it)
+                projectRoot.tabs.add(projectRoot.tabs.size - 1, tab)
+                projectRoot.selectionModel.select(tab)
+                sheetToTab[it] = tab
+            }
+
+            // Add tab for each sheet that already exists
+            newProject.sheets.forEach(addSheet)
+
+            newProject.sheets.addListener { change: ListChangeListener.Change<out Sheet> ->
+                while (change.next()) {
+                    change.removed.forEach {
+                        // Remove tab when sheet is delete
+                        projectRoot.tabs.remove(sheetToTab[it])
+                        sheetToTab.remove(it)
+                        ApplicationContext.get().connectionHandler.removeSheet(it)
+                    }
+                    change.addedSubList.forEach(addSheet)
+                }
+            }
+        }
+
+        // Clear the project to hide ui components
+        clearProject()
+
+        // A project is already loaded
+        if (projectManager.activeProject.get() != null) {
+            newProject(projectManager.activeProject.get())
+        }
+
+        projectManager.activeProject.addListener { _, _, project ->
+            if (project == null) { // No active project
+                clearProject()
             } else {  // A project has been loaded / created
-                debug("New project")
-                val projectRoot = TabPane()
-                projectRoot.isFocusTraversable = true
-                val sheetToTab = HashMap<Sheet, SheetTab>()
-                projectRoot.tabs.add(addMoreTab)
-                root.center = projectRoot
-                // Enable toolbar
-                root.right.isVisible = true
-                root.left.isVisible = true
-                root.bottom.isVisible = true
-                stage.title = "${translate("stage.title")} - ${newProject.name}"
-
-                projectRoot.selectionModel.selectedItemProperty().addListener { _, oldTab, newTab ->
-                    if (newTab is SheetTab) {
-                        currentTab.set(newTab)
-                    }
-                    if (newTab == addMoreTab) {
-                        if (projectRoot.tabs.size == 1) {
-                            // Only this tab exist anymore, so the project can be closed
-                            projectManager.closeProject()
-                        } else {
-                            // Select first the old tab, so there is a selection even when the dialog is closed
-                            projectRoot.selectionModel.select(oldTab)
-                            TextInputDialog(translate("dialog.sheet_name")).showDialog()?.let {
-                                // Create a new sheet with the name from the dialog
-                                newProject.newSheet(it)
-                            }
-                        }
-                    }
-                }
-
-                val addSheet: (Sheet) -> Unit = {
-                    val tab = SheetTab(newProject, it)
-                    projectRoot.tabs.add(projectRoot.tabs.size - 1, tab)
-                    projectRoot.selectionModel.select(tab)
-                    sheetToTab[it] = tab
-                }
-
-                // Add tab for each sheet that already exists
-                newProject.sheets.forEach(addSheet)
-
-                newProject.sheets.addListener { change: ListChangeListener.Change<out Sheet> ->
-                    while (change.next()) {
-                        change.removed.forEach {
-                            // Remove tab when sheet is delete
-                            projectRoot.tabs.remove(sheetToTab[it])
-                            sheetToTab.remove(it)
-                            ApplicationContext.get().connectionHandler.removeSheet(it)
-                        }
-                        change.addedSubList.forEach(addSheet)
-                    }
-                }
+                newProject(project)
             }
         }
 
@@ -167,38 +186,8 @@ class XControlPlus : Application() {
         stage.minWidth = 800.0
         stage.minHeight = 600.0
 
-        // Save latest window position and size
-        with(ApplicationContext.get().applicationSettings)
-        {
-            stage.isMaximized = this[ApplicationSettings.START_MAXIMIZED]
-            stage.x = this[ApplicationSettings.WINDOW_X].toDouble()
-            stage.y = this[ApplicationSettings.WINDOW_Y].toDouble()
-            stage.width = this[ApplicationSettings.WINDOW_WIDTH].toDouble()
-            stage.height = this[ApplicationSettings.WINDOW_HEIGHT].toDouble()
 
-            stage.maximizedProperty().addListener { _, _, newValue -> this[ApplicationSettings.START_MAXIMIZED] = newValue }
-            stage.xProperty().addListener { _, _, newValue ->
-                if (!stage.isMaximized) {
-                    this[ApplicationSettings.WINDOW_X] = newValue.toDouble()
-                }
-            }
-            stage.yProperty().addListener { _, _, newValue ->
-                if (!stage.isMaximized) {
-                    this[ApplicationSettings.WINDOW_Y] = newValue.toDouble()
-                }
-            }
-            stage.widthProperty().addListener { _, _, newValue ->
-                if (!stage.isMaximized) {
-                    this[ApplicationSettings.WINDOW_WIDTH] = newValue.toDouble()
-                }
-            }
-            stage.heightProperty().addListener { _, _, newValue ->
-                if (!stage.isMaximized) {
-                    this[ApplicationSettings.WINDOW_HEIGHT] = newValue.toDouble()
-                }
-            }
-        }
-
+        saveWindowSettings()
 
         // Add "Confirmation before exit" dialog
         stage.setOnCloseRequest { event ->
@@ -218,14 +207,8 @@ class XControlPlus : Application() {
         )
 
         // Show the window
-        stage.title = translate("stage.title")
-
-        // TODO to init(), but currently not possible because the property listeners are added in start()
-        if (ApplicationContext.get().userSettings[UserSettings.OPEN_LATEST_PROJECT]) {
-            projectManager.loadLatestProject()
-        }
-
         stage.show()
+        stage.requestFocus()
         debug("End of start")
     }
 
@@ -374,6 +357,39 @@ class XControlPlus : Application() {
             right.children.add(button)
         }
         return right
+    }
+
+    private fun saveWindowSettings() {
+        val stage = WindowContext.get().primaryStage
+        val settings = ApplicationContext.get().applicationSettings
+        // Save latest window position and size
+        stage.isMaximized = settings[ApplicationSettings.START_MAXIMIZED]
+        stage.x = settings[ApplicationSettings.WINDOW_X].toDouble()
+        stage.y = settings[ApplicationSettings.WINDOW_Y].toDouble()
+        stage.width = settings[ApplicationSettings.WINDOW_WIDTH].toDouble()
+        stage.height = settings[ApplicationSettings.WINDOW_HEIGHT].toDouble()
+
+        stage.maximizedProperty().addListener { _, _, newValue -> settings[ApplicationSettings.START_MAXIMIZED] = newValue }
+        stage.xProperty().addListener { _, _, newValue ->
+            if (!stage.isMaximized) {
+                settings[ApplicationSettings.WINDOW_X] = newValue.toDouble()
+            }
+        }
+        stage.yProperty().addListener { _, _, newValue ->
+            if (!stage.isMaximized) {
+                settings[ApplicationSettings.WINDOW_Y] = newValue.toDouble()
+            }
+        }
+        stage.widthProperty().addListener { _, _, newValue ->
+            if (!stage.isMaximized) {
+                settings[ApplicationSettings.WINDOW_WIDTH] = newValue.toDouble()
+            }
+        }
+        stage.heightProperty().addListener { _, _, newValue ->
+            if (!stage.isMaximized) {
+                settings[ApplicationSettings.WINDOW_HEIGHT] = newValue.toDouble()
+            }
+        }
     }
 
 }
