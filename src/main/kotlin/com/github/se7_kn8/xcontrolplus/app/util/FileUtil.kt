@@ -16,6 +16,7 @@ object FileUtil {
     val PROJECT_FILE = FileChooser.ExtensionFilter("X-Control Plus Project (*.xcpp)", "*.xcpp")
 
     fun readFileToString(path: Path?): String? {
+        debug("Reading content from file $path")
         try {
             if (path != null && Files.exists(path)) {
                 Files.newBufferedReader(path, Charset.forName("UTF-8")).use {
@@ -23,20 +24,19 @@ object FileUtil {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
-            println("Error while loading file")
+            warn(e, "Error while reading file")
         }
         return null
     }
 
     fun writeStringToFile(path: Path?, content: String?) {
+        debug("Write content to file $path")
         if (path != null) {
             try {
                 Files.createDirectories(path.parent)
                 Files.writeString(path, content, Charset.forName("UTF-8"))
             } catch (e: Exception) {
-                e.printStackTrace()
-                println("Error while writing to file")
+                warn(e, "Error while writing to file")
             }
         }
     }

@@ -2,6 +2,7 @@ package com.github.se7_kn8.xcontrolplus.app.settings
 
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
+import com.github.se7_kn8.xcontrolplus.app.util.debug
 import com.google.gson.reflect.TypeToken
 
 class SettingsEntry<T>(val saveName: String, val defaultValue: T)
@@ -23,6 +24,7 @@ abstract class Settings(fileName: String, val entries: List<SettingsEntry<*>>) {
         entries.forEach {
             if (settings[it.saveName] == null) {
                 shouldSave = true
+                debug("Add missing settings entry ${it.saveName} with default value ${it.defaultValue}")
                 settings[it.saveName] = it.defaultValue as Any
             }
         }
@@ -38,6 +40,7 @@ abstract class Settings(fileName: String, val entries: List<SettingsEntry<*>>) {
     }
 
     private fun loadFileIntoMap(): HashMap<String, Any> {
+        debug("Loading settings from $filePath")
         FileUtil.readFileToString(filePath)?.also {
             return ApplicationContext.get().gson.fromJson(it, type)
         }
@@ -45,6 +48,7 @@ abstract class Settings(fileName: String, val entries: List<SettingsEntry<*>>) {
     }
 
     private fun saveMapIntoFile() {
+        debug("Saving settings to $filePath")
         val json = ApplicationContext.get().gson.toJson(settings, type)
         FileUtil.writeStringToFile(filePath, json)
     }

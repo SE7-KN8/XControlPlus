@@ -14,6 +14,7 @@ import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
 import com.github.se7_kn8.xcontrolplus.app.toolbox.Tool
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
+import com.github.se7_kn8.xcontrolplus.app.util.debug
 import com.github.se7_kn8.xcontrolplus.app.util.translate
 import javafx.application.Application
 import javafx.application.Platform
@@ -40,25 +41,31 @@ class XControlPlus : Application() {
     private val currentGridHelper = SimpleObjectProperty<GridHelper>()
 
     override fun init() {
+        debug("Init application")
         ApplicationContext.init()
         ApplicationContext.get().applicationSettings.load()
         ApplicationContext.get().userSettings.load()
+        debug("End of init")
     }
 
     override fun start(stage: Stage) {
+        debug("Start application")
         WindowContext.init(stage)
 
         val toolRenderer = ToolRenderer()
         val shortcuts = GridShortcuts(toolRenderer)
 
         currentTab.addListener { _, _, newValue ->
+            debug("Current tab has changed to: $newValue")
             newValue?.let {
                 currentGridHelper.set(it.sheet.gridHelper)
             }
         }
 
         currentGridHelper.addListener { _, oldValue, newValue ->
+            debug("Current grid helper has changed to $newValue")
             oldValue?.let {
+                debug("Detach from old grid helper ($oldValue)")
                 toolRenderer.detach(oldValue)
                 shortcuts.detach(oldValue)
             }
@@ -91,6 +98,7 @@ class XControlPlus : Application() {
 
         projectManager.activeProject.addListener { _, _, newProject ->
             if (newProject == null) { // No active project
+                debug("Active project has been closed")
                 root.center = createProjectLabel
                 // Disable toolbar
                 root.right.isVisible = false
@@ -98,6 +106,7 @@ class XControlPlus : Application() {
                 root.bottom.isVisible = false
                 stage.title = translate("stage.title")
             } else {  // A project has been loaded / created
+                debug("New project")
                 val projectRoot = TabPane()
                 projectRoot.isFocusTraversable = true
                 val sheetToTab = HashMap<Sheet, SheetTab>()
@@ -217,13 +226,15 @@ class XControlPlus : Application() {
         }
 
         stage.show()
+        debug("End of start")
     }
 
     override fun stop() {
-        super.stop()
+        debug { "Stop application" }
         ApplicationContext.get().connectionHandler.closeConnection()
         ApplicationContext.get().applicationSettings.save()
         ApplicationContext.get().userSettings.save()
+        debug("End of stop")
     }
 
     private fun getTopNode(): Node {

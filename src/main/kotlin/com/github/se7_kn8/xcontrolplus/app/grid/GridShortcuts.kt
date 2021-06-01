@@ -6,6 +6,7 @@ import com.github.se7_kn8.xcontrolplus.app.action.EditSelectedCellParameterActio
 import com.github.se7_kn8.xcontrolplus.app.action.RotateSelectedCellAction
 import com.github.se7_kn8.xcontrolplus.app.toolbox.Tool
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
+import com.github.se7_kn8.xcontrolplus.app.util.debug
 import com.github.se7_kn8.xcontrolplus.gridview.RotationDirection
 import javafx.scene.input.KeyCode
 
@@ -44,7 +45,7 @@ class GridShortcuts(private val toolRenderer: ToolRenderer) {
                     }
                 }
                 else -> {
-                    println("Unknown key pressed: ${it.code.name}")
+                    debug("Unknown key pressed: ${it.code.name}")
                 }
             }
         }

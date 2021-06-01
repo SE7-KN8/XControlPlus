@@ -3,6 +3,7 @@ package com.github.se7_kn8.xcontrolplus.app.project
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.ConfirmationDialog
 import com.github.se7_kn8.xcontrolplus.app.dialog.TextInputDialog
+import com.github.se7_kn8.xcontrolplus.app.util.debug
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
 import javafx.scene.control.Tab
@@ -31,6 +32,7 @@ class SheetTab(project: Project, val sheet: Sheet) : Tab(sheet.name.get()) {
         }
         setOnCloseRequest { closeEvent ->
             if (ConfirmationDialog("Delete this sheet?").showDialog()) {
+                debug("Removing ${sheet.name.value} from project ${project.name}")
                 project.sheets.remove(sheet)
             } else {
                 closeEvent.consume()
@@ -41,6 +43,7 @@ class SheetTab(project: Project, val sheet: Sheet) : Tab(sheet.name.get()) {
             MenuItem("Rename").apply {
                 setOnAction {
                     TextInputDialog("New name?", sheet.name.get()).showDialog()?.let {
+                        debug("Renaming sheet ${sheet.name.value} to $it")
                         sheet.name.set(it)
                     }
                 }

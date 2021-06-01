@@ -2,6 +2,7 @@ package com.github.se7_kn8.xcontrolplus.app.toolbox
 
 import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
+import com.github.se7_kn8.xcontrolplus.app.util.trace
 import javafx.beans.property.SimpleObjectProperty
 
 class ToolRenderer {
@@ -28,6 +29,7 @@ class ToolRenderer {
 
         gridHelper.gridView.setClickCallback { event, drag ->
             gridHelper.contextMenu.hide()
+            trace { "Click-Event to tool ${currentTool.get().name}" }
             if (drag && currentTool.value.allowDrag) {
                 currentTool.value.onClick(event, gridHelper)
             } else if (!drag) {

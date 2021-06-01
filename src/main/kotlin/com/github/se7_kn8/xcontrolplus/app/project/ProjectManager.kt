@@ -4,6 +4,8 @@ import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
+import com.github.se7_kn8.xcontrolplus.app.util.debug
+import com.github.se7_kn8.xcontrolplus.app.util.warn
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.beans.property.SimpleObjectProperty
 import java.io.FileOutputStream
@@ -19,9 +21,7 @@ enum class SaveVersion {
     VERSION_1_0
 }
 
-class ProjectMetadata {
-    val version = SaveVersion.VERSION_1_0
-}
+data class ProjectMetadata(val version: SaveVersion = SaveVersion.VERSION_1_0)
 
 class ProjectManager {
     val metadataFileName = "metadata.json"
@@ -42,13 +42,17 @@ class ProjectManager {
     }
 
     private fun loadProject(path: String) {
+        debug("Trying to load project from $path")
         ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_PROJECT_PATH] = path
         ZipFile(path).use { file ->
             val entries = file.entries().toList().sortedBy { it.name }.associateBy { it.name }.toMutableMap()
+            debug("Found entries $entries")
             val metadataEntry = entries[metadataFileName] ?: throw IllegalStateException("Project file is invalid")
             InputStreamReader(file.getInputStream(metadataEntry), Charsets.UTF_8).use { metadataReader ->
                 val metadata = ApplicationContext.get().gson.fromJson(metadataReader, ProjectMetadata::class.java)
+                debug("Found metadata $metadata")
                 if (metadata.version != ProjectMetadata().version) {
+                    warn("Incompatible save version")
                     throw IllegalStateException("Unsupported save version")
                 }
                 val project = Project(path)
@@ -56,6 +60,7 @@ class ProjectManager {
                 for (entry in entries.values) {
                     InputStreamReader(file.getInputStream(entry), Charsets.UTF_8).use { sheetReader ->
                         val sheet = Sheet.load(sheetReader.readText())
+                        debug("Loaded sheet ${sheet.name.value} from ${project.name}")
                         project.sheets.add(sheet)
                     }
                 }
@@ -68,6 +73,7 @@ class ProjectManager {
         activeProject.get()?.let { project ->
             val charset = Charset.forName("UTF-8")
             FileUtil.saveFileChooser(FileUtil.PROJECT_FILE) { path ->
+                debug("Trying to save active project to $path")
                 ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_PROJECT_PATH] = path.toString()
                 ZipOutputStream(FileOutputStream(path.toFile())).use { zip ->
                     val metadataEntry = ZipEntry(metadataFileName)
@@ -77,7 +83,9 @@ class ProjectManager {
                     zip.closeEntry()
                     var counter = 1
                     for (sheet in project.sheets) {
-                        val sheetEntry = ZipEntry("sheet-$counter.json")
+                        val entryName = "sheet-$counter.json"
+                        val sheetEntry = ZipEntry(entryName)
+                        debug("Writing entry $entryName to $path")
                         zip.putNextEntry(sheetEntry)
                         val sheetBytes = sheet.save().toByteArray(charset)
                         zip.write(sheetBytes, 0, sheetBytes.size)
@@ -90,11 +98,13 @@ class ProjectManager {
     }
 
     fun newProject() {
+        debug("Creating new project")
         activeProject.set(Project("Unsaved Project"))
         activeProject.get().sheets.add(Sheet("Sheet 1", GridView<BaseCell>()))
     }
 
     fun closeProject() {
+        debug("Closing project")
         activeProject.set(null)
         ApplicationContext.get().connectionHandler.clear()
     }
