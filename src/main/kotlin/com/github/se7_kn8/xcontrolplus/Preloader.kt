@@ -6,7 +6,9 @@ import javafx.application.Preloader
 import javafx.scene.Scene
 import javafx.scene.image.ImageView
 import javafx.scene.layout.StackPane
+import javafx.scene.paint.Color
 import javafx.stage.Stage
+import javafx.stage.StageStyle
 
 class Preloader : Preloader() {
 
@@ -15,10 +17,16 @@ class Preloader : Preloader() {
     override fun start(splashStage: Stage) {
 
         val root = StackPane()
-        root.children.add(ImageView(FileUtil.getImage("logo/splash.png")))
+        root.style = "-fx-background-color: #00000000"
+        val imageView = ImageView(FileUtil.getImage("logo/splash.png"))
+        root.children.add(imageView)
 
         stage = splashStage
-        stage.scene = Scene(root, 768.0, 357.0)
+        stage.initStyle(StageStyle.TRANSPARENT)
+        stage.scene = Scene(root, 600.0, 330.0)
+        imageView.fitWidthProperty().bind(stage.scene.widthProperty())
+        imageView.fitHeightProperty().bind(stage.scene.heightProperty())
+        stage.scene.fill = Color.TRANSPARENT
         stage.show()
     }
 
