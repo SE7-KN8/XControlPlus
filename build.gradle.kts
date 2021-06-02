@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.ByteArrayOutputStream
+import java.util.*
 
 plugins {
     kotlin("jvm") version "1.5.10"
@@ -54,4 +56,29 @@ subprojects {
     repositories {
         mavenCentral()
     }
+}
+
+tasks.register("createBuildMetadata") {
+    doLast {
+        File("$buildDir/resources/main/build.properties").writer().use {
+            val properties = Properties()
+            properties["name"] = project.name
+            properties["version"] = project.version.toString()
+            properties["timestamp"] = Date().toString()
+            properties["commit"] = getCurrentCommitHash()
+
+            properties.store(it, "Build properties")
+        }
+    }
+}
+
+tasks["classes"].dependsOn("createBuildMetadata")
+
+fun getCurrentCommitHash(): String {
+    val output = ByteArrayOutputStream()
+    exec {
+        commandLine("git", "rev-parse", "--short", "HEAD")
+        standardOutput = output
+    }
+    return output.toString().trim()
 }

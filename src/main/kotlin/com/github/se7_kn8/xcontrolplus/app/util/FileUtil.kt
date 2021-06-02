@@ -81,9 +81,13 @@ object FileUtil {
         }
     }
 
-    fun getAsset(path: String) = FileUtil::class.java.getResource("/assets/$path")
+    fun getResource(path: String) = FileUtil::class.java.getResource("/$path")
 
-    fun getAssetAsStream(path: String) = FileUtil::class.java.getResourceAsStream("/assets/$path")
+    fun getResourceAsStream(path: String) = FileUtil::class.java.getResourceAsStream("/$path")
+
+    fun getAsset(path: String) = getResource("assets/$path")
+
+    fun getAssetAsStream(path: String) = getResourceAsStream("assets/$path")
 
     fun getImage(path: String) = Image(getAssetAsStream(path))
 

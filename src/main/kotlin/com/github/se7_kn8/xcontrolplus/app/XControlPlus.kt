@@ -2,6 +2,7 @@ package com.github.se7_kn8.xcontrolplus.app
 
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
+import com.github.se7_kn8.xcontrolplus.app.dialog.AboutDialog
 import com.github.se7_kn8.xcontrolplus.app.dialog.ExitConfirmationDialog
 import com.github.se7_kn8.xcontrolplus.app.dialog.SettingsDialog
 import com.github.se7_kn8.xcontrolplus.app.dialog.TextInputDialog
@@ -228,7 +229,8 @@ class XControlPlus : Application() {
         // Setup top node, which is the menu bar
         val top = VBox()
         val fileMenu = Menu(translate("menu.file"))
-        val menuBar = MenuBar(fileMenu)
+        val helpMenu = Menu(translate("menu.help"))
+        val menuBar = MenuBar(fileMenu, helpMenu)
         top.children.addAll(menuBar)
 
         // Setup menu items
@@ -248,6 +250,11 @@ class XControlPlus : Application() {
                 }
             }
         )
+
+        helpMenu.items.addAll(
+            MenuItem(translate("menu.help.about")).apply { setOnAction { AboutDialog().showDialog() } }
+        )
+
         return top
     }
 
