@@ -20,6 +20,7 @@ class SettingsDialog : Dialog<ButtonType>(), AppDialog<Unit> {
     init {
         initOwner(WindowContext.get().primaryStage)
         headerText = translate("dialog.settings")
+        title = translate("dialog.settings")
 
         var rowCounter = 0
 

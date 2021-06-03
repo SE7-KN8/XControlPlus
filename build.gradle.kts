@@ -22,6 +22,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.6")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.6")
     implementation("org.slf4j:slf4j-jdk14:1.7.30")
+    implementation("org.jfxtras:jmetro:11.6.15")
 }
 
 javafx {

@@ -17,7 +17,6 @@ class Preloader : Preloader() {
     override fun start(splashStage: Stage) {
 
         val root = StackPane()
-        root.style = "-fx-background-color: #00000000"
         val imageView = ImageView(FileUtil.getImage("logo/splash.png"))
         root.children.add(imageView)
 
@@ -27,6 +26,7 @@ class Preloader : Preloader() {
         imageView.fitWidthProperty().bind(stage.scene.widthProperty())
         imageView.fitHeightProperty().bind(stage.scene.heightProperty())
         stage.scene.fill = Color.TRANSPARENT
+        stage.scene.stylesheets.add(FileUtil.getAsset("style/transparent.css")?.toExternalForm())
         stage.show()
     }
 

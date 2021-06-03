@@ -13,6 +13,8 @@ module xcontrolplus {
 
 	requires kotlin.logging.jvm;
 
+	requires org.jfxtras.styles.jmetro;
+
 	// Required for javafx to start and logging
 	exports com.github.se7_kn8.xcontrolplus to javafx.graphics, java.logging;
 	exports com.github.se7_kn8.xcontrolplus.app to javafx.graphics;

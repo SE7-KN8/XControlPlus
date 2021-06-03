@@ -16,6 +16,7 @@ import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
 import com.github.se7_kn8.xcontrolplus.app.toolbox.Tool
 import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
+import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
 import com.github.se7_kn8.xcontrolplus.app.util.debug
 import com.github.se7_kn8.xcontrolplus.app.util.translate
 import javafx.application.Application
@@ -34,6 +35,8 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
+import jfxtras.styles.jmetro.JMetro
+import jfxtras.styles.jmetro.Style
 
 class XControlPlus : Application() {
 
@@ -191,6 +194,8 @@ class XControlPlus : Application() {
         stage.minHeight = 600.0
         stage.isIconified = false
 
+        JMetro(Style.LIGHT).scene = scene
+        scene.stylesheets.add(FileUtil.getAsset("style/base.css")?.toExternalForm())
 
         saveWindowSettings()
 
