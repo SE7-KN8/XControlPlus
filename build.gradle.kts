@@ -48,7 +48,12 @@ tasks.withType<KotlinCompile> {
 jlink {
     options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
     launcher {
-        name = "XControlPlus"
+        name = "XControl Plus"
+    }
+    jpackage {
+        imageName = "XControlPlus"
+        installerOptions = listOf("--win-menu", "--win-shortcut", "--win-upgrade-uuid", "00570e5a-6922-4ebe-a474-2556b0d99b9e", "--win-dir-chooser")
+        icon = "$projectDir/src/main/resources/assets/logo/large.ico"
     }
 }
 
