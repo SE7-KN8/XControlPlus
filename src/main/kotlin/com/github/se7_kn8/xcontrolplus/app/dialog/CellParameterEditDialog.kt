@@ -47,7 +47,7 @@ class CellParameterEditDialog(private val cell: BaseCell) : Alert(AlertType.NONE
                     Label(translate("dialog.parameter.unknown"))
                 }
             }
-            root.add(Label(translate("parameter." + parameter.key.toLowerCase())), 0, pos)
+            root.add(Label(translate("parameter." + parameter.key.lowercase())), 0, pos)
             root.add(node, 1, pos)
             pos += 1
         }

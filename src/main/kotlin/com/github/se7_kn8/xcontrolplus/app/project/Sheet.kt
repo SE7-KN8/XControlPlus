@@ -40,6 +40,8 @@ class Sheet(name: String, gridView: GridView<BaseCell>) {
                 scale = wrapper.grid_scale
                 translationX = wrapper.grid_translation_x
                 translationY = wrapper.grid_translation_y
+                // Stop rendering in background
+                renderer.stop()
             })
             sheet.gridHelper.addCells(wrapper.cells)
             return sheet
