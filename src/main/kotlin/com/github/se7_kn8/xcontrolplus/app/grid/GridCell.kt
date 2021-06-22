@@ -190,6 +190,7 @@ class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutTy
     var turned = false
     val id = SimpleIntegerProperty(0)
 
+    @Transient
     val onPacket = Consumer<Boolean> {
         turned = it
     }
