@@ -27,8 +27,8 @@ class TurnoutPacket(val turnoutId: Int, val state: Int) : Packet() {
 
             val address = packet.turnoutId - 1// Since turnout ids are internal 0 based
             // This is okay because addresses are unsigned and only have a range from 0 to 1023
-            data[0] = (address and 0xff).toByte() // Low address byte
-            data[1] = ((address shr 8) and 0xff).toByte() // High address byte
+            data[0] = ((address shr 8) and 0xff).toByte() // High address byte
+            data[1] = (address and 0xff).toByte() // Low address byte
             data[2] = packet.state.toByte()
             return data
         }
@@ -38,9 +38,7 @@ class TurnoutPacket(val turnoutId: Int, val state: Int) : Packet() {
                 throw IllegalStateException("Invalid data length")
             }
             val state = data[2].toInt()
-            var address = 0
-            address = address.or(data[0].toInt()) // Add low byte
-            address = address.or(data[1].toInt() shl 8) // Add high byte
+            val address: Int = (data[0].toInt() shl 8).or(data[1].toInt())
             return TurnoutPacket(address, state)
         }
 
