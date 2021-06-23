@@ -117,6 +117,7 @@ class XControlPlus : Application() {
         }
 
         val newProject: (Project) -> Unit = { newProject ->
+            newProject.init()
             debug("New project")
             val projectRoot = TabPane()
             projectRoot.isFocusTraversable = true

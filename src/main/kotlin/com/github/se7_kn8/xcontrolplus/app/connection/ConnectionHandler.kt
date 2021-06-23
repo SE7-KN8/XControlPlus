@@ -53,7 +53,7 @@ class ConnectionHandler : Consumer<Packet> {
     }
 
     fun removeSheet(sheet: Sheet) {
-        sheet.gridHelper.getCells().filterIsInstance<TurnoutGridCell>().forEach { removeTurnout(it.id.get(), it.onPacket) }
+        sheet.gridHelper.getCells().filterIsInstance<TurnoutGridCell>().forEach { removeTurnout(it.id.get(), it) }
     }
 
     fun clear() {
@@ -65,7 +65,7 @@ class ConnectionHandler : Consumer<Packet> {
         debug("New packet: $packet")
         when (packet) {
             is TurnoutPacket -> {
-                Platform.runLater { turnoutMap[packet.turnoutId]?.forEach { it.accept(packet.isTurned()) } }
+                Platform.runLater { turnoutMap[packet.address]?.forEach { it.accept(packet.isTurned()) } }
             }
         }
     }

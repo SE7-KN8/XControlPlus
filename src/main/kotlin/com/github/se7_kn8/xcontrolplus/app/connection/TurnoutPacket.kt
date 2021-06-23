@@ -7,7 +7,7 @@ import com.github.se7_kn8.xcontrolplus.protocol.packet.PacketFactory
 // Structure:
 // LEN ID ADDR_HIGH ADDR_LOW STATE
 // For request use STATE == 100
-class TurnoutPacket(val turnoutId: Int, val state: Int) : Packet() {
+class TurnoutPacket(val address: Int, val state: Int) : Packet() {
 
     companion object {
         fun newRequest(id: Int) = TurnoutPacket(id, 100)
@@ -19,13 +19,17 @@ class TurnoutPacket(val turnoutId: Int, val state: Int) : Packet() {
 
     fun isTurned() = state == 1 // XNET_TURNOUT_TURNED
 
+    override fun toString(): String {
+        return "TurnoutPacket(address=$address, state=$state)"
+    }
+
     class TurnoutPacketFactory : PacketFactory<TurnoutPacket> {
 
 
         override fun toData(packet: TurnoutPacket): ByteArray {
             val data = ByteArray(3)
 
-            val address = packet.turnoutId - 1// Since turnout ids are internal 0 based
+            val address = packet.address - 1// Since turnout ids are internal 0 based
             // This is okay because addresses are unsigned and only have a range from 0 to 1023
             data[0] = ((address shr 8) and 0xff).toByte() // High address byte
             data[1] = (address and 0xff).toByte() // Low address byte
@@ -38,20 +42,8 @@ class TurnoutPacket(val turnoutId: Int, val state: Int) : Packet() {
                 throw IllegalStateException("Invalid data length")
             }
             val state = data[2].toInt()
-            val address: Int = (data[0].toInt() shl 8).or(data[1].toInt())
+            val address: Int = ((data[0].toInt() shl 8).or(data[1].toInt())) + 1 // Same as above
             return TurnoutPacket(address, state)
         }
-
-        /*override fun toData(packet: TurnoutPacket): HashMap<String, String> {
-            val data = HashMap<String, String>()
-            data["id"] = packet.turnoutId.toString()
-            data["turned"] = packet.turned.toString()
-
-            return data
-        }
-
-        override fun fromData(data: HashMap<String, String>): TurnoutPacket {
-            return TurnoutPacket(data.getOrDefault("id", "0").toInt(), data.getOrDefault("turned", "false").toBoolean())
-        }*/
     }
 }

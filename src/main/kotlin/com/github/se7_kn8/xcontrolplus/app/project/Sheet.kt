@@ -3,6 +3,7 @@ package com.github.se7_kn8.xcontrolplus.app.project
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
+import com.github.se7_kn8.xcontrolplus.app.grid.TurnoutGridCell
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.beans.property.SimpleStringProperty
 
@@ -30,6 +31,12 @@ class Sheet(name: String, gridView: GridView<BaseCell>) {
                 data
             )
         )
+    }
+
+    fun init() {
+        gridHelper.getCells().filterIsInstance(TurnoutGridCell::class.java).forEach {
+            it.init()
+        }
     }
 
     companion object {

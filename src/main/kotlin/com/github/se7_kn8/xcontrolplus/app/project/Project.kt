@@ -16,4 +16,8 @@ class Project(var name: String) {
         sheets.add(Sheet(name, GridView<BaseCell>()))
     }
 
+    fun init() {
+        sheets.forEach(Sheet::init)
+    }
+
 }

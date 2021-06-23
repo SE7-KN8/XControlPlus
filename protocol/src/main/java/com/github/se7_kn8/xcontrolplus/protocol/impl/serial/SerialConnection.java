@@ -140,13 +140,13 @@ public class SerialConnection implements Connection {
 					byte[] buffer = new byte[event.getSerialPort().bytesAvailable()];
 					event.getSerialPort().readBytes(buffer, buffer.length);
 
-					for (int i = 0; i < buffer.length; i++) {
+					for (byte b : buffer) {
 						if (bytesToRead == -1) {
 							readBuffer.clear();
-							bytesToRead = Byte.toUnsignedInt(buffer[i]) -1;// One byte was already read
-							readBuffer.add(buffer[i]);
+							bytesToRead = Byte.toUnsignedInt(b) - 1;// One byte was already read
+							readBuffer.add(b);
 						} else if (bytesToRead >= 1) {
-							readBuffer.add(buffer[i]);
+							readBuffer.add(b);
 							bytesToRead--;
 							if (bytesToRead == 0) { // Finish packet
 								byte[] packetData = new byte[readBuffer.size()];

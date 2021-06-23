@@ -3,6 +3,7 @@ package com.github.se7_kn8.xcontrolplus.app.action
 import com.github.se7_kn8.xcontrolplus.app.dialog.CellParameterEditDialog
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
+import com.github.se7_kn8.xcontrolplus.app.grid.TurnoutGridCell
 import com.github.se7_kn8.xcontrolplus.gridview.RotationDirection
 
 interface Action {
@@ -60,6 +61,9 @@ class AddCellAction(private val cell: BaseCell) : Action {
 
     override fun doAction(helper: GridHelper) {
         helper.addCell(cell)
+        if (cell is TurnoutGridCell) {
+            cell.init()
+        }
     }
 
     override fun undoAction(helper: GridHelper) {

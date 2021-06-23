@@ -186,20 +186,28 @@ enum class TurnoutType {
     abstract fun getRenderer(): GridCellRenderer
 }
 
-class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutType) : BaseCell(gridHelper) {
+class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutType) : BaseCell(gridHelper), Consumer<Boolean> {
     var turned = false
     val id = SimpleIntegerProperty(0)
 
-    @Transient
-    val onPacket = Consumer<Boolean> {
-        turned = it
+    override fun accept(t: Boolean) {
+        turned = t
     }
 
     init {
-        ApplicationContext.get().connectionHandler.addTurnout(id.get(), onPacket)
+        /*ApplicationContext.get().connectionHandler.addTurnout(id.get(), onPacket)
         id.addListener { _, oldValue, newValue ->
             ApplicationContext.get().connectionHandler.removeTurnout(oldValue.toInt(), onPacket)
             ApplicationContext.get().connectionHandler.addTurnout(newValue.toInt(), onPacket)
+        }*/
+    }
+
+    fun init() {
+        val connectionHandler = ApplicationContext.get().connectionHandler
+        connectionHandler.addTurnout(id.get(), this)
+        id.addListener { _, oldValue, newValue ->
+            connectionHandler.removeTurnout(oldValue.toInt(), this)
+            connectionHandler.addTurnout(newValue.toInt(), this)
         }
     }
 
