@@ -1,5 +1,6 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
+import com.github.se7_kn8.xcontrolplus.app.connection.TurnoutPacket
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
 import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
@@ -216,7 +217,7 @@ class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutTy
     override fun getContextOptions(): List<MenuItem> {
         val item = MenuItem("Turn")
         item.setOnAction {
-            this.turned = !this.turned
+            ApplicationContext.get().connectionHandler.sendPacket(TurnoutPacket.newOperation(id.get(), !turned))
         }
         return listOf(item)
     }

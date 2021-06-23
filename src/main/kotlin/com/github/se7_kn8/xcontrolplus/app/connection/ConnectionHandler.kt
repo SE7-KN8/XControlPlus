@@ -62,12 +62,17 @@ class ConnectionHandler : Consumer<Packet> {
     }
 
     override fun accept(packet: Packet) {
-        debug("New packet: $packet")
+        debug("Received packet: $packet")
         when (packet) {
             is TurnoutPacket -> {
                 Platform.runLater { turnoutMap[packet.address]?.forEach { it.accept(packet.isTurned()) } }
             }
         }
+    }
+
+    fun sendPacket(packet: Packet) {
+        debug("Try to send packet: $packet")
+        connection.get()?.sendPacket(packet)
     }
 
 

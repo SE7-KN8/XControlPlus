@@ -23,10 +23,28 @@ uint8_t readBuffer[10];
 void parsePacket(const uint8_t data[]) {
     uint8_t length = data[0];
     switch (data[1]) {
-        case 0x0: {
+        case 0x0: { // Echo packet
             if (length == 3) {
                 uint8_t echo[] = {3, 0, data[2]};
                 output.write(echo, 3);
+            }
+            break;
+        }
+        case 0x0A: { // Turnout packet
+            if (length == 5) {
+                uint16_t address = (data[2] << 8) | data[3];
+                uint8_t state = data[4];
+                if (state == XNET_TURNOUT_UNKNOWN) { // Request
+                    XpressNet.requestTurnoutStatus(address);
+                } else if (state == XNET_TURNOUT_STRAIGHT) {
+                    XpressNet.requestTurnoutOperation(address, XNET_TURNOUT_ACTIVATE_2);
+                    delay(100);
+                    XpressNet.requestTurnoutOperation(address, XNET_TURNOUT_DEACTIVATE_2);
+                } else if (state == XNET_TURNOUT_TURNED) {
+                    XpressNet.requestTurnoutOperation(address, XNET_TURNOUT_ACTIVATE_1);
+                    delay(100);
+                    XpressNet.requestTurnoutOperation(address, XNET_TURNOUT_DEACTIVATE_1);
+                }
             }
             break;
         }

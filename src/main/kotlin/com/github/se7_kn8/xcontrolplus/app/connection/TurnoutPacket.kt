@@ -10,7 +10,8 @@ import com.github.se7_kn8.xcontrolplus.protocol.packet.PacketFactory
 class TurnoutPacket(val address: Int, val state: Int) : Packet() {
 
     companion object {
-        fun newRequest(id: Int) = TurnoutPacket(id, 100)
+        fun newRequest(address: Int) = TurnoutPacket(address, 0) // XNET_TURNOUT_UNKNOWN
+        fun newOperation(address: Int, turn: Boolean) = TurnoutPacket(address, if (turn) 1 else 2)  // XNET_TURNOUT_TURNED and XNET_TURNOUT_STRAIGHT
     }
 
     override fun getId(): Int {
