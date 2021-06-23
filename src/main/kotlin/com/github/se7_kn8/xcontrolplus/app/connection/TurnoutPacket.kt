@@ -26,7 +26,7 @@ class TurnoutPacket(val turnoutId: Int, val state: Int) : Packet() {
             val data = ByteArray(3)
 
             val address = packet.turnoutId - 1// Since turnout ids are internal 0 based
-            // This is okay because addresses are unsiged and only have a range from 0 to 1023
+            // This is okay because addresses are unsigned and only have a range from 0 to 1023
             data[0] = (address and 0xff).toByte() // Low address byte
             data[1] = ((address shr 8) and 0xff).toByte() // High address byte
             data[2] = packet.state.toByte()
