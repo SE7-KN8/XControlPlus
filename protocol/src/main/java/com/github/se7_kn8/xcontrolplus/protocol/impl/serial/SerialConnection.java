@@ -10,8 +10,7 @@ import com.github.se7_kn8.xcontrolplus.protocol.packet.Packet;
 import com.github.se7_kn8.xcontrolplus.protocol.packet.PacketFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
@@ -62,9 +61,9 @@ public class SerialConnection implements Connection {
 		public void run() {
 			while (!Thread.currentThread().isInterrupted()) {
 				try {
-					String toParse = packetsToParse.take();
+					byte[] packetData = packetsToParse.take();
 					try {
-						packetConsumer.accept(parsePacket(toParse));
+						packetConsumer.accept(parsePacket(packetData));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -97,7 +96,7 @@ public class SerialConnection implements Connection {
 	public static final int BAUDRATE = 19200;
 	private final SerialPort port;
 	private boolean active = false;
-	private final BlockingQueue<String> packetsToParse = new LinkedBlockingQueue<>();
+	private final BlockingQueue<byte[]> packetsToParse = new LinkedBlockingQueue<>();
 	private final BlockingQueue<Packet> packetsToSend = new LinkedBlockingQueue<>();
 	private Thread parserThread;
 	private Thread senderThread;
@@ -127,7 +126,8 @@ public class SerialConnection implements Connection {
 		senderThread.start();
 		port.addDataListener(new SerialPortDataListener() {
 
-			private StringBuilder builder = new StringBuilder();
+			private int bytesToRead = -1;// -1 equals not in packet
+			private ArrayList<Byte> readBuffer = new ArrayList<>();
 
 			@Override
 			public int getListeningEvents() {
@@ -137,22 +137,28 @@ public class SerialConnection implements Connection {
 			@Override
 			public void serialEvent(SerialPortEvent event) {
 				try {
-
 					byte[] buffer = new byte[event.getSerialPort().bytesAvailable()];
 					event.getSerialPort().readBytes(buffer, buffer.length);
-					String readString = new String(buffer, StandardCharsets.US_ASCII);
-					String[] parts = readString.split("\n");
-					for (String part : parts) {
-						if (part.startsWith("$")) {
-							// New paket start
-							builder = new StringBuilder();
-						}
-						builder.append(part);
-						// Paket ends
-						if (part.endsWith("\r")) {
-							packetsToParse.put(builder.toString());
+
+					for (int i = 0; i < buffer.length; i++) {
+						if (bytesToRead == -1) {
+							readBuffer.clear();
+							bytesToRead = Byte.toUnsignedInt(buffer[i]) -1;// One byte was already read
+							readBuffer.add(buffer[i]);
+						} else if (bytesToRead >= 1) {
+							readBuffer.add(buffer[i]);
+							bytesToRead--;
+							if (bytesToRead == 0) { // Finish packet
+								byte[] packetData = new byte[readBuffer.size()];
+								for (int j = 0; j < readBuffer.size(); j++) {
+									packetData[j] = readBuffer.get(j);
+								}
+								packetsToParse.put(packetData);
+								bytesToRead = -1;
+							}
 						}
 					}
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -204,40 +210,37 @@ public class SerialConnection implements Connection {
 	}
 
 	private synchronized <T extends Packet> void sendPacketBlocking(T packet) {
-		HashMap<String, String> data = DefaultPacketFactory.INSTANCE.<T>getFactoryById(packet.getId()).toData(packet);
-		StringBuilder sb = new StringBuilder();
-		sb.append("$;");
-		sb.append(packet.getId());
-		sb.append(";");
-		data.forEach((key, value) -> {
-			sb.append(key);
-			sb.append(":");
-			sb.append(value);
-			sb.append(";");
-		});
-		sb.append("\r\n");
+		byte[] data = DefaultPacketFactory.INSTANCE.<T>getFactoryById(packet.getId()).toData(packet);
+		byte[] bytesToSend = new byte[data.length + 2]; // Add length and id byte
+		if (bytesToSend.length >= 255) {
+			throw new IllegalStateException("Packet is too long");
+		}
+		if (packet.getId() >= 255 || packet.getId() < 0) {
+			throw new IllegalStateException("Illegal packet id");
+		}
+		bytesToSend[0] = (byte) bytesToSend.length;
+		bytesToSend[1] = (byte) packet.getId();
+
+		System.arraycopy(data, 0, bytesToSend, 2, bytesToSend.length - 2);
+
 		if (port.isOpen()) {
-			byte[] bytes = sb.toString().getBytes(StandardCharsets.US_ASCII);
-			port.writeBytes(bytes, bytes.length);
+			port.writeBytes(bytesToSend, bytesToSend.length);
 		} else {
 			throw new IllegalStateException("Serial port " + port.getSystemPortName() + " is closed");
 		}
 	}
 
-	private <T extends Packet> T parsePacket(String packet) {
-		String[] parts = packet.split(";");
-		if (parts[0].equals("$")) {
-			HashMap<String, String> data = new HashMap<>();
-			PacketFactory<T> factory = DefaultPacketFactory.INSTANCE.getFactoryById(Integer.parseInt(parts[1]));
-			for (int i = 2; i < parts.length; i++) {
-				if (parts[i].contains(":")) {
-					String[] keyValue = parts[i].split(":");
-					data.put(keyValue[0], keyValue[1]);
-				}
-			}
-			return factory.fromData(data);
+	@SuppressWarnings("unchecked")
+	private <T extends Packet> T parsePacket(byte[] packet) {
+		if (packet.length <= 1) {
+			throw new IllegalStateException("Error while parsing packet");
 		}
-		throw new IllegalStateException("Error while parsing packet");
+		int length = Byte.toUnsignedInt(packet[0]);
+		int packetId = Byte.toUnsignedInt(packet[1]);
+		byte[] packetData = new byte[length - 2]; // Remove length and id byte
+		System.arraycopy(packet, 2, packetData, 0, length - 2);
+		return ((PacketFactory<T>) DefaultPacketFactory.INSTANCE.getFactoryById(packetId)).fromData(packetData);
+
 	}
 
 	@Override

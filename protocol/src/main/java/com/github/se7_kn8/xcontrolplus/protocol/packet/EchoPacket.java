@@ -1,6 +1,5 @@
 package com.github.se7_kn8.xcontrolplus.protocol.packet;
 
-import java.util.HashMap;
 import java.util.Random;
 
 public class EchoPacket extends Packet {
@@ -9,27 +8,28 @@ public class EchoPacket extends Packet {
 
 	public static class EchoPacketFactory implements PacketFactory<EchoPacket> {
 		@Override
-		public HashMap<String, String> toData(EchoPacket packet) {
-			HashMap<String, String> data = new HashMap<>();
-			data.put("RANDOM", String.valueOf(packet.random));
-			return data;
+		public byte[] toData(EchoPacket packet) {
+			return new byte[]{packet.random};
 		}
 
 		@Override
-		public EchoPacket fromData(HashMap<String, String> data) {
+		public EchoPacket fromData(byte[] data) {
+			if (data.length != 1) {
+				throw new IllegalStateException("Wrong packet length");
+			}
 			EchoPacket packet = new EchoPacket();
-			packet.random = Integer.parseInt(data.get("RANDOM"));
+			packet.random = data[0];
 			return packet;
 		}
 	}
 
-	private int random;
+	private byte random;
 
 	public EchoPacket() {
-		random = new Random().nextInt();
+		random = (byte) new Random().nextInt();
 	}
 
-	public int getRandomNumber() {
+	public byte getRandomNumber() {
 		return random;
 	}
 

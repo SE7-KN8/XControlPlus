@@ -65,7 +65,7 @@ class ConnectionHandler : Consumer<Packet> {
         debug("New packet: $packet")
         when (packet) {
             is TurnoutPacket -> {
-                Platform.runLater { turnoutMap[packet.turnoutId]?.forEach { it.accept(packet.turned) } }
+                Platform.runLater { turnoutMap[packet.turnoutId]?.forEach { it.accept(packet.isTurned()) } }
             }
         }
     }
