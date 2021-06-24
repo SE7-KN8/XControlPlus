@@ -88,7 +88,9 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
                     progressBar.isVisible = false
                     infoLabel.text = translate("dialog.connection.testing_success")
                 } else if (newValue == Worker.State.FAILED || newValue == Worker.State.CANCELLED || (newValue == Worker.State.SUCCEEDED && task.value == false)) {
-                    Alert(Alert.AlertType.ERROR, translate("dialog.connection.testing_error")).showAndWait()
+                    Alert(Alert.AlertType.ERROR, translate("dialog.connection.testing_error")).apply {
+                        initOwner(WindowContext.get().primaryStage)
+                    }.showAndWait()
                     infoLabel.text = translate("dialog.connection.testing_error")
                     okButton.isDisable = true
                     progressBar.isVisible = false
@@ -123,7 +125,8 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
                         testButton.isDisable = true
                     }
                 } else if (newValue == Worker.State.FAILED || newValue == Worker.State.CANCELLED) {
-                    Alert(Alert.AlertType.ERROR, translate("dialog.connection.loading_error")).showAndWait()
+                    Alert(Alert.AlertType.ERROR, translate("dialog.connection.loading_error")).apply { initOwner(WindowContext.get().primaryStage) }
+                        .showAndWait()
                     close()
                 }
             }
