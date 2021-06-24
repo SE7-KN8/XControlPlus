@@ -11,6 +11,8 @@ public interface Connection {
 
 	boolean testConnection(int timeout);
 
+	boolean isOpen();
+
 	void closeConnection();
 
 	void setOnPacketReceived(Consumer<? extends Packet> packetConsumer);

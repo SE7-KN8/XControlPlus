@@ -225,7 +225,7 @@ class XControlPlus : Application() {
 
     override fun stop() {
         debug { "Stop application" }
-        ApplicationContext.get().connectionHandler.closeConnection()
+        ApplicationContext.get().connectionHandler.close()
         ApplicationContext.get().applicationSettings.save()
         ApplicationContext.get().userSettings.save()
         debug("End of stop")
@@ -289,9 +289,12 @@ class XControlPlus : Application() {
         val showGrid = CheckBox()
 
         val connectionInfo = Label()
+        connectionInfo.text = translate("label.no_connected")
         ApplicationContext.get().connectionHandler.connection.addListener { _, _, newValue ->
             if (newValue != null) {
                 connectionInfo.text = translate("label.connected_to", newValue.name)
+            } else {
+                connectionInfo.text = translate("label.no_connected")
             }
         }
 

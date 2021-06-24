@@ -248,4 +248,8 @@ public class SerialConnection implements Connection {
 		return port.getSystemPortName();
 	}
 
+	@Override
+	public boolean isOpen() {
+		return port.isOpen();
+	}
 }
