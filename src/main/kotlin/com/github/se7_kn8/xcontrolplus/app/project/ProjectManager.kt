@@ -5,6 +5,7 @@ import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
 import com.github.se7_kn8.xcontrolplus.app.util.debug
+import com.github.se7_kn8.xcontrolplus.app.util.translate
 import com.github.se7_kn8.xcontrolplus.app.util.warn
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.beans.property.SimpleObjectProperty
@@ -100,7 +101,7 @@ class ProjectManager {
     fun newProject() {
         debug("Creating new project")
         activeProject.set(Project("Unsaved Project"))
-        activeProject.get().sheets.add(Sheet("Sheet 1", GridView<BaseCell>()))
+        activeProject.get().sheets.add(Sheet(translate("label.unnamed"), GridView<BaseCell>()))
     }
 
     fun closeProject() {

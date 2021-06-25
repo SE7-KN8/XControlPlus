@@ -4,6 +4,7 @@ import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.ConfirmationDialog
 import com.github.se7_kn8.xcontrolplus.app.dialog.TextInputDialog
 import com.github.se7_kn8.xcontrolplus.app.util.debug
+import com.github.se7_kn8.xcontrolplus.app.util.translate
 import javafx.application.Platform
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
@@ -35,7 +36,7 @@ class SheetTab(project: Project, val sheet: Sheet) : Tab(sheet.name.get()) {
             renderer.start()
         }
         setOnCloseRequest { closeEvent ->
-            if (ConfirmationDialog("Delete this sheet?").showDialog()) {
+            if (ConfirmationDialog(translate("dialog.delete_sheet")).showDialog()) {
                 debug("Removing ${sheet.name.value} from project ${project.name}")
                 project.sheets.remove(sheet)
             } else {
