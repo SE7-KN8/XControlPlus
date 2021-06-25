@@ -11,6 +11,8 @@ plugins {
 
 group = "com.github.se7_kn8"
 version = "0.0.0"
+// TODO change this for release versions
+val versionInfo = "snapshot"
 
 val currentOs = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem()!!
 val arch = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentArchitecture()!!
@@ -101,6 +103,7 @@ tasks.register("createBuildMetadata") {
             properties["version"] = project.version.toString()
             properties["timestamp"] = Date().toString()
             properties["commit"] = getCurrentCommitHash()
+            properties["versionInfo"] = versionInfo
 
             properties.store(it, "Build properties")
         }

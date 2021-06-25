@@ -4,6 +4,7 @@ import com.github.se7_kn8.xcontrolplus.app.connection.ConnectionHandler
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
+import com.github.se7_kn8.xcontrolplus.app.util.BuildInfo
 import com.github.se7_kn8.xcontrolplus.app.util.Translator
 import com.google.gson.*
 import javafx.beans.property.SimpleBooleanProperty
@@ -75,6 +76,8 @@ class ApplicationContext {
     val translator = Translator()
 
     val executor = Executors.newCachedThreadPool()
+
+    val buildInfo = BuildInfo()
 
     companion object {
 

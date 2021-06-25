@@ -215,6 +215,15 @@ class XControlPlus : Application() {
             Image(javaClass.getResourceAsStream("/assets/logo/small.png"))
         )
 
+        if (ApplicationContext.get().buildInfo.getVersionInfo() == "snapshot") {
+            Platform.runLater {
+                Alert(
+                    Alert.AlertType.WARNING,
+                    translate("dialog.warning_snapshot", ApplicationContext.get().buildInfo.getCommit())
+                ).apply { initOwner(WindowContext.get().primaryStage) }.showAndWait()
+            }
+        }
+
         // Show the window
         stage.show()
         stage.requestFocus()
