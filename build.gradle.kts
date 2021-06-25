@@ -5,12 +5,33 @@ import java.util.*
 plugins {
     kotlin("jvm") version "1.5.10"
     id("application")
-    id("org.openjfx.javafxplugin") version "0.0.10"
+    id("org.javamodularity.moduleplugin") version "1.8.7"
     id("org.beryx.jlink") version "2.23.5"
 }
 
 group = "com.github.se7_kn8"
 version = "0.0.0"
+
+val currentOs = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem()!!
+val arch = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentArchitecture()!!
+
+println("OS: $currentOs")
+println("Arch: $arch")
+
+var platform = when {
+    currentOs.isWindows -> {
+        "win"
+    }
+    currentOs.isLinux -> {
+        "linux"
+    }
+    currentOs.isMacOsX -> {
+        "mac"
+    }
+    else -> {
+        "UNKNOWN_PLATFORM"
+    }
+}
 
 repositories {
     mavenCentral()
@@ -23,13 +44,20 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.6")
     implementation("org.slf4j:slf4j-jdk14:1.7.30")
     implementation("org.jfxtras:jmetro:11.6.15")
-}
 
-javafx {
-    version = "16"
-    modules = listOf("javafx.controls")
-}
 
+    if (arch.isAmd64 || arch.isI386) {
+        implementation("org.openjfx:javafx-base:16:${platform}")
+        implementation("org.openjfx:javafx-controls:16:${platform}")
+        implementation("org.openjfx:javafx-graphics:16:${platform}")
+    } else {
+        println("Excluded javafx runtime dependencies")
+        compileOnly("org.openjfx:javafx-base:16:${platform}")
+        compileOnly("org.openjfx:javafx-controls:16:${platform}")
+        compileOnly("org.openjfx:javafx-graphics:16:${platform}")
+    }
+
+}
 
 java {
     modularity.inferModulePath.set(true)
