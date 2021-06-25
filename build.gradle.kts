@@ -65,6 +65,7 @@ subprojects {
 }
 
 tasks.register("createBuildMetadata") {
+    dependsOn("processResources")
     doLast {
         File("$buildDir/resources/main/build.properties").writer().use {
             val properties = Properties()
