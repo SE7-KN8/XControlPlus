@@ -2,9 +2,7 @@ package com.github.se7_kn8.xcontrolplus.app
 
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
-import com.github.se7_kn8.xcontrolplus.app.dialog.AboutDialog
-import com.github.se7_kn8.xcontrolplus.app.dialog.ExitConfirmationDialog
-import com.github.se7_kn8.xcontrolplus.app.dialog.SettingsDialog
+import com.github.se7_kn8.xcontrolplus.app.dialog.*
 import com.github.se7_kn8.xcontrolplus.app.dialog.TextInputDialog
 import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
 import com.github.se7_kn8.xcontrolplus.app.grid.GridShortcuts
@@ -225,6 +223,7 @@ class XControlPlus : Application() {
 
     override fun stop() {
         debug { "Stop application" }
+        ApplicationContext.get().executor.shutdown()
         ApplicationContext.get().connectionHandler.close()
         ApplicationContext.get().applicationSettings.save()
         ApplicationContext.get().userSettings.save()
@@ -292,6 +291,7 @@ class XControlPlus : Application() {
         connectionInfo.text = translate("label.no_connected")
         ApplicationContext.get().connectionHandler.connection.addListener { _, _, newValue ->
             if (newValue != null) {
+                projectManager.activeProject.get()?.updateTurnoutStates()
                 connectionInfo.text = translate("label.connected_to", newValue.name)
             } else {
                 connectionInfo.text = translate("label.no_connected")
@@ -327,13 +327,26 @@ class XControlPlus : Application() {
 
     private fun getLeftNode(): Node {
         val left = VBox()
-        val chooseConnection = Button(translate("button.choose_connection"))
+        val chooseConnection = Button(translate("button.choose_connection")).apply {
+            maxWidth = Double.MAX_VALUE
+        }
+        val updateTurnouts = Button(translate("button.update_turnouts_manually")).apply {
+            maxWidth = Double.MAX_VALUE
+        }
 
         chooseConnection.setOnAction {
             ApplicationContext.get().connectionHandler.showConnectionSelectDialog()
         }
 
-        left.children.addAll(chooseConnection)
+        updateTurnouts.setOnAction {
+            if (ApplicationContext.get().connectionHandler.hasConnection()) {
+                projectManager.activeProject.get()?.updateTurnoutStates()
+            } else {
+                NoConnectionDialog().showDialog()
+            }
+        }
+
+        left.children.addAll(chooseConnection, updateTurnouts)
         return left
     }
 

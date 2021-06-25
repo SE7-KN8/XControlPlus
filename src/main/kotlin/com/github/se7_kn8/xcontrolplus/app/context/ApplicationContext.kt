@@ -10,6 +10,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import java.lang.reflect.Type
+import java.util.concurrent.Executors
 
 // From: https://stackoverflow.com/a/9550086/10648509
 class AbstractClassAdapter<T : Any> : JsonSerializer<T>, JsonDeserializer<T> {
@@ -72,6 +73,8 @@ class ApplicationContext {
     val connectionHandler = ConnectionHandler()
 
     val translator = Translator()
+
+    val executor = Executors.newCachedThreadPool()
 
     companion object {
 

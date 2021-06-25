@@ -2,6 +2,7 @@ package com.github.se7_kn8.xcontrolplus.app.grid
 
 import com.github.se7_kn8.xcontrolplus.app.connection.TurnoutPacket
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
+import com.github.se7_kn8.xcontrolplus.app.dialog.NoConnectionDialog
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
 import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
 import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell
@@ -195,14 +196,6 @@ class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutTy
         turned = t
     }
 
-    init {
-        /*ApplicationContext.get().connectionHandler.addTurnout(id.get(), onPacket)
-        id.addListener { _, oldValue, newValue ->
-            ApplicationContext.get().connectionHandler.removeTurnout(oldValue.toInt(), onPacket)
-            ApplicationContext.get().connectionHandler.addTurnout(newValue.toInt(), onPacket)
-        }*/
-    }
-
     fun init() {
         val connectionHandler = ApplicationContext.get().connectionHandler
         connectionHandler.addTurnout(id.get(), this)
@@ -212,12 +205,20 @@ class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutTy
         }
     }
 
+    fun update() {
+        ApplicationContext.get().connectionHandler.sendPacket(TurnoutPacket.newRequest(id.get()))
+    }
+
     override fun getRenderer() = turnoutType.getRenderer()
 
     override fun getContextOptions(): List<MenuItem> {
         val item = MenuItem("Turn")
         item.setOnAction {
-            ApplicationContext.get().connectionHandler.sendPacket(TurnoutPacket.newOperation(id.get(), !turned))
+            if (ApplicationContext.get().connectionHandler.hasConnection()) {
+                ApplicationContext.get().connectionHandler.sendPacket(TurnoutPacket.newOperation(id.get(), !turned))
+            } else {
+                NoConnectionDialog().showDialog()
+            }
         }
         return listOf(item)
     }

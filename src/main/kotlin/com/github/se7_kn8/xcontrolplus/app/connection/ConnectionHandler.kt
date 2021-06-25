@@ -9,6 +9,7 @@ import com.github.se7_kn8.xcontrolplus.app.util.info
 import com.github.se7_kn8.xcontrolplus.app.util.trace
 import com.github.se7_kn8.xcontrolplus.app.util.warn
 import com.github.se7_kn8.xcontrolplus.protocol.Connection
+import com.github.se7_kn8.xcontrolplus.protocol.packet.EchoPacket
 import com.github.se7_kn8.xcontrolplus.protocol.packet.Packet
 import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
@@ -22,15 +23,33 @@ class ConnectionHandler : Consumer<Packet> {
 
         private val checkIntervall: Long = 5000
 
+        var receivedEcho: Int = Int.MAX_VALUE // The echo packet can never reach this value
+
         override fun run() {
-            while (!Thread.currentThread().isInterrupted) {
+            threadLoop@ while (!Thread.currentThread().isInterrupted) {
                 try {
                     Thread.sleep(checkIntervall)
                     try {
-                        connection.get()?.let {
-                            if (it.isOpen) {
+                        val conn = connection.get()
+                        if (conn != null) {
+                            if (conn.isOpen) {
+                                receivedEcho = Int.MAX_VALUE
                                 trace { "Testing connection" }
-                                if (!it.testConnection(1000)) {
+                                val echoPacket = EchoPacket()
+                                conn.sendPacket(echoPacket)
+                                val start = System.currentTimeMillis()
+                                var receivedAnswer = false
+                                while ((System.currentTimeMillis() - start) < 5000 && !receivedAnswer) {
+                                    try {
+                                        Thread.sleep(50) // Save some cpu time
+                                    } catch (e: InterruptedException) {
+                                        break@threadLoop
+                                    }
+                                    if (receivedEcho == echoPacket.randomNumber.toInt()) {
+                                        receivedAnswer = true
+                                    }
+                                }
+                                if (!receivedAnswer) {
                                     Platform.runLater { onTimeout() }
                                 }
                             } else {
@@ -42,7 +61,7 @@ class ConnectionHandler : Consumer<Packet> {
                         Platform.runLater { onTimeout() }
                     }
                 } catch (e: InterruptedException) {
-                    break
+                    break@threadLoop
                 }
             }
         }
@@ -52,12 +71,12 @@ class ConnectionHandler : Consumer<Packet> {
     val connection = SimpleObjectProperty<Connection?>()
 
     private val turnoutMap = HashMap<Int, ArrayList<Consumer<Boolean>>>()
-    private val connectionTestThread: Thread
+    private val connectionTesterRunnable = CheckIfConnectionStillAlive()
+    private val connectionTestThread = Thread(connectionTesterRunnable).apply {
+        name = "ConnectionKeepAliveTest"
+    }
 
     init {
-        connectionTestThread = Thread(CheckIfConnectionStillAlive()).apply {
-            name = "ConnectionKeepAliveTest"
-        }
         connectionTestThread.start()
 
         Packet.registerPacket(PacketIDs.TURNOUT_PACKET, TurnoutPacket.TurnoutPacketFactory())
@@ -127,6 +146,9 @@ class ConnectionHandler : Consumer<Packet> {
     override fun accept(packet: Packet) {
         debug("Received packet: $packet")
         when (packet) {
+            is EchoPacket -> {
+                connectionTesterRunnable.receivedEcho = packet.randomNumber.toInt()
+            }
             is TurnoutPacket -> {
                 Platform.runLater { turnoutMap[packet.address]?.forEach { it.accept(packet.isTurned()) } }
             }

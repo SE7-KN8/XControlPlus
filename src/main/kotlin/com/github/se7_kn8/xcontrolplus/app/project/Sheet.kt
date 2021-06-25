@@ -39,6 +39,16 @@ class Sheet(name: String, gridView: GridView<BaseCell>) {
         }
     }
 
+    fun updateTurnoutStates() {
+        gridHelper.getCells().filterIsInstance(TurnoutGridCell::class.java).forEach {
+            it.update()
+        }
+    }
+
+    fun getTurnoutAddresses(): List<Int> {
+        return gridHelper.getCells().filterIsInstance(TurnoutGridCell::class.java).map { it.id.get() }.distinct()
+    }
+
     companion object {
         fun load(from: String): Sheet {
             val wrapper = ApplicationContext.get().gson.fromJson(from, SaveWrapper::class.java)
