@@ -7,9 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.*;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
@@ -25,6 +23,8 @@ public class GridView<T extends GridCell> extends Canvas {
 	private double moveOffsetY;
 	private double mouseStartPosX;
 	private double mouseStartPosY;
+
+	private boolean disableMouseInputs = false;
 
 	public GridView() {
 		this(50.0, 100.0, 100.0);
@@ -50,9 +50,17 @@ public class GridView<T extends GridCell> extends Canvas {
 
 		setOnMousePressed(this::onMousePressed);
 		setOnMouseDragged(this::onMouseDragged);
+		setOnScrollStarted(this::onScrollStart);
 		setOnScroll(this::onScroll);
 		setOnMouseMoved(this::onMouseMoved);
 		setOnMouseEntered(this::onMouseEntered);
+		setOnZoom(this::onZoom);
+		setOnZoomStarted(this::onZoomStart);
+		setOnZoomFinished(this::onZoomEnd);
+		setOnSwipeUp(this::onSwipe);
+		setOnSwipeDown(this::onSwipe);
+		setOnSwipeLeft(this::onSwipe);
+		setOnSwipeRight(this::onSwipe);
 
 		pauseProperty().addListener((o, oV, newValue) -> {
 			if (newValue) {
@@ -71,44 +79,80 @@ public class GridView<T extends GridCell> extends Canvas {
 	}
 
 	private void onMousePressed(MouseEvent event) {
-		moveOffsetX = getTranslationX();
-		moveOffsetY = getTranslationY();
-		mouseStartPosX = event.getX();
-		mouseStartPosY = event.getY();
-		if (event.getButton() != getMoveMouseButton()) {
-			findCell(getMouseGridX(), getMouseGridY()).ifPresentOrElse(this::setSelectedCell, () -> this.setSelectedCell(null));
-			getClickCallback().accept(event, false);
+		if (!disableMouseInputs) {
+			moveOffsetX = getTranslationX();
+			moveOffsetY = getTranslationY();
+			mouseStartPosX = event.getX();
+			mouseStartPosY = event.getY();
+			if (event.getButton() != getMoveMouseButton()) {
+				findCell(getMouseGridX(), getMouseGridY()).ifPresentOrElse(this::setSelectedCell, () -> this.setSelectedCell(null));
+				getClickCallback().accept(event, false);
+			}
+			// We need this here otherwise the TabPane will consume the event and request focus
+			event.consume();
 		}
-		// We need this here otherwise the TabPane will consume the event and request focus
-		event.consume();
 	}
 
 	private void onMouseDragged(MouseEvent event) {
-		if (event.getButton() == getMoveMouseButton()) {
-			double translationX = event.getX() - mouseStartPosX + moveOffsetX;
-			double translationY = event.getY() - mouseStartPosY + moveOffsetY;
-			setTranslationX(translationX);
-			setTranslationY(translationY);
-		} else if (isClickAndDrag() && event.getButton() != getMoveMouseButton()) {
-			int oldMousePosX = getMouseGridX();
-			int oldMousePosY = getMouseGridY();
-			updateMousePos(event.getX(), event.getY());
-			if (oldMousePosX != getMouseGridX() || oldMousePosY != getMouseGridY()) {
-				getClickCallback().accept(event, true);
+		if (!disableMouseInputs) {
+			if (event.getButton() == getMoveMouseButton()) {
+				double translationX = event.getX() - mouseStartPosX + moveOffsetX;
+				double translationY = event.getY() - mouseStartPosY + moveOffsetY;
+				setTranslationX(translationX);
+				setTranslationY(translationY);
+			} else if (isClickAndDrag() && event.getButton() != getMoveMouseButton()) {
+				int oldMousePosX = getMouseGridX();
+				int oldMousePosY = getMouseGridY();
+				updateMousePos(event.getX(), event.getY());
+				if (oldMousePosX != getMouseGridX() || oldMousePosY != getMouseGridY()) {
+					getClickCallback().accept(event, true);
+				}
 			}
 		}
 	}
 
-	private void onScroll(ScrollEvent event) {
-		double zoom = -event.getDeltaY() * event.getMultiplierY() * 0.0001 * getZoomFactor() + 1.0;
-		double newValue = getScale() * zoom;
+	private void onSwipe(SwipeEvent event) {
+		System.out.println(event.getX());
+	}
+
+	private void onZoomStart(ZoomEvent event) {
+		disableMouseInputs = true;
+	}
+
+	private void onZoomEnd(ZoomEvent event) {
+		disableMouseInputs = false;
+	}
+
+	private void onZoom(ZoomEvent event) {
+		double zoom = 1 / event.getZoomFactor();
+		double newValue = getScale() * zoom * getZoomFactor();
 
 		newValue = Math.min(newValue, getMaxScale());
 		newValue = Math.max(newValue, getMinScale());
 
 		setScale(newValue);
+	}
 
-		updateMousePos(event.getX(), event.getY());
+	private void onScrollStart(ScrollEvent event) {
+		moveOffsetX = getTranslationX();
+		moveOffsetY = getTranslationY();
+	}
+
+	private void onScroll(ScrollEvent event) {
+		if (event.isDirect()) {
+			setTranslationX(moveOffsetX + event.getTotalDeltaX());
+			setTranslationY(moveOffsetY + event.getTotalDeltaY());
+		} else {
+			double zoom = -event.getDeltaY() * event.getMultiplierY() * 0.0001 * getZoomFactor() + 1.0;
+			double newValue = getScale() * zoom;
+
+			newValue = Math.min(newValue, getMaxScale());
+			newValue = Math.max(newValue, getMinScale());
+
+			setScale(newValue);
+
+			updateMousePos(event.getX(), event.getY());
+		}
 	}
 
 	private void onMouseMoved(MouseEvent event) {
