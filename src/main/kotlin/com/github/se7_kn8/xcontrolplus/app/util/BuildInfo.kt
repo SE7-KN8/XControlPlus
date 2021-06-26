@@ -30,4 +30,8 @@ class BuildInfo {
         return properties.getProperty("commit")
     }
 
+    fun isDebug(): Boolean {
+        return properties.getProperty("debug").toBoolean()
+    }
+
 }

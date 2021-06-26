@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.konan.properties.hasProperty
 import java.io.ByteArrayOutputStream
 import java.util.*
 
@@ -16,6 +17,7 @@ val versionInfo = "snapshot"
 
 val currentOs = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem()!!
 val arch = org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentArchitecture()!!
+val debugFeatures = System.getProperties().hasProperty("xcontrolplus.debug")
 
 println("OS: $currentOs")
 println("Arch: $arch")
@@ -104,6 +106,7 @@ tasks.register("createBuildMetadata") {
             properties["timestamp"] = Date().toString()
             properties["commit"] = getCurrentCommitHash()
             properties["versionInfo"] = versionInfo
+            properties["debug"] = debugFeatures.toString()
 
             properties.store(it, "Build properties")
         }

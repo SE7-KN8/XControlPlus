@@ -111,7 +111,11 @@ class XControlPlus : Application() {
             root.right.isVisible = false
             root.left.isVisible = false
             root.bottom.isVisible = false
-            stage.title = translate("stage.title")
+            if (ApplicationContext.get().buildInfo.isDebug()) {
+                stage.title = "DEBUG ${translate("stage.title")}"
+            } else {
+                stage.title = translate("stage.title")
+            }
         }
 
         val newProject: (Project) -> Unit = { newProject ->
@@ -126,7 +130,12 @@ class XControlPlus : Application() {
             root.right.isVisible = true
             root.left.isVisible = true
             root.bottom.isVisible = true
-            stage.title = "${translate("stage.title")} - ${newProject.name}"
+
+            if (ApplicationContext.get().buildInfo.isDebug()) {
+                stage.title = "DEBUG ${translate("stage.title")} - ${newProject.name}"
+            } else {
+                stage.title = "${translate("stage.title")} - ${newProject.name}"
+            }
 
             projectRoot.selectionModel.selectedItemProperty().addListener { _, oldTab, newTab ->
                 if (newTab is SheetTab) {
@@ -215,7 +224,7 @@ class XControlPlus : Application() {
             Image(javaClass.getResourceAsStream("/assets/logo/small.png"))
         )
 
-        if (ApplicationContext.get().buildInfo.getVersionInfo() == "snapshot") {
+        if (ApplicationContext.get().buildInfo.getVersionInfo() == "snapshot" && !ApplicationContext.get().buildInfo.isDebug()) {
             Platform.runLater {
                 Alert(
                     Alert.AlertType.WARNING,
