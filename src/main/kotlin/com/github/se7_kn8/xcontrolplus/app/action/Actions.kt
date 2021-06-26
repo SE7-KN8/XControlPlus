@@ -55,6 +55,7 @@ class AddCellAction(private val cell: BaseCell) : Action {
         if (cell.getParameters().keys.isNotEmpty()) {
             CellParameterEditDialog(cell).showAndWait()
         }
+        cell.setPosFromMouse(helper)
     }
 
     override fun valid(helper: GridHelper) = true

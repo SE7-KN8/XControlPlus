@@ -44,7 +44,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
 
         override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                helper.doAction(AddCellAction(StraightGridCell(helper)))
+                helper.doAction(AddCellAction(StraightGridCell()))
             }
         }
 
@@ -57,7 +57,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
 
         override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                helper.doAction(AddCellAction(TurnGridCell(helper)))
+                helper.doAction(AddCellAction(TurnGridCell()))
             }
         }
 
@@ -71,7 +71,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
 
         override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                helper.doAction(AddCellAction(TurnoutGridCell(helper, TurnoutType.LEFT)))
+                helper.doAction(AddCellAction(TurnoutGridCell(TurnoutType.LEFT)))
             }
         }
 
@@ -84,7 +84,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
 
         override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                helper.doAction(AddCellAction(TurnoutGridCell(helper, TurnoutType.RIGHT)))
+                helper.doAction(AddCellAction(TurnoutGridCell(TurnoutType.RIGHT)))
             }
         }
 
@@ -98,7 +98,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
 
         override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                helper.doAction(AddCellAction(TextGridCell(helper)))
+                helper.doAction(AddCellAction(TextGridCell()))
             }
         }
 

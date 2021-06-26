@@ -3,10 +3,7 @@ package com.github.se7_kn8.xcontrolplus.app.project
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
-import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
-import com.github.se7_kn8.xcontrolplus.app.util.debug
-import com.github.se7_kn8.xcontrolplus.app.util.translate
-import com.github.se7_kn8.xcontrolplus.app.util.warn
+import com.github.se7_kn8.xcontrolplus.app.util.*
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.beans.property.SimpleObjectProperty
 import java.io.FileOutputStream
@@ -18,11 +15,12 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
-enum class SaveVersion {
-    VERSION_1_0
+enum class SaveVersion(val versionName: String, val compatibleTo: List<SaveVersion> = emptyList()) {
+    VERSION_1_0("1.0"),
+    VERSION_1_1("1.1", listOf(VERSION_1_0))
 }
 
-data class ProjectMetadata(val version: SaveVersion = SaveVersion.VERSION_1_0)
+data class ProjectMetadata(val version: SaveVersion = SaveVersion.VERSION_1_1)
 
 class ProjectManager {
     val metadataFileName = "metadata.json"
@@ -53,8 +51,12 @@ class ProjectManager {
                 val metadata = ApplicationContext.get().gson.fromJson(metadataReader, ProjectMetadata::class.java)
                 debug("Found metadata $metadata")
                 if (metadata.version != ProjectMetadata().version) {
-                    warn("Incompatible save version")
-                    throw IllegalStateException("Unsupported save version")
+                    if (!(ProjectMetadata().version.compatibleTo.contains(metadata.version))) {
+                        warn("Incompatible save version")
+                        throw IllegalStateException("Unsupported save version")
+                    } else {
+                        info("Loading project with older, but compatible save version. Current: ${ProjectMetadata().version.versionName}; Loaded: ${metadata.version.versionName}")
+                    }
                 }
                 val project = Project(path)
                 entries.remove(metadataFileName)

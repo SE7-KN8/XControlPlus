@@ -9,6 +9,7 @@ import com.github.se7_kn8.xcontrolplus.app.util.translate
 import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
 import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.canvas.GraphicsContext
@@ -86,7 +87,11 @@ enum class GridCellRenderer {
         override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
             val colors = ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]
             if (cell is TurnoutGridCell) {
-                if (cell.turned) {
+                var turned = cell.turned
+                if (cell.invert.get()) {
+                    turned = !turned
+                }
+                if (turned) {
                     if (colors) {
                         gc.fill = Colors.turnoutBlock
                         STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
@@ -124,7 +129,11 @@ enum class GridCellRenderer {
         override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
             if (cell is TurnoutGridCell) {
                 val colors = ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]
-                if (cell.turned) {
+                var turned = cell.turned
+                if (cell.invert.get()) {
+                    turned = !turned
+                }
+                if (turned) {
                     if (colors) {
                         gc.fill = Colors.turnoutBlock
                         STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
@@ -180,8 +189,14 @@ enum class GridCellRenderer {
 
 }
 
-abstract class BaseCell(currentGridHelper: GridHelper) :
-    GridCell(currentGridHelper.mouseGridX(), currentGridHelper.mouseGridY(), currentGridHelper.toolRotation) {
+abstract class BaseCell : GridCell() {
+
+    fun setPosFromMouse(gridHelper: GridHelper) {
+        gridX = gridHelper.mouseGridX()
+        gridY = gridHelper.mouseGridY()
+        rotation = gridHelper.toolRotation
+    }
+
     override fun render(now: Long, gc: GraphicsContext, renderer: GridRenderer<out GridCell>) {
         getRenderer().draw(gridX, gridY, gc, renderer, this)
     }
@@ -194,11 +209,11 @@ abstract class BaseCell(currentGridHelper: GridHelper) :
 
 }
 
-class StraightGridCell(gridHelper: GridHelper) : BaseCell(gridHelper) {
+class StraightGridCell() : BaseCell() {
     override fun getRenderer() = GridCellRenderer.STRAIGHT
 }
 
-class TurnGridCell(gridHelper: GridHelper) : BaseCell(gridHelper) {
+class TurnGridCell() : BaseCell() {
     override fun getRenderer() = GridCellRenderer.TURN
 }
 
@@ -214,15 +229,25 @@ enum class TurnoutType {
     abstract fun getRenderer(): GridCellRenderer
 }
 
-class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutType) : BaseCell(gridHelper), Consumer<Boolean> {
+// The default value for the parameter is necessary
+// Because with it kotlin will generate a constructor without parameter
+// which will be utilized by gson
+// without out it there would be no constructor call which will result in values not being initialized
+class TurnoutGridCell(private val turnoutType: TurnoutType = TurnoutType.LEFT) : BaseCell(), Consumer<Boolean> {
+
+    // The should not be serialized, because it could indicate a false state
+    @Transient
     var turned = false
+
     val id = SimpleIntegerProperty(0)
+    val invert = SimpleBooleanProperty(false)
 
     override fun accept(t: Boolean) {
         turned = t
     }
 
     fun init() {
+        println(invert)
         val connectionHandler = ApplicationContext.get().connectionHandler
         connectionHandler.addTurnout(id.get(), this)
         id.addListener { _, oldValue, newValue ->
@@ -249,10 +274,10 @@ class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutTy
         return listOf(item)
     }
 
-    override fun getParameters() = mapOf(Pair("id", id))
+    override fun getParameters() = mapOf(Pair("id", id), Pair("invert_turnout", invert))
 }
 
-class TextGridCell(gridHelper: GridHelper) : BaseCell(gridHelper) {
+class TextGridCell() : BaseCell() {
     val fontSize = SimpleIntegerProperty(10)
     val text = SimpleStringProperty("")
 
