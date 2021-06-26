@@ -84,17 +84,24 @@ enum class GridCellRenderer {
         }
 
         override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
+            val colors = ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]
             if (cell is TurnoutGridCell) {
                 if (cell.turned) {
-                    if (ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]) {
-                        gc.fill = Colors.turnoutTurned
+                    if (colors) {
+                        gc.fill = Colors.turnoutBlock
+                        STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
+                        gc.fill = Colors.turnout
                     }
                     gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
                         TURN.drawForeground(gridX, gridY, gc, renderer, cell)
                     }
                 } else {
-                    if (ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]) {
-                        gc.fill = Colors.turnoutStraight
+                    if (colors) {
+                        gc.fill = Colors.turnoutBlock
+                        gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
+                            TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                        }
+                        gc.fill = Colors.turnout
                     }
                     STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
                 }
@@ -116,14 +123,19 @@ enum class GridCellRenderer {
 
         override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
             if (cell is TurnoutGridCell) {
+                val colors = ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]
                 if (cell.turned) {
-                    if (ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]) {
-                        gc.fill = Colors.turnoutTurned
+                    if (colors) {
+                        gc.fill = Colors.turnoutBlock
+                        STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
+                        gc.fill = Colors.turnout
                     }
                     TURN.drawForeground(gridX, gridY, gc, renderer, cell)
                 } else {
-                    if (ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]) {
-                        gc.fill = Colors.turnoutStraight
+                    if (colors) {
+                        gc.fill = Colors.turnoutBlock
+                        TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                        gc.fill = Colors.turnout
                     }
                     STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
                 }
@@ -224,7 +236,11 @@ class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutTy
     override fun getContextOptions(): List<MenuItem> {
         val item = MenuItem(translate("context_menu.turn"))
         item.setOnAction {
-            if (ApplicationContext.get().connectionHandler.hasConnection()) {
+            val isDebug = ApplicationContext.get().buildInfo.isDebug()
+            if (ApplicationContext.get().connectionHandler.hasConnection() || isDebug) {
+                if (isDebug) {
+                    turned = !turned
+                }
                 ApplicationContext.get().connectionHandler.sendPacket(TurnoutPacket.newOperation(id.get(), !turned))
             } else {
                 NoConnectionDialog().showDialog()
