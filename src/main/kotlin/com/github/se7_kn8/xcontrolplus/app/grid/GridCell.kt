@@ -4,6 +4,7 @@ import com.github.se7_kn8.xcontrolplus.app.connection.TurnoutPacket
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.NoConnectionDialog
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
+import com.github.se7_kn8.xcontrolplus.app.util.translate
 import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
 import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell
 import javafx.beans.property.Property
@@ -212,7 +213,7 @@ class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutTy
     override fun getRenderer() = turnoutType.getRenderer()
 
     override fun getContextOptions(): List<MenuItem> {
-        val item = MenuItem("Turn")
+        val item = MenuItem(translate("context_menu.turn"))
         item.setOnAction {
             if (ApplicationContext.get().connectionHandler.hasConnection()) {
                 ApplicationContext.get().connectionHandler.sendPacket(TurnoutPacket.newOperation(id.get(), !turned))

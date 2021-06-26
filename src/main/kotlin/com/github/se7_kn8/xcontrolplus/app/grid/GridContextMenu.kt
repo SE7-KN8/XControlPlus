@@ -3,6 +3,7 @@ package com.github.se7_kn8.xcontrolplus.app.grid
 import com.github.se7_kn8.xcontrolplus.app.action.DeleteSelectedCellAction
 import com.github.se7_kn8.xcontrolplus.app.action.EditSelectedCellParameterAction
 import com.github.se7_kn8.xcontrolplus.app.action.RotateSelectedCellAction
+import com.github.se7_kn8.xcontrolplus.app.util.translate
 import com.github.se7_kn8.xcontrolplus.gridview.RotationDirection
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
@@ -17,15 +18,15 @@ class GridContextMenu(private val helper: GridHelper) {
     private val defaultItems = ArrayList<MenuItem>()
 
     init {
-        val rotateCW = MenuItem("Rotate").apply {
+        val rotateCW = MenuItem(translate("context_menu.rotate")).apply {
             setOnAction { helper.doAction(RotateSelectedCellAction(RotationDirection.CLOCKWISE)) }
             accelerator = KeyCombination.keyCombination("r")
         }
-        val rotateCCW = MenuItem("Inverse Rotate").apply {
+        val rotateCCW = MenuItem(translate("context_menu.inverse_rotate")).apply {
             setOnAction { helper.doAction(RotateSelectedCellAction(RotationDirection.COUNTER_CLOCKWISE)) }
             accelerator = KeyCombination.keyCombination("shift+r")
         }
-        val delete = MenuItem("Delete").apply {
+        val delete = MenuItem(translate("context_menu.delete")).apply {
             setOnAction { helper.doAction(DeleteSelectedCellAction()) }
             accelerator = KeyCombination.keyCombination("delete")
         }
@@ -46,7 +47,7 @@ class GridContextMenu(private val helper: GridHelper) {
         val parameter = selectedCell.getParameters()
         if (parameter.keys.isNotEmpty()) {
             menu.items.addAll(SeparatorMenuItem())
-            menu.items.addAll(MenuItem("Edit parameter").apply {
+            menu.items.addAll(MenuItem(translate("context_menu.edit")).apply {
                 setOnAction { helper.doAction(EditSelectedCellParameterAction()) }
                 accelerator = KeyCombination.keyCombination("e")
             })
