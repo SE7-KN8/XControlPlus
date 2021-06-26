@@ -10,5 +10,7 @@ class Colors {
         val grid: Color = Color.DARKGRAY
         val track: Color = Color.BLACK
         val trackHighlight: Color = Color.GRAY
+        val turnoutTurned: Color = Color.RED
+        val turnoutStraight: Color = Color.LIME
     }
 }

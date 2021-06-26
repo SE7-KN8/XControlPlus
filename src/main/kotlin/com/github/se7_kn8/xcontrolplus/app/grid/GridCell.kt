@@ -3,6 +3,7 @@ package com.github.se7_kn8.xcontrolplus.app.grid
 import com.github.se7_kn8.xcontrolplus.app.connection.TurnoutPacket
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.NoConnectionDialog
+import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
 import com.github.se7_kn8.xcontrolplus.app.util.translate
 import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
@@ -85,10 +86,16 @@ enum class GridCellRenderer {
         override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
             if (cell is TurnoutGridCell) {
                 if (cell.turned) {
+                    if (ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]) {
+                        gc.fill = Colors.turnoutTurned
+                    }
                     gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
                         TURN.drawForeground(gridX, gridY, gc, renderer, cell)
                     }
                 } else {
+                    if (ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]) {
+                        gc.fill = Colors.turnoutStraight
+                    }
                     STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
                 }
             } else {
@@ -110,8 +117,14 @@ enum class GridCellRenderer {
         override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
             if (cell is TurnoutGridCell) {
                 if (cell.turned) {
+                    if (ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]) {
+                        gc.fill = Colors.turnoutTurned
+                    }
                     TURN.drawForeground(gridX, gridY, gc, renderer, cell)
                 } else {
+                    if (ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]) {
+                        gc.fill = Colors.turnoutStraight
+                    }
                     STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
                 }
             } else {
@@ -204,10 +217,6 @@ class TurnoutGridCell(gridHelper: GridHelper, private val turnoutType: TurnoutTy
             connectionHandler.removeTurnout(oldValue.toInt(), this)
             connectionHandler.addTurnout(newValue.toInt(), this)
         }
-    }
-
-    fun update() {
-        ApplicationContext.get().connectionHandler.sendPacket(TurnoutPacket.newRequest(id.get()))
     }
 
     override fun getRenderer() = turnoutType.getRenderer()
