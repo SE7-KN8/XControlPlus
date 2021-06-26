@@ -12,5 +12,6 @@ class Colors {
         val trackHighlight: Color = Color.GRAY
         val turnoutBlock: Color = Color.RED
         val turnout: Color = Color.LIME
+        val stop: Color = Color.RED
     }
 }

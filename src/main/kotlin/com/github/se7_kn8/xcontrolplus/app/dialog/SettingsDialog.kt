@@ -87,6 +87,7 @@ class SettingsDialog : Dialog<ButtonType>(), AppDialog<Unit> {
         settingsMap.forEach { (key, value) ->
             ApplicationContext.get().userSettings.setAny(key, value)
         }
+        ApplicationContext.get().userSettings.save()
     }
 
 }

@@ -7,6 +7,8 @@ SoftwareSerial output(11, 12);
 
 void on_track_power(uint8_t new_track_power) {
     digitalWrite(LED_BUILTIN, new_track_power != XNET_TRACK_POWER_NORMAL);
+    uint8_t data[] = {3, 11, new_track_power};
+    output.write(data, 3);
 }
 
 void on_turnout_status(uint16_t address, uint8_t state) {
@@ -48,6 +50,16 @@ void parsePacket(const uint8_t data[]) {
             }
             break;
         }
+        case 0x0B: {
+            if (length == 3) {
+                uint8_t newState = data[2];
+                if (newState == XNET_TRACK_POWER_NORMAL) {
+                    XpressNet.request(XNET_REQUEST_RESUME_OPERATIONS);
+                } else if (newState == XNET_TRACK_POWER_EMERGENCY_STOP) {
+                    XpressNet.request(XNET_REQUEST_EMERGENCY_OFF);
+                }
+            }
+        }
     }
 }
 
@@ -83,7 +95,7 @@ void on_packet(XpressNetPacket packet) {
 
 void setup() {
     pinMode(13, OUTPUT);
-    XpressNet.begin(28, 8);
+    XpressNet.begin(23, 8);
     output.begin(19200); // Try with lower speeds at first
     XpressNet.onTrackPower = on_track_power;
     XpressNet.onTurnoutStatus = on_turnout_status;

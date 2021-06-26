@@ -1,10 +1,14 @@
 package com.github.se7_kn8.xcontrolplus.app
 
+import com.github.se7_kn8.xcontrolplus.app.connection.TrackPowerPacket
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
-import com.github.se7_kn8.xcontrolplus.app.dialog.*
+import com.github.se7_kn8.xcontrolplus.app.dialog.AboutDialog
+import com.github.se7_kn8.xcontrolplus.app.dialog.ExitConfirmationDialog
+import com.github.se7_kn8.xcontrolplus.app.dialog.SettingsDialog
 import com.github.se7_kn8.xcontrolplus.app.dialog.TextInputDialog
 import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
+import com.github.se7_kn8.xcontrolplus.app.grid.GridOverlayRenderer
 import com.github.se7_kn8.xcontrolplus.app.grid.GridShortcuts
 import com.github.se7_kn8.xcontrolplus.app.project.Project
 import com.github.se7_kn8.xcontrolplus.app.project.ProjectManager
@@ -66,6 +70,7 @@ class XControlPlus : Application() {
 
         val toolRenderer = ToolRenderer()
         val shortcuts = GridShortcuts(toolRenderer)
+        val overlay = GridOverlayRenderer()
 
         currentTab.addListener { _, _, newValue ->
             debug("Current tab has changed to: $newValue")
@@ -80,9 +85,13 @@ class XControlPlus : Application() {
                 debug("Detach from old grid helper ($oldValue)")
                 toolRenderer.detach(oldValue)
                 shortcuts.detach(oldValue)
+                overlay.attach(oldValue)
             }
-            toolRenderer.attach(newValue)
-            shortcuts.attach(newValue)
+            newValue?.let {
+                toolRenderer.attach(newValue)
+                shortcuts.attach(newValue)
+                overlay.attach(newValue)
+            }
         }
 
         val left = getLeftNode()
@@ -352,19 +361,31 @@ class XControlPlus : Application() {
             maxWidth = Double.MAX_VALUE
         }
 
+        val resumePower = Button(translate("button.resume_track_power")).apply {
+            maxWidth = Double.MAX_VALUE
+        }
+
+        val emergencyStopPower = Button(translate("button.emergency_stop_power")).apply {
+            maxWidth = Double.MAX_VALUE
+        }
+
         chooseConnection.setOnAction {
             ApplicationContext.get().connectionHandler.showConnectionSelectDialog()
         }
 
-        updateTurnouts.setOnAction {
-            if (ApplicationContext.get().connectionHandler.hasConnection()) {
-                projectManager.activeProject.get()?.updateTurnoutStates()
-            } else {
-                NoConnectionDialog().showDialog()
-            }
-        }
+        updateTurnouts.disableProperty().bind(Bindings.not(ApplicationContext.get().connectionHandler.hasConnection))
+        updateTurnouts.setOnAction { projectManager.activeProject.get()?.updateTurnoutStates() }
 
-        left.children.addAll(chooseConnection, updateTurnouts)
+        resumePower.disableProperty().bind(Bindings.not(ApplicationContext.get().connectionHandler.hasConnection))
+        resumePower.setOnAction { ApplicationContext.get().connectionHandler.sendPacket(TrackPowerPacket.newResumeRequest()) }
+        resumePower.visibleProperty().bind(ApplicationContext.get().connectionHandler.trackStop)
+
+        emergencyStopPower.disableProperty().bind(Bindings.not(ApplicationContext.get().connectionHandler.hasConnection))
+        emergencyStopPower.setOnAction { ApplicationContext.get().connectionHandler.sendPacket(TrackPowerPacket.newEmergencyStopRequest()) }
+        emergencyStopPower.visibleProperty().bind(Bindings.not(ApplicationContext.get().connectionHandler.trackStop))
+
+
+        left.children.addAll(chooseConnection, updateTurnouts, resumePower, emergencyStopPower)
         return left
     }
 

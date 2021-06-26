@@ -12,6 +12,7 @@ import com.github.se7_kn8.xcontrolplus.protocol.Connection
 import com.github.se7_kn8.xcontrolplus.protocol.packet.EchoPacket
 import com.github.se7_kn8.xcontrolplus.protocol.packet.Packet
 import javafx.application.Platform
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.control.Alert
 import java.util.function.Consumer
@@ -69,6 +70,8 @@ class ConnectionHandler : Consumer<Packet> {
     }
 
     val connection = SimpleObjectProperty<Connection?>()
+    val hasConnection = SimpleBooleanProperty(false)
+    val trackStop = SimpleBooleanProperty(false)
 
     private val turnoutMap = HashMap<Int, ArrayList<Consumer<Boolean>>>()
     private val connectionTesterRunnable = CheckIfConnectionStillAlive()
@@ -80,6 +83,9 @@ class ConnectionHandler : Consumer<Packet> {
         connectionTestThread.start()
 
         Packet.registerPacket(PacketIDs.TURNOUT_PACKET, TurnoutPacket.TurnoutPacketFactory())
+        Packet.registerPacket(PacketIDs.TRACK_POWER_PACKET, TrackPowerPacket.TrackPowerPacketFactory())
+
+
         connection.addListener { _, oldValue, newValue ->
             oldValue?.let {
                 it.closeConnection()
@@ -90,6 +96,7 @@ class ConnectionHandler : Consumer<Packet> {
                 it.openConnection()
                 it.setOnPacketReceived(this)
             }
+            hasConnection.set(newValue != null)
         }
     }
 
@@ -98,7 +105,7 @@ class ConnectionHandler : Consumer<Packet> {
         connection.value = ConnectionChoiceDialog().showDialog()
     }
 
-    fun hasConnection() = connection.get() != null
+    fun hasConnection() = hasConnection.get()
 
     private fun onTimeout() {
         info("Connection encountered timeout")
@@ -151,6 +158,9 @@ class ConnectionHandler : Consumer<Packet> {
             }
             is TurnoutPacket -> {
                 Platform.runLater { turnoutMap[packet.address]?.forEach { it.accept(packet.isTurned()) } }
+            }
+            is TrackPowerPacket -> {
+                Platform.runLater { trackStop.set(packet.state != 1) } // XNET_TRACK_POWER_NORMAL
             }
         }
     }
