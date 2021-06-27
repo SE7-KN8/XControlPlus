@@ -1,15 +1,53 @@
 package com.github.se7_kn8.xcontrolplus.app.project
 
+import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.ConfirmationDialog
 import com.github.se7_kn8.xcontrolplus.app.dialog.TextInputDialog
+import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
+import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
 import com.github.se7_kn8.xcontrolplus.app.util.debug
 import com.github.se7_kn8.xcontrolplus.app.util.translate
+import javafx.animation.AnimationTimer
 import javafx.application.Platform
+import javafx.event.ActionEvent
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
 import javafx.scene.control.Tab
+import javafx.scene.input.MouseButton
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Pane
+
+class LongPressTimer(private val gridHelper: GridHelper) : AnimationTimer() {
+
+    private var lastStart: Long = 0
+
+    override fun handle(now: Long) {
+        if ((now - lastStart) > 400000000) {
+            gridHelper.getHoveredCell().ifPresent {
+                it.getContextOptions().firstOrNull()?.onAction?.handle(ActionEvent())
+            }
+            stop()
+        }
+    }
+
+    override fun start() {
+        super.start()
+        lastStart = System.nanoTime()
+    }
+}
+/*
+class SingleTouchMoveHelper() {
+
+    fun onStart(event: MouseEvent) {
+
+    }
+
+    fun onMove(event: MouseEvent) {
+
+    }
+
+}*/
 
 class SheetTab(project: Project, val sheet: Sheet) : Tab(sheet.name.get()) {
 
@@ -18,7 +56,25 @@ class SheetTab(project: Project, val sheet: Sheet) : Tab(sheet.name.get()) {
         if (!Platform.isFxApplicationThread()) {
             throw IllegalStateException()
         }
+        val longPressTimer = LongPressTimer(sheet.gridHelper)
         with(sheet.gridHelper.gridView) {
+            addEventFilter(MouseEvent.ANY) {
+                if (ApplicationContext.get().userSettings[UserSettings.SINGLE_TOUCH_MODE]) {
+                    this.moveMouseButton = MouseButton.PRIMARY
+                    when (it.eventType) {
+                        MouseEvent.MOUSE_PRESSED -> {
+                            longPressTimer.start()
+                        }
+                        MouseEvent.MOUSE_DRAGGED -> {
+                        }
+                        else -> {
+                            longPressTimer.stop()
+                        }
+                    }
+                } else {
+                    this.moveMouseButton = MouseButton.MIDDLE
+                }
+            }
             minScale = 0.1
             maxScale = 5.0
             // Only render when visible, to safe resources

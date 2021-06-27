@@ -110,12 +110,14 @@ class UserSettings : Settings(
     listOf(
         ASK_BEFORE_EXIT,
         OPEN_LATEST_PROJECT,
-        COLORED_TURNOUTS
+        COLORED_TURNOUTS,
+        SINGLE_TOUCH_MODE
     )
 ) {
     companion object {
         val ASK_BEFORE_EXIT = SettingsEntry("ask_before_exit", true)
         val OPEN_LATEST_PROJECT = SettingsEntry("open_latest_project", true)
         val COLORED_TURNOUTS = SettingsEntry("colored_turnouts", false)
+        val SINGLE_TOUCH_MODE = SettingsEntry("single_touch", false)
     }
 }

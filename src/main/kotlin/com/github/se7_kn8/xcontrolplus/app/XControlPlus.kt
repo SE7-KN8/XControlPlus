@@ -85,7 +85,7 @@ class XControlPlus : Application() {
                 debug("Detach from old grid helper ($oldValue)")
                 toolRenderer.detach(oldValue)
                 shortcuts.detach(oldValue)
-                overlay.attach(oldValue)
+                overlay.detach(oldValue)
             }
             newValue?.let {
                 toolRenderer.attach(newValue)
