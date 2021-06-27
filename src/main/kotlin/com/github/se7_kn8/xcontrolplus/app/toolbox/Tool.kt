@@ -37,6 +37,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
         override fun getImage() = FileUtil.getImage("tool/cursor.png")
 
     },
+
     STRAIGHT(Cursor.CROSSHAIR, true) {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             GridCellRenderer.STRAIGHT.draw(gridX, gridY, gc, gridView.renderer)
@@ -50,6 +51,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
 
         override fun getImage() = FileUtil.getImage("tool/straight.png")
     },
+
     TURN(Cursor.CROSSHAIR, true) {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             GridCellRenderer.TURN.draw(gridX, gridY, gc, gridView.renderer)
@@ -77,6 +79,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
 
         override fun getImage() = FileUtil.getImage("tool/left_turnout.png")
     },
+
     RIGHT_TURNOUT(Cursor.CROSSHAIR) {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             GridCellRenderer.RIGHT_TURNOUT.draw(gridX, gridY, gc, gridView.renderer)
@@ -91,6 +94,21 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
         override fun getImage() = FileUtil.getImage("tool/right_turnout.png")
     },
 
+    Y_TURNOUT(Cursor.CROSSHAIR) {
+        override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
+            GridCellRenderer.Y_TURNOUT.draw(gridX, gridY, gc, gridView.renderer)
+        }
+
+        override fun onClick(event: MouseEvent, helper: GridHelper) {
+            if (event.button == MouseButton.PRIMARY) {
+                helper.doAction(AddCellAction(TurnoutGridCell(TurnoutType.Y)))
+            }
+        }
+
+        override fun getImage() = FileUtil.getImage("tool/y_turnout.png")
+
+    },
+
     TEXT(Cursor.CROSSHAIR) {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             GridCellRenderer.TEXT.draw(gridX, gridY, gc, gridView.renderer)
@@ -102,7 +120,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
             }
         }
 
-        override fun getImage()= FileUtil.getImage("tool/text.png")
+        override fun getImage() = FileUtil.getImage("tool/text.png")
     },
 
     DELETE(Cursor.OPEN_HAND, true) {
@@ -120,7 +138,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
             }
         }
 
-        override fun getImage()= FileUtil.getImage("tool/delete.png")
+        override fun getImage() = FileUtil.getImage("tool/delete.png")
     },
     ;
 

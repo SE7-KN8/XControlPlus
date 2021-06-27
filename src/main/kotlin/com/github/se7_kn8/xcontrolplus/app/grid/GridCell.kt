@@ -156,6 +156,52 @@ enum class GridCellRenderer {
 
     },
 
+    Y_TURNOUT {
+        override fun drawBackground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
+            TURN.drawBackground(gridX, gridY, gc, renderer, cell)
+            gc.rotated(
+                90.0, renderer.getMidX(gridX.toDouble()),
+                renderer.getMidY(gridY.toDouble())
+            ) {
+                TURN.drawBackground(gridX, gridY, gc, renderer, cell)
+            }
+        }
+
+        override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
+            val colors = ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]
+            if (cell is TurnoutGridCell) {
+                var turned = cell.turned
+                if (cell.invert.get()) {
+                    turned = !turned
+                }
+                if (turned) {
+                    if (colors) {
+                        gc.fill = Colors.turnoutBlock
+                        TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                        gc.fill = Colors.turnout
+                    }
+                    gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
+                        TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                    }
+                } else {
+                    if (colors) {
+                        gc.fill = Colors.turnoutBlock
+                        gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
+                            TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                        }
+                        gc.fill = Colors.turnout
+                    }
+                    TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                }
+            } else {
+                TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
+                    TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                }
+            }
+        }
+    },
+
     TEXT {
         override fun drawBackground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
             // NOP
@@ -224,7 +270,11 @@ enum class TurnoutType {
     },
     RIGHT {
         override fun getRenderer() = GridCellRenderer.RIGHT_TURNOUT
-    };
+    },
+    Y {
+        override fun getRenderer() = GridCellRenderer.Y_TURNOUT
+    }
+    ;
 
     abstract fun getRenderer(): GridCellRenderer
 }
@@ -247,7 +297,6 @@ class TurnoutGridCell(private val turnoutType: TurnoutType = TurnoutType.LEFT) :
     }
 
     fun init() {
-        println(invert)
         val connectionHandler = ApplicationContext.get().connectionHandler
         connectionHandler.addTurnout(id.get(), this)
         id.addListener { _, oldValue, newValue ->
@@ -277,7 +326,7 @@ class TurnoutGridCell(private val turnoutType: TurnoutType = TurnoutType.LEFT) :
     override fun getParameters() = mapOf(Pair("id", id), Pair("invert_turnout", invert))
 }
 
-class TextGridCell() : BaseCell() {
+class TextGridCell : BaseCell() {
     val fontSize = SimpleIntegerProperty(10)
     val text = SimpleStringProperty("")
 
