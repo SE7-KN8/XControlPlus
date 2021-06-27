@@ -296,7 +296,7 @@ class XControlPlus : Application() {
 
     private fun getBottomNode(): Node {
         val bottom = HBox()
-        bottom.spacing = 10.0
+        bottom.spacing = 15.0
         bottom.alignment = Pos.CENTER_RIGHT
 
         val zoomSlider = Slider(0.1, 5.0, 1.0).apply {
@@ -315,8 +315,11 @@ class XControlPlus : Application() {
         }
 
 
-        val mousePosInfo = Label()
+        val mousePosInfoX = Label()
+        val mousePosInfoY = Label()
+
         val showGrid = CheckBox()
+        showGrid.text = translate("label.render_grid")
 
         val connectionInfo = Label()
 
@@ -354,12 +357,12 @@ class XControlPlus : Application() {
                     renderGridProperty().bindBidirectional(showGrid.selectedProperty())
                 }
 
-                mousePosInfo.textProperty()
-                    .bind(Bindings.concat(translate("label.x"), mouseGridXProperty(), translate("label.y"), mouseGridYProperty()))
+                mousePosInfoX.textProperty().bind(Bindings.concat(translate("label.x"), " ", mouseGridXProperty()))
+                mousePosInfoY.textProperty().bind(Bindings.concat(translate("label.y"), " ", mouseGridYProperty()))
             }
         }
 
-        bottom.children.addAll(connectionInfo, showGrid, mousePosInfo, zoomSlider)
+        bottom.children.addAll(connectionInfo, showGrid, mousePosInfoX, mousePosInfoY, zoomSlider)
         return bottom
     }
 
