@@ -90,6 +90,7 @@ class ApplicationSettings : Settings(
         WINDOW_WIDTH,
         WINDOW_HEIGHT,
         LATEST_PROJECT_PATH,
+        LATEST_CONNECTION,
     )
 ) {
     companion object {
@@ -101,6 +102,7 @@ class ApplicationSettings : Settings(
         val WINDOW_WIDTH = SettingsEntry("window_width", 0.0)
         val WINDOW_HEIGHT = SettingsEntry("window_height", 0.0)
         val LATEST_PROJECT_PATH = SettingsEntry("latest_project_path", "")
+        val LATEST_CONNECTION = SettingsEntry("latest_connection", "")
     }
 }
 
@@ -111,7 +113,8 @@ class UserSettings : Settings(
         ASK_BEFORE_EXIT,
         OPEN_LATEST_PROJECT,
         COLORED_TURNOUTS,
-        SINGLE_TOUCH_MODE
+        SINGLE_TOUCH_MODE,
+        OPEN_LATEST_CONNECTION,
     )
 ) {
     companion object {
@@ -119,5 +122,6 @@ class UserSettings : Settings(
         val OPEN_LATEST_PROJECT = SettingsEntry("open_latest_project", true)
         val COLORED_TURNOUTS = SettingsEntry("colored_turnouts", false)
         val SINGLE_TOUCH_MODE = SettingsEntry("single_touch", false)
+        val OPEN_LATEST_CONNECTION = SettingsEntry("open_latest_connection", false)
     }
 }

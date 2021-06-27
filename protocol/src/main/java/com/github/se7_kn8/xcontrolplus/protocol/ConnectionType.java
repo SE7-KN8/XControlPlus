@@ -6,5 +6,8 @@ public interface ConnectionType {
 
 	List<Connection> listConnections();
 
-	String getName();
+	String getFullName();
+
+	String getSimpleName();
+
 }

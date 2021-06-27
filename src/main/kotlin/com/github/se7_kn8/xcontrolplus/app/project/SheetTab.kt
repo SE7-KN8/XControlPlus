@@ -36,18 +36,6 @@ class LongPressTimer(private val gridHelper: GridHelper) : AnimationTimer() {
         lastStart = System.nanoTime()
     }
 }
-/*
-class SingleTouchMoveHelper() {
-
-    fun onStart(event: MouseEvent) {
-
-    }
-
-    fun onMove(event: MouseEvent) {
-
-    }
-
-}*/
 
 class SheetTab(project: Project, val sheet: Sheet) : Tab(sheet.name.get()) {
 

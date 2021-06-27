@@ -115,7 +115,7 @@ public class SerialConnection implements Connection {
 			return;
 		}
 		if (!port.openPort()) {
-			throw new IOException("Could not open SerialPort: " + getName());
+			throw new IOException("Could not open SerialPort: " + getFullName());
 		}
 		port.setComPortParameters(BAUDRATE, 8, 1, 0);
 		parserThread = new Thread(new PacketParserTask());
@@ -244,7 +244,12 @@ public class SerialConnection implements Connection {
 	}
 
 	@Override
-	public String getName() {
+	public String getFullName() {
+		return port.getDescriptivePortName();
+	}
+
+	@Override
+	public String getSimpleName() {
 		return port.getSystemPortName();
 	}
 

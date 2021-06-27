@@ -1,6 +1,8 @@
 package com.github.se7_kn8.xcontrolplus.app.dialog
 
+import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
+import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.util.translate
 import com.github.se7_kn8.xcontrolplus.protocol.Connection
 import com.github.se7_kn8.xcontrolplus.protocol.ConnectionType
@@ -14,13 +16,25 @@ import javafx.util.StringConverter
 
 
 class ConnectionTypeStringConverter : StringConverter<ConnectionType>() {
-    override fun toString(type: ConnectionType?) = type?.name
+    override fun toString(type: ConnectionType?): String {
+        return if (type == null) {
+            ""
+        } else {
+            translate("connection.${type.simpleName}")
+        }
+    }
 
     override fun fromString(string: String?) = throw NotImplementedError("Not necessary")
 }
 
 class ConnectionStringConverter : StringConverter<Connection>() {
-    override fun toString(conn: Connection?) = conn?.name
+    override fun toString(conn: Connection?): String {
+        return if (conn == null) {
+            ""
+        } else {
+            "${conn.fullName} (${conn.simpleName})"
+        }
+    }
 
     override fun fromString(string: String?) = throw NotImplementedError("Not necessary")
 
@@ -53,12 +67,14 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
 
         title = translate("dialog.connection")
         dialogPane.headerText = translate("dialog.connection")
+        dialogPane.maxWidth = Double.MAX_VALUE
         dialogPane.buttonTypes.addAll(ButtonType.OK, ButtonType.CANCEL)
 
         val connectionTypeBox = ComboBox<ConnectionType>().apply {
             items.addAll(Connections.getTypes())
             selectionModel.selectFirst()
             converter = ConnectionTypeStringConverter()
+            maxWidth = Double.MAX_VALUE
         }
 
         val connectionTypeLabel = Label(translate("dialog.connection.type"))
@@ -81,13 +97,13 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
         progressBar.isVisible = false
 
         testButton.setOnAction {
-            val task = TestConnectionTask(connectionBox.selectionModel.selectedItem)
-            task.stateProperty().addListener { _, _, newValue ->
-                if (newValue == Worker.State.SUCCEEDED && task.value == true) {
+            val testTask = TestConnectionTask(connectionBox.selectionModel.selectedItem)
+            testTask.stateProperty().addListener { _, _, newValue ->
+                if (newValue == Worker.State.SUCCEEDED && testTask.value == true) {
                     okButton.isDisable = false
                     progressBar.isVisible = false
                     infoLabel.text = translate("dialog.connection.testing_success")
-                } else if (newValue == Worker.State.FAILED || newValue == Worker.State.CANCELLED || (newValue == Worker.State.SUCCEEDED && task.value == false)) {
+                } else if (newValue == Worker.State.FAILED || newValue == Worker.State.CANCELLED || (newValue == Worker.State.SUCCEEDED && testTask.value == false)) {
                     Alert(Alert.AlertType.ERROR, translate("dialog.connection.testing_error")).apply {
                         initOwner(WindowContext.get().primaryStage)
                     }.showAndWait()
@@ -96,7 +112,7 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
                     progressBar.isVisible = false
                 }
             }
-            Thread(task).start()
+            Thread(testTask).start()
             infoLabel.text = translate("dialog.connection.testing_connection")
             progressBar.isVisible = true
         }
@@ -104,16 +120,17 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
         connectionBox.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
             okButton.isDisable = true
             testButton.isDisable = newValue == null
+            dialogPane.scene.window.sizeToScene()
         }
 
         connectionTypeBox.selectionModel.selectedItemProperty().addListener { _, _, newType ->
-            val task = ListConnectionsTask(newType)
-            task.stateProperty().addListener { _, _, newValue ->
+            val listTask = ListConnectionsTask(newType)
+            listTask.stateProperty().addListener { _, _, newValue ->
                 if (newValue == Worker.State.SUCCEEDED) {
                     testButton.isDisable = false
                     progressBar.isVisible = false
                     connectionBox.items.clear()
-                    val connections = task.value
+                    val connections = listTask.value
                     connectionBox.items.addAll(connections)
                     if (connections.isNotEmpty()) {
                         testButton.isDisable = false
@@ -130,7 +147,7 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
                     close()
                 }
             }
-            Thread(task).start()
+            Thread(listTask).start()
             progressBar.isVisible = true
             infoLabel.text = translate("dialog.connection.scanning")
         }
@@ -148,6 +165,8 @@ class ConnectionChoiceDialog : Dialog<Connection>(), AppDialog<Connection?> {
 
         setResultConverter {
             if (it.buttonData == ButtonBar.ButtonData.OK_DONE) {
+                ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_CONNECTION] =
+                    "${connectionTypeBox.selectionModel.selectedItem.simpleName}:${connectionBox.selectionModel.selectedItem.simpleName}"
                 connectionBox.selectionModel.selectedItem
             } else {
                 null

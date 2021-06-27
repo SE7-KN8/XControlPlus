@@ -21,6 +21,7 @@ import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
 import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
 import com.github.se7_kn8.xcontrolplus.app.util.debug
 import com.github.se7_kn8.xcontrolplus.app.util.translate
+import com.github.se7_kn8.xcontrolplus.protocol.Connection
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.beans.binding.Bindings
@@ -53,9 +54,12 @@ class XControlPlus : Application() {
         ApplicationContext.get().applicationSettings.load()
         ApplicationContext.get().userSettings.load()
 
-        // TODO to init(), but currently not possible because the property listeners are added in start()
         if (ApplicationContext.get().userSettings[UserSettings.OPEN_LATEST_PROJECT]) {
             projectManager.loadLatestProject()
+        }
+
+        if (ApplicationContext.get().userSettings[UserSettings.OPEN_LATEST_CONNECTION]) {
+            ApplicationContext.get().connectionHandler.loadLatestConnection()
         }
 
         // A little time to let the threads catch up
@@ -315,14 +319,21 @@ class XControlPlus : Application() {
         val showGrid = CheckBox()
 
         val connectionInfo = Label()
-        connectionInfo.text = translate("label.no_connected")
-        ApplicationContext.get().connectionHandler.connection.addListener { _, _, newValue ->
-            if (newValue != null) {
-                projectManager.activeProject.get()?.updateTurnoutStates()
-                connectionInfo.text = translate("label.connected_to", newValue.name)
+
+        val setLabelText: (connection: Connection?, updateTurnouts: Boolean) -> Unit = { it, update ->
+            if (it != null) {
+                if (update) {
+                    projectManager.activeProject.get()?.updateTurnoutStates()
+                }
+                connectionInfo.text = translate("label.connected_to", it.simpleName)
             } else {
                 connectionInfo.text = translate("label.no_connected")
             }
+        }
+
+        setLabelText(ApplicationContext.get().connectionHandler.connection.get(), false)
+        ApplicationContext.get().connectionHandler.connection.addListener { _, _, newValue ->
+            setLabelText(newValue, true)
         }
 
         currentTab.addListener { _, oldValue, newValue ->

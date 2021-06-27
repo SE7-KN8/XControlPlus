@@ -21,8 +21,13 @@ public class Connections {
 		}
 
 		@Override
-		public String getName() {
-			return "None";
+		public String getFullName() {
+			return "Empty Connection";
+		}
+
+		@Override
+		public String getSimpleName() {
+			return "none";
 		}
 	}
 

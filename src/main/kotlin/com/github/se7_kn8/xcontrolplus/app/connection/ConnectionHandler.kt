@@ -1,14 +1,17 @@
 package com.github.se7_kn8.xcontrolplus.app.connection
 
+import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.ConnectionChoiceDialog
 import com.github.se7_kn8.xcontrolplus.app.grid.TurnoutGridCell
 import com.github.se7_kn8.xcontrolplus.app.project.Sheet
+import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.util.debug
 import com.github.se7_kn8.xcontrolplus.app.util.info
 import com.github.se7_kn8.xcontrolplus.app.util.trace
 import com.github.se7_kn8.xcontrolplus.app.util.warn
 import com.github.se7_kn8.xcontrolplus.protocol.Connection
+import com.github.se7_kn8.xcontrolplus.protocol.Connections
 import com.github.se7_kn8.xcontrolplus.protocol.packet.EchoPacket
 import com.github.se7_kn8.xcontrolplus.protocol.packet.Packet
 import javafx.application.Platform
@@ -92,7 +95,7 @@ class ConnectionHandler : Consumer<Packet> {
                 debug("Closing old connection")
             }
             newValue?.let {
-                info("New connection ${it.name}")
+                info("New connection ${it.simpleName}")
                 it.openConnection()
                 it.setOnPacketReceived(this)
             }
@@ -168,6 +171,30 @@ class ConnectionHandler : Consumer<Packet> {
     fun sendPacket(packet: Packet) {
         debug("Try to send packet: $packet")
         connection.get()?.sendPacket(packet)
+    }
+
+    fun loadLatestConnection() {
+        val latestConnection = ApplicationContext.get().applicationSettings[ApplicationSettings.LATEST_CONNECTION]
+        val split = latestConnection.split(":")
+        val typeName = split[0]
+        val connName = split[1]
+        val conn =
+            Connections.getTypes().filter { it.simpleName == typeName }.firstOrNull()?.listConnections()?.filter { it.simpleName == connName }
+                ?.firstOrNull()
+        conn?.let {
+            info("Loading connection ${it.fullName}")
+            it.openConnection()
+            val valid = it.testConnection(5000)
+            it.closeConnection()
+            Platform.runLater {
+                if (valid) {
+                    connection.set(conn)
+                } else {
+                    warn("Could not load connection on start")
+                }
+            }
+        }
+
     }
 
 }

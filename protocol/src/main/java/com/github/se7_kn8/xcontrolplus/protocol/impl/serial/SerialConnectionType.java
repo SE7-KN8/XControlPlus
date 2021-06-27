@@ -17,9 +17,12 @@ public class SerialConnectionType implements ConnectionType {
 	}
 
 	@Override
-	public String getName() {
+	public String getFullName() {
 		return "SerialConnection-jSerialComm" + SerialPort.getVersion();
 	}
 
-
+	@Override
+	public String getSimpleName() {
+		return "serial";
+	}
 }
