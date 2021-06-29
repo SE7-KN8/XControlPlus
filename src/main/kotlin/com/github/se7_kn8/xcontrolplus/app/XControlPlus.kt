@@ -1,5 +1,6 @@
 package com.github.se7_kn8.xcontrolplus.app
 
+import com.github.se7_kn8.xcontrolplus.app.connection.DebugConnection
 import com.github.se7_kn8.xcontrolplus.app.connection.TrackPowerPacket
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
@@ -387,19 +388,31 @@ class XControlPlus : Application() {
             ApplicationContext.get().connectionHandler.showConnectionSelectDialog()
         }
 
-        updateTurnouts.disableProperty().bind(Bindings.not(ApplicationContext.get().connectionHandler.hasConnection))
         updateTurnouts.setOnAction { projectManager.activeProject.get()?.updateTurnoutStates() }
 
-        resumePower.disableProperty().bind(Bindings.not(ApplicationContext.get().connectionHandler.hasConnection))
         resumePower.setOnAction { ApplicationContext.get().connectionHandler.sendPacket(TrackPowerPacket.newResumeRequest()) }
         resumePower.visibleProperty().bind(ApplicationContext.get().connectionHandler.trackStop)
 
-        emergencyStopPower.disableProperty().bind(Bindings.not(ApplicationContext.get().connectionHandler.hasConnection))
         emergencyStopPower.setOnAction { ApplicationContext.get().connectionHandler.sendPacket(TrackPowerPacket.newEmergencyStopRequest()) }
         emergencyStopPower.visibleProperty().bind(Bindings.not(ApplicationContext.get().connectionHandler.trackStop))
 
+        if (ApplicationContext.get().buildInfo.isDebug()) {
+            val debugConnection = Button("DEBUG CONNECTION").apply {
+                maxWidth = Double.MAX_VALUE
+            }
+            debugConnection.setOnAction {
+                DebugConnection.showWindow()
+            }
+            left.children.add(debugConnection)
+        } else {
+            updateTurnouts.disableProperty().bind(Bindings.not(ApplicationContext.get().connectionHandler.hasConnection))
+            emergencyStopPower.disableProperty().bind(Bindings.not(ApplicationContext.get().connectionHandler.hasConnection))
+            resumePower.disableProperty().bind(Bindings.not(ApplicationContext.get().connectionHandler.hasConnection))
+        }
 
         left.children.addAll(chooseConnection, updateTurnouts, resumePower, emergencyStopPower)
+
+
         return left
     }
 
