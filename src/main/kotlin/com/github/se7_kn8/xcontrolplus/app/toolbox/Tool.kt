@@ -122,6 +122,20 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
         override fun getImage() = FileUtil.getImage("tool/three_way_turnout.png")
     },
 
+    CROSSING_TURNOUT(Cursor.CROSSHAIR) {
+        override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
+            GridCellRenderer.CROSSING_TURNOUT.draw(gridX, gridY, gc, gridView.renderer)
+        }
+
+        override fun onClick(event: MouseEvent, helper: GridHelper) {
+            if (event.button == MouseButton.PRIMARY) {
+                helper.doAction(AddCellAction(CrossingTurnout()))
+            }
+        }
+
+        override fun getImage() = FileUtil.getImage("tool/crossing_turnout.png")
+    },
+
     TEXT(Cursor.CROSSHAIR) {
         override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
             GridCellRenderer.TEXT.draw(gridX, gridY, gc, gridView.renderer)

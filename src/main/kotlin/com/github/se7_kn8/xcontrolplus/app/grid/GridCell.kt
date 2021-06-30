@@ -1,11 +1,8 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
-import com.github.se7_kn8.xcontrolplus.app.project.turnout.ThreeWayTurnoutLogic
-import com.github.se7_kn8.xcontrolplus.app.project.turnout.ThreeWayTurnoutOutputState
 import com.github.se7_kn8.xcontrolplus.app.project.turnout.Turnout
-import com.github.se7_kn8.xcontrolplus.app.project.turnout.logic.SimpleTurnoutLogic
-import com.github.se7_kn8.xcontrolplus.app.project.turnout.logic.SimpleTurnoutOutputState
+import com.github.se7_kn8.xcontrolplus.app.project.turnout.logic.*
 import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
 import com.github.se7_kn8.xcontrolplus.app.util.translate
@@ -244,6 +241,135 @@ enum class GridCellRenderer {
         }
     },
 
+    CROSSING_TURNOUT {
+        override fun drawBackground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
+            val x =
+                doubleArrayOf(
+                    (gridX.toDouble() + 0.0) * renderer.gridSize,
+                    (gridX.toDouble() + 0.3) * renderer.gridSize,
+                    (gridX.toDouble() + 0.3) * renderer.gridSize,
+                    (gridX.toDouble() + 0.7) * renderer.gridSize,
+                    (gridX.toDouble() + 0.7) * renderer.gridSize,
+                    (gridX.toDouble() + 0.8) * renderer.gridSize,
+                    (gridX.toDouble() + 1.0) * renderer.gridSize,
+                    (gridX.toDouble() + 1.0) * renderer.gridSize,
+                    (gridX.toDouble() + 0.7) * renderer.gridSize,
+                    (gridX.toDouble() + 0.7) * renderer.gridSize,
+                    (gridX.toDouble() + 0.3) * renderer.gridSize,
+                    (gridX.toDouble() + 0.3) * renderer.gridSize,
+                    (gridX.toDouble() + 0.2) * renderer.gridSize,
+                    (gridX.toDouble() + 0.0) * renderer.gridSize,
+                )
+            val y =
+                doubleArrayOf(
+                    (gridY.toDouble() + 0.3) * renderer.gridSize,
+                    (gridY.toDouble() + 0.3) * renderer.gridSize,
+                    (gridY.toDouble() + 0.0) * renderer.gridSize,
+                    (gridY.toDouble() + 0.0) * renderer.gridSize,
+                    (gridY.toDouble() + 0.2) * renderer.gridSize,
+                    (gridY.toDouble() + 0.3) * renderer.gridSize,
+                    (gridY.toDouble() + 0.3) * renderer.gridSize,
+                    (gridY.toDouble() + 0.7) * renderer.gridSize,
+                    (gridY.toDouble() + 0.7) * renderer.gridSize,
+                    (gridY.toDouble() + 1.0) * renderer.gridSize,
+                    (gridY.toDouble() + 1.0) * renderer.gridSize,
+                    (gridY.toDouble() + 0.8) * renderer.gridSize,
+                    (gridY.toDouble() + 0.7) * renderer.gridSize,
+                    (gridY.toDouble() + 0.7) * renderer.gridSize,
+                )
+            gc.fillPolygon(x, y, x.size)
+        }
+
+        override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
+            val colors = ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]
+            val upperHalfX = doubleArrayOf(
+                (gridX.toDouble() + 0.4) * renderer.gridSize,
+                (gridX.toDouble() + 0.6) * renderer.gridSize,
+                (gridX.toDouble() + 0.6) * renderer.gridSize,
+                (gridX.toDouble() + 0.7) * renderer.gridSize,
+                (gridX.toDouble() + 1.0) * renderer.gridSize,
+                (gridX.toDouble() + 1.0) * renderer.gridSize,
+                (gridX.toDouble() + 0.6) * renderer.gridSize,
+                (gridX.toDouble() + 0.4) * renderer.gridSize,
+            )
+            val upperHalfY = doubleArrayOf(
+                (gridY.toDouble() + 0.0) * renderer.gridSize,
+                (gridY.toDouble() + 0.0) * renderer.gridSize,
+                (gridY.toDouble() + 0.3) * renderer.gridSize,
+                (gridY.toDouble() + 0.4) * renderer.gridSize,
+                (gridY.toDouble() + 0.4) * renderer.gridSize,
+                (gridY.toDouble() + 0.6) * renderer.gridSize,
+                (gridY.toDouble() + 0.6) * renderer.gridSize,
+                (gridY.toDouble() + 0.4) * renderer.gridSize,
+            )
+            val lowerHalfX = doubleArrayOf(
+                (gridX.toDouble() + 0.0) * renderer.gridSize,
+                (gridX.toDouble() + 0.4) * renderer.gridSize,
+                (gridX.toDouble() + 0.6) * renderer.gridSize,
+                (gridX.toDouble() + 0.6) * renderer.gridSize,
+                (gridX.toDouble() + 0.4) * renderer.gridSize,
+                (gridX.toDouble() + 0.4) * renderer.gridSize,
+                (gridX.toDouble() + 0.3) * renderer.gridSize,
+                (gridX.toDouble() + 0.0) * renderer.gridSize,
+            )
+            val lowerHalfY = doubleArrayOf(
+                (gridY.toDouble() + 0.4) * renderer.gridSize,
+                (gridY.toDouble() + 0.4) * renderer.gridSize,
+                (gridY.toDouble() + 0.6) * renderer.gridSize,
+                (gridY.toDouble() + 1.0) * renderer.gridSize,
+                (gridY.toDouble() + 1.0) * renderer.gridSize,
+                (gridY.toDouble() + 0.7) * renderer.gridSize,
+                (gridY.toDouble() + 0.6) * renderer.gridSize,
+                (gridY.toDouble() + 0.6) * renderer.gridSize,
+            )
+
+            if (cell is CrossingTurnout) {
+                when (cell.logic.getState()) {
+                    CrossingTurnoutOutputState.TOP_TO_BOTTOM -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            gc.fillPolygon(upperHalfX, upperHalfY, upperHalfX.size)
+                            gc.fillPolygon(lowerHalfX, lowerHalfY, lowerHalfX.size)
+                            gc.fill = Colors.turnout
+                        }
+                        gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
+                            STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
+                        }
+                    }
+                    CrossingTurnoutOutputState.LEFT_TO_RIGHT -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            gc.fillPolygon(upperHalfX, upperHalfY, upperHalfX.size)
+                            gc.fillPolygon(lowerHalfX, lowerHalfY, lowerHalfX.size)
+                            gc.fill = Colors.turnout
+                        }
+                        STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
+                    }
+                    CrossingTurnoutOutputState.TOP_TO_RIGHT -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            gc.fillPolygon(lowerHalfX, lowerHalfY, lowerHalfX.size)
+                            gc.fill = Colors.turnout
+                        }
+                        gc.fillPolygon(upperHalfX, upperHalfY, upperHalfX.size)
+                    }
+                    CrossingTurnoutOutputState.LEFT_TO_BOTTOM -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            gc.fillPolygon(upperHalfX, upperHalfY, upperHalfX.size)
+                            gc.fill = Colors.turnout
+                        }
+                        gc.fillPolygon(lowerHalfX, lowerHalfY, lowerHalfX.size)
+                    }
+                }
+            } else {
+                gc.fillPolygon(upperHalfX, upperHalfY, upperHalfX.size)
+                gc.fillPolygon(lowerHalfX, lowerHalfY, lowerHalfX.size)
+            }
+        }
+
+    },
+
     TEXT {
         override fun drawBackground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
             // NOP
@@ -363,15 +489,9 @@ class TurnoutGridCell(private val turnoutType: TurnoutType = TurnoutType.LEFT) :
     override fun turnoutInputToAddress(input: Int) = id.get()
 }
 
-class ThreeWayTurnout : BaseCell(), Turnout<ThreeWayTurnoutOutputState> {
-
-    private val id1 = SimpleIntegerProperty(0)
-    private val id2 = SimpleIntegerProperty(0)
-
-    @Transient
-    override val logic = ThreeWayTurnoutLogic(this)
-
-    override var stateMap = logic.getDefaultStateMap()
+abstract class DoubleTurnout<Output : Enum<*>> : BaseCell(), Turnout<Output> {
+    protected val id1 = SimpleIntegerProperty(0)
+    protected val id2 = SimpleIntegerProperty(0)
 
     override fun init() {
         val connectionHandler = ApplicationContext.get().connectionHandler
@@ -383,6 +503,22 @@ class ThreeWayTurnout : BaseCell(), Turnout<ThreeWayTurnoutOutputState> {
             connectionHandler.updateTurnout(oldValue.toInt(), this)
         }
     }
+
+    override fun getAddresses() = intArrayOf(id1.get(), id2.get())
+
+    override fun getParameters() = mapOf(Pair("id_1", id1), Pair("id_2", id2))
+
+    override fun turnoutInputToAddress(input: Int) = if (input == 0) id1.get() else id2.get()
+
+    override fun addressToTurnoutInput(address: Int) = if (address == id1.get()) 0 else 1
+}
+
+class ThreeWayTurnout : DoubleTurnout<ThreeWayTurnoutOutputState>() {
+
+    @Transient
+    override val logic = ThreeWayTurnoutLogic(this)
+
+    override var stateMap = logic.getDefaultStateMap()
 
     override fun getContextOptions(): List<MenuItem> {
         val turnNext = MenuItem(translate("context_menu.turn_next"))
@@ -409,14 +545,45 @@ class ThreeWayTurnout : BaseCell(), Turnout<ThreeWayTurnoutOutputState> {
     }
 
     override fun getRenderer() = GridCellRenderer.THREE_WAY_TURNOUT
+}
 
-    override fun getAddresses() = intArrayOf(id1.get(), id2.get())
+class CrossingTurnout : DoubleTurnout<CrossingTurnoutOutputState>() {
 
-    override fun getParameters() = mapOf(Pair("id_1", id1), Pair("id_2", id2))
+    @Transient
+    override val logic = CrossingTurnoutLogic(this)
 
-    override fun turnoutInputToAddress(input: Int) = if (input == 0) id1.get() else id2.get()
+    override var stateMap = logic.getDefaultStateMap()
 
-    override fun addressToTurnoutInput(address: Int) = if (address == id1.get()) 0 else 1
+    override fun getContextOptions(): List<MenuItem> {
+        val turnNext = MenuItem(translate("context_menu.turn_next"))
+        turnNext.setOnAction {
+            turnTo(logic.getState().next())
+        }
+
+        val turnLeftRight = MenuItem(translate("context_menu.turn_left_to_right"))
+        turnLeftRight.setOnAction {
+            turnTo(CrossingTurnoutOutputState.LEFT_TO_RIGHT)
+        }
+
+        val turnTopBottom = MenuItem(translate("context_menu.turn_top_to_bottom"))
+        turnTopBottom.setOnAction {
+            turnTo(CrossingTurnoutOutputState.TOP_TO_BOTTOM)
+        }
+
+        val turnTopRight = MenuItem(translate("context_menu.turn_top_to_right"))
+        turnTopRight.setOnAction {
+            turnTo(CrossingTurnoutOutputState.TOP_TO_RIGHT)
+        }
+
+        val turnLeftBottom = MenuItem(translate("context_menu.turn_left_to_bottom"))
+        turnLeftBottom.setOnAction {
+            turnTo(CrossingTurnoutOutputState.LEFT_TO_BOTTOM)
+        }
+
+        return listOf(turnNext, turnLeftRight, turnTopBottom, turnTopRight, turnLeftBottom)
+    }
+
+    override fun getRenderer() = GridCellRenderer.CROSSING_TURNOUT
 }
 
 class TextGridCell : BaseCell() {

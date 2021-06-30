@@ -142,11 +142,13 @@ class ConnectionHandler : Consumer<Packet> {
         turnout.getAddresses().forEach {
             turnoutMap.getOrPut(it) { HashSet() }.add(turnout)
         }
+        trace { "New turnout map is $turnoutMap" }
     }
 
     fun removeTurnout(oldAddress: Int, turnout: Turnout<*>) {
         debug { "Remove turnout consumer $turnout for address $oldAddress" }
         turnoutMap.getOrPut(oldAddress) { HashSet() }.remove(turnout)
+        trace { "New turnout map is $turnoutMap" }
     }
 
     fun removeTurnout(turnout: Turnout<*>) {
@@ -154,6 +156,7 @@ class ConnectionHandler : Consumer<Packet> {
         turnout.getAddresses().forEach {
             turnoutMap.getOrPut(it) { HashSet() }.remove(turnout)
         }
+        trace { "New turnout map is $turnoutMap" }
     }
 
     fun close() {

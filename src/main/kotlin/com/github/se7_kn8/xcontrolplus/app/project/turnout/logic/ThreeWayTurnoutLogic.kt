@@ -1,6 +1,6 @@
-package com.github.se7_kn8.xcontrolplus.app.project.turnout
+package com.github.se7_kn8.xcontrolplus.app.project.turnout.logic
 
-import com.github.se7_kn8.xcontrolplus.app.project.turnout.logic.TurnoutLogic
+import com.github.se7_kn8.xcontrolplus.app.project.turnout.Turnout
 
 enum class ThreeWayTurnoutOutputState {
     NOT_TURNED,
