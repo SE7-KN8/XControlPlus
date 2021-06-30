@@ -4,6 +4,8 @@ import com.github.se7_kn8.xcontrolplus.app.connection.TurnoutPacket
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.NoConnectionDialog
 import com.github.se7_kn8.xcontrolplus.app.project.turnout.logic.TurnoutLogic
+import com.github.se7_kn8.xcontrolplus.gridview.CellRotation
+import javafx.scene.image.Image
 import java.util.function.BiConsumer
 
 
@@ -37,4 +39,13 @@ interface Turnout<Output : Enum<*>> : BiConsumer<Int, Boolean> {
     fun turnoutInputToAddress(input: Int): Int
 
     fun addressToTurnoutInput(address: Int): Int
+
+    fun getGraphic(state: Output): Image
+
+    fun getRotation(): CellRotation
+
+    fun getRotationOffset(): CellRotation
+
+    //fun getRotationOffset(): CellRotation
+
 }

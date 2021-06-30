@@ -6,6 +6,8 @@ import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import javafx.scene.image.Image
 import javafx.stage.FileChooser
 import java.io.File
+import java.io.InputStream
+import java.net.URL
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
@@ -81,14 +83,19 @@ object FileUtil {
         }
     }
 
-    fun getResource(path: String) = FileUtil::class.java.getResource("/$path")
+    fun getResource(path: String): URL {
+        debug("Loading resource $path")
+        return FileUtil::class.java.getResource("/$path")!!
+    }
 
-    fun getResourceAsStream(path: String) = FileUtil::class.java.getResourceAsStream("/$path")
+    fun getResourceAsStream(path: String): InputStream {
+        debug("Loading resource stream $path")
+        return FileUtil::class.java.getResourceAsStream("/$path")!!
+    }
 
     fun getAsset(path: String) = getResource("assets/$path")
 
     fun getAssetAsStream(path: String) = getResourceAsStream("assets/$path")
 
     fun getImage(path: String) = Image(getAssetAsStream(path))
-
 }

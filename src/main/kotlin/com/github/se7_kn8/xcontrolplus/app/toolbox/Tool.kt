@@ -115,7 +115,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
 
         override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                helper.doAction(AddCellAction(ThreeWayTurnout()))
+                helper.doAction(AddCellAction(ThreeWayTurnoutGridCell()))
             }
         }
 
@@ -129,7 +129,7 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
 
         override fun onClick(event: MouseEvent, helper: GridHelper) {
             if (event.button == MouseButton.PRIMARY) {
-                helper.doAction(AddCellAction(CrossingTurnout()))
+                helper.doAction(AddCellAction(CrossingTurnoutGridCell()))
             }
         }
 

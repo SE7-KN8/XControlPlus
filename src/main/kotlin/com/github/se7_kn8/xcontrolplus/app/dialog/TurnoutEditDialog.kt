@@ -6,6 +6,7 @@ import com.github.se7_kn8.xcontrolplus.app.util.translate
 import javafx.collections.FXCollections
 import javafx.geometry.Insets
 import javafx.scene.control.*
+import javafx.scene.image.ImageView
 import javafx.scene.layout.GridPane
 import javafx.scene.paint.Color
 import javafx.scene.shape.Rectangle
@@ -30,7 +31,9 @@ class TurnoutEditDialog<OutputState : Enum<*>>(private val turnout: Turnout<Outp
                     if (item == null || empty) {
                         graphic = null
                     } else {
-                        // TODO add graphics
+                        graphic = ImageView(turnout.getGraphic(item))
+                        graphic.rotate = turnout.getRotation().rotation() + turnout.getRotationOffset().rotation()
+                        println(graphic.rotate)
                         text = translate("turnout.state.${item.name.lowercase()}")
                     }
                 }

@@ -59,10 +59,10 @@ class DeleteSelectedCellAction : SelectedCellAction() {
 class AddCellAction(private val cell: BaseCell) : Action {
 
     override fun init(helper: GridHelper) {
+        cell.setPosFromMouse(helper)
         if (cell.getParameters().keys.isNotEmpty()) {
             CellParameterEditDialog(cell).showAndWait()
         }
-        cell.setPosFromMouse(helper)
     }
 
     override fun valid(helper: GridHelper) = true

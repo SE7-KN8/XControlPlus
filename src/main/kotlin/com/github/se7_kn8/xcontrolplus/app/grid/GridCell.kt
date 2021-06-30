@@ -4,8 +4,10 @@ import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.project.turnout.Turnout
 import com.github.se7_kn8.xcontrolplus.app.project.turnout.logic.*
 import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
+import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
 import com.github.se7_kn8.xcontrolplus.app.util.translate
+import com.github.se7_kn8.xcontrolplus.gridview.CellRotation
 import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
 import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell
 import javafx.beans.property.Property
@@ -205,7 +207,7 @@ enum class GridCellRenderer {
 
         override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
             val colors = ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]
-            if (cell is ThreeWayTurnout) {
+            if (cell is ThreeWayTurnoutGridCell) {
                 when (cell.logic.getState()) {
                     ThreeWayTurnoutOutputState.NOT_TURNED -> {
                         if (colors) {
@@ -323,7 +325,7 @@ enum class GridCellRenderer {
                 (gridY.toDouble() + 0.6) * renderer.gridSize,
             )
 
-            if (cell is CrossingTurnout) {
+            if (cell is CrossingTurnoutGridCell) {
                 when (cell.logic.getState()) {
                     CrossingTurnoutOutputState.TOP_TO_BOTTOM -> {
                         if (colors) {
@@ -487,9 +489,15 @@ class TurnoutGridCell(private val turnoutType: TurnoutType = TurnoutType.LEFT) :
     override fun addressToTurnoutInput(address: Int) = 0
 
     override fun turnoutInputToAddress(input: Int) = id.get()
+
+    override fun getGraphic(state: SimpleTurnoutOutputState) =
+        FileUtil.getImage("turnout/${turnoutType.name.lowercase()}/${state.name.lowercase()}.png")
+
+    override fun getRotationOffset() = CellRotation.D90
+
 }
 
-abstract class DoubleTurnout<Output : Enum<*>> : BaseCell(), Turnout<Output> {
+abstract class DoubleTurnoutGridCell<Output : Enum<*>> : BaseCell(), Turnout<Output> {
     protected val id1 = SimpleIntegerProperty(0)
     protected val id2 = SimpleIntegerProperty(0)
 
@@ -511,9 +519,10 @@ abstract class DoubleTurnout<Output : Enum<*>> : BaseCell(), Turnout<Output> {
     override fun turnoutInputToAddress(input: Int) = if (input == 0) id1.get() else id2.get()
 
     override fun addressToTurnoutInput(address: Int) = if (address == id1.get()) 0 else 1
+
 }
 
-class ThreeWayTurnout : DoubleTurnout<ThreeWayTurnoutOutputState>() {
+class ThreeWayTurnoutGridCell : DoubleTurnoutGridCell<ThreeWayTurnoutOutputState>() {
 
     @Transient
     override val logic = ThreeWayTurnoutLogic(this)
@@ -545,9 +554,13 @@ class ThreeWayTurnout : DoubleTurnout<ThreeWayTurnoutOutputState>() {
     }
 
     override fun getRenderer() = GridCellRenderer.THREE_WAY_TURNOUT
+
+    override fun getGraphic(state: ThreeWayTurnoutOutputState) = FileUtil.getImage("turnout/three_way/${state.name.lowercase()}.png")
+
+    override fun getRotationOffset() = CellRotation.D90
 }
 
-class CrossingTurnout : DoubleTurnout<CrossingTurnoutOutputState>() {
+class CrossingTurnoutGridCell : DoubleTurnoutGridCell<CrossingTurnoutOutputState>() {
 
     @Transient
     override val logic = CrossingTurnoutLogic(this)
@@ -584,6 +597,10 @@ class CrossingTurnout : DoubleTurnout<CrossingTurnoutOutputState>() {
     }
 
     override fun getRenderer() = GridCellRenderer.CROSSING_TURNOUT
+
+    override fun getGraphic(state: CrossingTurnoutOutputState) = FileUtil.getImage("turnout/crossing/${state.name.lowercase()}.png")
+
+    override fun getRotationOffset() = CellRotation.D0
 }
 
 class TextGridCell : BaseCell() {
