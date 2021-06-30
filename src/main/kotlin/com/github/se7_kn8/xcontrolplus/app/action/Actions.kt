@@ -1,9 +1,11 @@
 package com.github.se7_kn8.xcontrolplus.app.action
 
+import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.CellParameterEditDialog
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
 import com.github.se7_kn8.xcontrolplus.app.grid.TurnoutGridCell
+import com.github.se7_kn8.xcontrolplus.app.project.turnout.Turnout
 import com.github.se7_kn8.xcontrolplus.gridview.RotationDirection
 
 interface Action {
@@ -33,10 +35,13 @@ class RotateSelectedCellAction(private val direction: RotationDirection) : Selec
     }
 }
 
-class DeleteSelectedCellAction() : SelectedCellAction() {
+class DeleteSelectedCellAction : SelectedCellAction() {
     override fun doAction(helper: GridHelper) {
         cell?.let {
             helper.removeCell(it)
+            if (it is Turnout<*>) {
+                ApplicationContext.get().connectionHandler.removeTurnout(it)
+            }
         }
         helper.selectHoveredCell()
     }
@@ -44,6 +49,9 @@ class DeleteSelectedCellAction() : SelectedCellAction() {
     override fun undoAction(helper: GridHelper) {
         cell?.let {
             helper.addCell(it)
+            if (it is Turnout<*>) {
+                ApplicationContext.get().connectionHandler.addTurnout(it)
+            }
         }
     }
 

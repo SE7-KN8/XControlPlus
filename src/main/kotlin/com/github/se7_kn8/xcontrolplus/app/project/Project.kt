@@ -25,7 +25,7 @@ class Project(var name: String) {
     }
 
     fun updateTurnoutStates() {
-        if (ApplicationContext.get().connectionHandler.hasConnection()) {
+        if (ApplicationContext.get().connectionHandler.hasConnection() || ApplicationContext.get().buildInfo.isDebug()) {
             ProjectUpdateDialog(this).showDialog()
         }
     }

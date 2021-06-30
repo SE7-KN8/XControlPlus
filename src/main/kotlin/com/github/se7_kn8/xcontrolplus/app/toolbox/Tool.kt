@@ -106,7 +106,20 @@ enum class Tool(val cursor: Cursor = Cursor.DEFAULT, val allowDrag: Boolean = fa
         }
 
         override fun getImage() = FileUtil.getImage("tool/y_turnout.png")
+    },
 
+    THREE_WAY_TURNOUT(Cursor.CROSSHAIR) {
+        override fun draw(gridX: Int, gridY: Int, gc: GraphicsContext, gridView: GridView<BaseCell>) {
+            GridCellRenderer.THREE_WAY_TURNOUT.draw(gridX, gridY, gc, gridView.renderer)
+        }
+
+        override fun onClick(event: MouseEvent, helper: GridHelper) {
+            if (event.button == MouseButton.PRIMARY) {
+                helper.doAction(AddCellAction(ThreeWayTurnout()))
+            }
+        }
+
+        override fun getImage() = FileUtil.getImage("tool/three_way_turnout.png")
     },
 
     TEXT(Cursor.CROSSHAIR) {

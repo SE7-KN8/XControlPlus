@@ -17,10 +17,11 @@ import java.util.zip.ZipOutputStream
 
 enum class SaveVersion(val versionName: String, val compatibleTo: List<SaveVersion> = emptyList()) {
     VERSION_1_0("1.0"),
-    VERSION_1_1("1.1", listOf(VERSION_1_0))
+    VERSION_1_1("1.1", listOf(VERSION_1_0)), // Add invert function
+    VERSION_1_2("1.2", listOf(VERSION_1_0, VERSION_1_1)) // Add new turnout logic and new cells
 }
 
-data class ProjectMetadata(val version: SaveVersion = SaveVersion.VERSION_1_1)
+data class ProjectMetadata(val version: SaveVersion = SaveVersion.VERSION_1_2)
 
 class ProjectManager {
     val metadataFileName = "metadata.json"

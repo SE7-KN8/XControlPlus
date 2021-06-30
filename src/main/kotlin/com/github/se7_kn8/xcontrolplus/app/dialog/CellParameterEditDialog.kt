@@ -2,6 +2,7 @@ package com.github.se7_kn8.xcontrolplus.app.dialog
 
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
+import com.github.se7_kn8.xcontrolplus.app.project.turnout.Turnout
 import com.github.se7_kn8.xcontrolplus.app.util.translate
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.IntegerProperty
@@ -50,6 +51,16 @@ class CellParameterEditDialog(private val cell: BaseCell) : Alert(AlertType.NONE
             root.add(Label(translate("parameter." + parameter.key.lowercase())), 0, pos)
             root.add(node, 1, pos)
             pos += 1
+        }
+
+
+        if (cell is Turnout<*>) {
+            pos += 2
+            val editTurnout = Button(translate("dialog.parameter.edit_turnout"))
+            editTurnout.setOnAction {
+                TurnoutEditDialog(cell).showDialog()
+            }
+            root.add(editTurnout, 0, pos)
         }
 
         title = translate("dialog.parameter")

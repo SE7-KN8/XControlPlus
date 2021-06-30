@@ -1,21 +1,22 @@
 package com.github.se7_kn8.xcontrolplus.app.grid
 
-import com.github.se7_kn8.xcontrolplus.app.connection.TurnoutPacket
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
-import com.github.se7_kn8.xcontrolplus.app.dialog.NoConnectionDialog
+import com.github.se7_kn8.xcontrolplus.app.project.turnout.ThreeWayTurnoutLogic
+import com.github.se7_kn8.xcontrolplus.app.project.turnout.ThreeWayTurnoutOutputState
+import com.github.se7_kn8.xcontrolplus.app.project.turnout.Turnout
+import com.github.se7_kn8.xcontrolplus.app.project.turnout.logic.SimpleTurnoutLogic
+import com.github.se7_kn8.xcontrolplus.app.project.turnout.logic.SimpleTurnoutOutputState
 import com.github.se7_kn8.xcontrolplus.app.settings.UserSettings
 import com.github.se7_kn8.xcontrolplus.app.util.rotated
 import com.github.se7_kn8.xcontrolplus.app.util.translate
 import com.github.se7_kn8.xcontrolplus.gridview.GridRenderer
 import com.github.se7_kn8.xcontrolplus.gridview.model.GridCell
 import javafx.beans.property.Property
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.MenuItem
 import javafx.scene.text.Font
-import java.util.function.Consumer
 
 enum class GridCellRenderer {
     STRAIGHT {
@@ -87,28 +88,27 @@ enum class GridCellRenderer {
         override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
             val colors = ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]
             if (cell is TurnoutGridCell) {
-                var turned = cell.turned
-                if (cell.invert.get()) {
-                    turned = !turned
-                }
-                if (turned) {
-                    if (colors) {
-                        gc.fill = Colors.turnoutBlock
-                        STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
-                        gc.fill = Colors.turnout
-                    }
-                    gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
-                        TURN.drawForeground(gridX, gridY, gc, renderer, cell)
-                    }
-                } else {
-                    if (colors) {
-                        gc.fill = Colors.turnoutBlock
+                when (cell.logic.getState()) {
+                    SimpleTurnoutOutputState.TURNED -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
+                            gc.fill = Colors.turnout
+                        }
                         gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
                             TURN.drawForeground(gridX, gridY, gc, renderer, cell)
                         }
-                        gc.fill = Colors.turnout
                     }
-                    STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
+                    SimpleTurnoutOutputState.NOT_TURNED -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
+                                TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                            }
+                            gc.fill = Colors.turnout
+                        }
+                        STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
+                    }
                 }
             } else {
                 STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
@@ -129,24 +129,23 @@ enum class GridCellRenderer {
         override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
             if (cell is TurnoutGridCell) {
                 val colors = ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]
-                var turned = cell.turned
-                if (cell.invert.get()) {
-                    turned = !turned
-                }
-                if (turned) {
-                    if (colors) {
-                        gc.fill = Colors.turnoutBlock
-                        STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
-                        gc.fill = Colors.turnout
-                    }
-                    TURN.drawForeground(gridX, gridY, gc, renderer, cell)
-                } else {
-                    if (colors) {
-                        gc.fill = Colors.turnoutBlock
+                when (cell.logic.getState()) {
+                    SimpleTurnoutOutputState.TURNED -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
+                            gc.fill = Colors.turnout
+                        }
                         TURN.drawForeground(gridX, gridY, gc, renderer, cell)
-                        gc.fill = Colors.turnout
                     }
-                    STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
+                    SimpleTurnoutOutputState.NOT_TURNED -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                            gc.fill = Colors.turnout
+                        }
+                        STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
+                    }
                 }
             } else {
                 STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
@@ -170,34 +169,77 @@ enum class GridCellRenderer {
         override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
             val colors = ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]
             if (cell is TurnoutGridCell) {
-                var turned = cell.turned
-                if (cell.invert.get()) {
-                    turned = !turned
-                }
-                if (turned) {
-                    if (colors) {
-                        gc.fill = Colors.turnoutBlock
-                        TURN.drawForeground(gridX, gridY, gc, renderer, cell)
-                        gc.fill = Colors.turnout
-                    }
-                    gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
-                        TURN.drawForeground(gridX, gridY, gc, renderer, cell)
-                    }
-                } else {
-                    if (colors) {
-                        gc.fill = Colors.turnoutBlock
+                when (cell.logic.getState()) {
+                    SimpleTurnoutOutputState.TURNED -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                            gc.fill = Colors.turnout
+                        }
                         gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
                             TURN.drawForeground(gridX, gridY, gc, renderer, cell)
                         }
-                        gc.fill = Colors.turnout
                     }
-                    TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                    SimpleTurnoutOutputState.NOT_TURNED -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
+                                TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                            }
+                            gc.fill = Colors.turnout
+                        }
+                        TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                    }
                 }
             } else {
                 TURN.drawForeground(gridX, gridY, gc, renderer, cell)
                 gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
                     TURN.drawForeground(gridX, gridY, gc, renderer, cell)
                 }
+            }
+        }
+    },
+
+    THREE_WAY_TURNOUT {
+        override fun drawBackground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
+            Y_TURNOUT.drawBackground(gridX, gridY, gc, renderer, cell)
+            STRAIGHT.drawBackground(gridX, gridY, gc, renderer, cell)
+        }
+
+        override fun drawForeground(gridX: Int, gridY: Int, gc: GraphicsContext, renderer: GridRenderer<out GridCell>, cell: GridCell?) {
+            val colors = ApplicationContext.get().userSettings[UserSettings.COLORED_TURNOUTS]
+            if (cell is ThreeWayTurnout) {
+                when (cell.logic.getState()) {
+                    ThreeWayTurnoutOutputState.NOT_TURNED -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            Y_TURNOUT.drawForeground(gridX, gridY, gc, renderer, cell)
+                            gc.fill = Colors.turnout
+                        }
+                        STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
+                    }
+                    ThreeWayTurnoutOutputState.TURNED_LEFT -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            RIGHT_TURNOUT.drawForeground(gridX, gridY, gc, renderer, cell)
+                            gc.fill = Colors.turnout
+                        }
+                        gc.rotated(90.0, renderer.getMidX(gridX.toDouble()), renderer.getMidY(gridY.toDouble())) {
+                            TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                        }
+                    }
+                    ThreeWayTurnoutOutputState.TURNED_RIGHT -> {
+                        if (colors) {
+                            gc.fill = Colors.turnoutBlock
+                            LEFT_TURNOUT.drawForeground(gridX, gridY, gc, renderer, cell)
+                            gc.fill = Colors.turnout
+                        }
+                        TURN.drawForeground(gridX, gridY, gc, renderer, cell)
+                    }
+                }
+            } else {
+                Y_TURNOUT.drawForeground(gridX, gridY, gc, renderer, cell)
+                STRAIGHT.drawForeground(gridX, gridY, gc, renderer, cell)
             }
         }
     },
@@ -218,8 +260,7 @@ enum class GridCellRenderer {
             }
         }
 
-    }
-
+    },
     ;
 
 
@@ -255,11 +296,11 @@ abstract class BaseCell : GridCell() {
 
 }
 
-class StraightGridCell() : BaseCell() {
+class StraightGridCell : BaseCell() {
     override fun getRenderer() = GridCellRenderer.STRAIGHT
 }
 
-class TurnGridCell() : BaseCell() {
+class TurnGridCell : BaseCell() {
     override fun getRenderer() = GridCellRenderer.TURN
 }
 
@@ -283,47 +324,99 @@ enum class TurnoutType {
 // Because with it kotlin will generate a constructor without parameter
 // which will be utilized by gson
 // without out it there would be no constructor call which will result in values not being initialized
-class TurnoutGridCell(private val turnoutType: TurnoutType = TurnoutType.LEFT) : BaseCell(), Consumer<Boolean> {
+class TurnoutGridCell(private val turnoutType: TurnoutType = TurnoutType.LEFT) : BaseCell(),
+    Turnout<SimpleTurnoutOutputState> {
+
+    private val id = SimpleIntegerProperty(0)
 
     // The should not be serialized, because it could indicate a false state
     @Transient
-    var turned = false
+    override val logic = SimpleTurnoutLogic(this)
 
-    val id = SimpleIntegerProperty(0)
-    val invert = SimpleBooleanProperty(false)
+    override var stateMap = logic.getDefaultStateMap()
 
-    override fun accept(t: Boolean) {
-        turned = t
-    }
-
-    fun init() {
+    override fun init() {
         val connectionHandler = ApplicationContext.get().connectionHandler
-        connectionHandler.addTurnout(id.get(), this)
-        id.addListener { _, oldValue, newValue ->
-            connectionHandler.removeTurnout(oldValue.toInt(), this)
-            connectionHandler.addTurnout(newValue.toInt(), this)
+        connectionHandler.addTurnout(this)
+        id.addListener { _, oldValue, _ ->
+            connectionHandler.updateTurnout(oldValue.toInt(), this)
         }
     }
 
     override fun getRenderer() = turnoutType.getRenderer()
 
+
     override fun getContextOptions(): List<MenuItem> {
         val item = MenuItem(translate("context_menu.turn"))
         item.setOnAction {
-            val isDebug = ApplicationContext.get().buildInfo.isDebug()
-            if (ApplicationContext.get().connectionHandler.hasConnection() || isDebug) {
-                if (isDebug) {
-                    turned = !turned
-                }
-                ApplicationContext.get().connectionHandler.sendPacket(TurnoutPacket.newOperation(id.get(), !turned))
-            } else {
-                NoConnectionDialog().showDialog()
-            }
+            turnTo(logic.getState().next())
         }
         return listOf(item)
     }
 
-    override fun getParameters() = mapOf(Pair("id", id), Pair("invert_turnout", invert))
+    override fun getParameters() = mapOf(Pair("id", id))
+
+    override fun getAddresses() = intArrayOf(id.get())
+
+    override fun addressToTurnoutInput(address: Int) = 0
+
+    override fun turnoutInputToAddress(input: Int) = id.get()
+}
+
+class ThreeWayTurnout : BaseCell(), Turnout<ThreeWayTurnoutOutputState> {
+
+    private val id1 = SimpleIntegerProperty(0)
+    private val id2 = SimpleIntegerProperty(0)
+
+    @Transient
+    override val logic = ThreeWayTurnoutLogic(this)
+
+    override var stateMap = logic.getDefaultStateMap()
+
+    override fun init() {
+        val connectionHandler = ApplicationContext.get().connectionHandler
+        connectionHandler.addTurnout(this)
+        id1.addListener { _, oldValue, _ ->
+            connectionHandler.updateTurnout(oldValue.toInt(), this)
+        }
+        id2.addListener { _, oldValue, _ ->
+            connectionHandler.updateTurnout(oldValue.toInt(), this)
+        }
+    }
+
+    override fun getContextOptions(): List<MenuItem> {
+        val turnNext = MenuItem(translate("context_menu.turn_next"))
+        turnNext.setOnAction {
+            turnTo(logic.getState().next())
+        }
+
+        val turnStraight = MenuItem(translate("context_menu.turn_straight"))
+        turnStraight.setOnAction {
+            turnTo(ThreeWayTurnoutOutputState.NOT_TURNED)
+        }
+
+        val turnLeft = MenuItem(translate("context_menu.turn_left"))
+        turnLeft.setOnAction {
+            turnTo(ThreeWayTurnoutOutputState.TURNED_LEFT)
+        }
+
+        val turnRight = MenuItem(translate("context_menu.turn_right"))
+        turnRight.setOnAction {
+            turnTo(ThreeWayTurnoutOutputState.TURNED_RIGHT)
+        }
+
+        return listOf(turnNext, turnStraight, turnLeft, turnRight)
+    }
+
+    override fun getRenderer() = GridCellRenderer.THREE_WAY_TURNOUT
+
+    override fun getAddresses() = intArrayOf(id1.get(), id2.get())
+
+    override fun getParameters() = mapOf(Pair("id_1", id1), Pair("id_2", id2))
+
+    override fun turnoutInputToAddress(input: Int) = if (input == 0) id1.get() else id2.get()
+
+    override fun addressToTurnoutInput(address: Int) = if (address == id1.get()) 0 else 1
 }
 
 class TextGridCell : BaseCell() {

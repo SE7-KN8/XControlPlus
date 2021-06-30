@@ -3,7 +3,7 @@ package com.github.se7_kn8.xcontrolplus.app.project
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.grid.BaseCell
 import com.github.se7_kn8.xcontrolplus.app.grid.GridHelper
-import com.github.se7_kn8.xcontrolplus.app.grid.TurnoutGridCell
+import com.github.se7_kn8.xcontrolplus.app.project.turnout.Turnout
 import com.github.se7_kn8.xcontrolplus.gridview.GridView
 import javafx.beans.property.SimpleStringProperty
 
@@ -34,13 +34,11 @@ class Sheet(name: String, gridView: GridView<BaseCell>) {
     }
 
     fun init() {
-        gridHelper.getCells().filterIsInstance(TurnoutGridCell::class.java).forEach {
-            it.init()
-        }
+        gridHelper.getCells().filterIsInstance(Turnout::class.java).forEach { it.init() }
     }
 
     fun getTurnoutAddresses(): List<Int> {
-        return gridHelper.getCells().filterIsInstance(TurnoutGridCell::class.java).map { it.id.get() }.distinct()
+        return gridHelper.getCells().filterIsInstance(Turnout::class.java).map { it.getAddresses() }.flatMap { it.toHashSet() }.distinct()
     }
 
     companion object {

@@ -3,8 +3,8 @@ package com.github.se7_kn8.xcontrolplus.app.connection
 import com.github.se7_kn8.xcontrolplus.app.context.ApplicationContext
 import com.github.se7_kn8.xcontrolplus.app.context.WindowContext
 import com.github.se7_kn8.xcontrolplus.app.dialog.ConnectionChoiceDialog
-import com.github.se7_kn8.xcontrolplus.app.grid.TurnoutGridCell
 import com.github.se7_kn8.xcontrolplus.app.project.Sheet
+import com.github.se7_kn8.xcontrolplus.app.project.turnout.Turnout
 import com.github.se7_kn8.xcontrolplus.app.settings.ApplicationSettings
 import com.github.se7_kn8.xcontrolplus.app.util.debug
 import com.github.se7_kn8.xcontrolplus.app.util.info
@@ -18,6 +18,7 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.control.Alert
+import java.util.function.BiConsumer
 import java.util.function.Consumer
 
 class ConnectionHandler : Consumer<Packet> {
@@ -76,7 +77,7 @@ class ConnectionHandler : Consumer<Packet> {
     val hasConnection = SimpleBooleanProperty(false)
     val trackStop = SimpleBooleanProperty(false)
 
-    private val turnoutMap = HashMap<Int, ArrayList<Consumer<Boolean>>>()
+    private val turnoutMap = HashMap<Int, MutableSet<BiConsumer<Int, Boolean>>>()
     private val connectionTesterRunnable = CheckIfConnectionStillAlive()
     private val connectionTestThread = Thread(connectionTesterRunnable).apply {
         name = "ConnectionKeepAliveTest"
@@ -129,14 +130,30 @@ class ConnectionHandler : Consumer<Packet> {
         connection.set(null)
     }
 
-    fun addTurnout(id: Int, onTurn: Consumer<Boolean>) {
-        debug("Register turnout consumer $onTurn with id $id")
-        turnoutMap.getOrPut(id) { ArrayList() }.add(onTurn)
+
+    fun updateTurnout(oldAddress: Int, turnout: Turnout<*>) {
+        removeTurnout(oldAddress, turnout)
+        addTurnout(turnout)
     }
 
-    fun removeTurnout(id: Int, onTurn: Consumer<Boolean>) {
-        debug("Remove turnout consumer $onTurn with id $id")
-        turnoutMap.getOrPut(id) { ArrayList() }.remove(onTurn)
+
+    fun addTurnout(turnout: Turnout<*>) {
+        debug { "Register turnout consumer $turnout for addresses ${turnout.getAddresses().joinToString { it.toString() }}" }
+        turnout.getAddresses().forEach {
+            turnoutMap.getOrPut(it) { HashSet() }.add(turnout)
+        }
+    }
+
+    fun removeTurnout(oldAddress: Int, turnout: Turnout<*>) {
+        debug { "Remove turnout consumer $turnout for address $oldAddress" }
+        turnoutMap.getOrPut(oldAddress) { HashSet() }.remove(turnout)
+    }
+
+    fun removeTurnout(turnout: Turnout<*>) {
+        debug { "Remove turnout consumer $turnout for addresses ${turnout.getAddresses().joinToString { it.toString() }}" }
+        turnout.getAddresses().forEach {
+            turnoutMap.getOrPut(it) { HashSet() }.remove(turnout)
+        }
     }
 
     fun close() {
@@ -145,7 +162,7 @@ class ConnectionHandler : Consumer<Packet> {
     }
 
     fun removeSheet(sheet: Sheet) {
-        sheet.gridHelper.getCells().filterIsInstance<TurnoutGridCell>().forEach { removeTurnout(it.id.get(), it) }
+        sheet.gridHelper.getCells().filterIsInstance(Turnout::class.java).forEach(::removeTurnout)
     }
 
     fun clear() {
@@ -160,7 +177,7 @@ class ConnectionHandler : Consumer<Packet> {
                 connectionTesterRunnable.receivedEcho = packet.randomNumber.toInt()
             }
             is TurnoutPacket -> {
-                Platform.runLater { turnoutMap[packet.address]?.forEach { it.accept(packet.isTurned()) } }
+                Platform.runLater { turnoutMap[packet.address]?.forEach { it.accept(packet.address, packet.isTurned()) } }
             }
             is TrackPowerPacket -> {
                 Platform.runLater { trackStop.set(packet.state != 1) } // XNET_TRACK_POWER_NORMAL

@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import java.lang.reflect.Type
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 // From: https://stackoverflow.com/a/9550086/10648509
@@ -68,6 +69,8 @@ class ApplicationContext {
         .registerTypeAdapter(SimpleBooleanProperty::class.java, SimpleBooleanPropertyAdapter())
         .create()
 
+    val executor: ExecutorService = Executors.newCachedThreadPool()
+
     val applicationSettings = ApplicationSettings()
     val userSettings = UserSettings()
 
@@ -75,7 +78,6 @@ class ApplicationContext {
 
     val translator = Translator()
 
-    val executor = Executors.newCachedThreadPool()
 
     val buildInfo = BuildInfo()
 
