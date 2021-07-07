@@ -84,7 +84,7 @@ class ApplicationContext {
     companion object {
 
         private lateinit var instance: ApplicationContext
-        private var init = false;
+        private var init = false
 
         fun init() {
             if (!init) {

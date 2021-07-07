@@ -231,7 +231,6 @@ class XControlPlus : Application() {
         }
 
         // Set window icons
-        //FIXME Currently not working with intellij because: https://youtrack.jetbrains.com/issue/IDEA-197469
         stage.icons.addAll(
             Image(javaClass.getResourceAsStream("/assets/logo/large.png")),
             Image(javaClass.getResourceAsStream("/assets/logo/medium.png")),
