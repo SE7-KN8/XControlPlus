@@ -90,6 +90,8 @@ public:
     // Address is zero based; Turnout 1 == Address 0
     void requestTurnoutOperation(uint16_t address, uint8_t operation);
 
+    inline void _rxCompleted();
+
     inline void _txCompleted();
 
 private:
@@ -101,13 +103,11 @@ private:
 
     void addXorByte(XpressNetPacket &packet);
 
-    void writePacket(XpressNetPacket &packet);
-
-    inline void write(uint16_t data);
-
     void writeAck();
 
     void sendFromData(const uint8_t *data, uint8_t len);
+
+    void write(uint16_t data);
 
     inline uint16_t readUart();
 
@@ -139,6 +139,9 @@ private:
     // Current position in receiver buffer
     volatile uint8_t receiveBufferPos;
     uint8_t receiveBuffer[XNET_RECEIVE_BUFFER];
+
+    XpressNetPacket packetToSend;
+    volatile uint8_t sentPos;
 
     // ISR-Safe buffers to allow async sending and processing of packets
     RingBufCPP<XpressNetPacket, XNET_SEND_BUFFER> sendBuffer;

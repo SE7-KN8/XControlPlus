@@ -92,15 +92,16 @@ void XNet::requestTurnoutOperation(uint16_t address, uint8_t operation) {
 }
 
 
-// USART tx complete interrupt handler
-inline void XNet::_txCompleted() {
+// USART rx complete interrupt handler
+inline void XNet::_rxCompleted() {
     uint16_t data = readUart();
     if (data == inqByte) {
         XpressNetPacket packet;
         if (sendBuffer.pull(&packet)) {
+            packetToSend = packet;
+            sentPos = 0;
             digitalWrite(controlPin, HIGH);
-            writePacket(packet);
-            digitalWrite(controlPin, LOW);
+            write(packetToSend.data[sentPos]);
         }
     } else if (data == resByte) {
         bytesToRead = 1; // The packet size is currently unknown so just read the header
@@ -138,6 +139,16 @@ inline void XNet::_txCompleted() {
 #endif
 }
 
+inline void XNet::_txCompleted() {
+    if (sentPos == (packetToSend.length - 1)) {
+        digitalWrite(controlPin, LOW);
+        return;
+    } else {
+        sentPos++;
+        write(packetToSend.data[sentPos]);
+    }
+}
+
 // Calculates the parity bit and sets it to the last bit of the given byte
 uint8_t XNet::withParity(uint8_t data) {
     uint16_t parity = PARITY_EVEN;
@@ -168,8 +179,8 @@ void XNet::initUart() {
     UBRR0H = 0x0;
     UBRR0L = 0x0F;
 
-    // Enable receiver, transmitter, receive complete interrupt and 9th bit
-    UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0) | (1 << UCSZ02);
+    // Enable receiver, transmitter, receive complete interrupt, transmit complete interrupt and 9th bit
+    UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0) | (1 << TXCIE0) | (1 << UCSZ02);
 
     sei(); // Enable interrupts
 }
@@ -192,11 +203,12 @@ void XNet::addXorByte(XpressNetPacket &packet) {
 
 
 void XNet::writeAck() {
-    uint8_t data[] = {0x20, 0x20};
-    XpressNetPacket packet = XpressNetPacket(2, data);
+    noInterrupts();
     digitalWrite(controlPin, HIGH);
-    writePacket(packet);
+    write(0x20);
+    write(0x20);
     digitalWrite(controlPin, LOW);
+    interrupts();
 }
 
 inline void XNet::flush() {
@@ -206,7 +218,7 @@ inline void XNet::flush() {
     }
 }
 
-inline void XNet::write(uint16_t data) {
+void XNet::write(uint16_t data) {
     // Wait for empty transmit buffer
     while (!(UCSR0A & (1 << UDRE0))) {}
     // Copy 9th bit to TXB8
@@ -216,17 +228,11 @@ inline void XNet::write(uint16_t data) {
     }
     // Put data into buffer, sends the data
     UDR0 = data;
-
+/*
     // Wait for complete transmit
     while (!(UCSR0A & (1 << TXC0))) {};
     UCSR0A = (1 << TXC0);
-    UCSR0A = 0;
-}
-
-void XNet::writePacket(XpressNetPacket &packet) {
-    for (int i = 0; i < packet.length; ++i) {
-        write(packet.data[i]);
-    }
+    UCSR0A = 0;*/
 }
 
 inline uint16_t XNet::readUart() {
@@ -251,5 +257,9 @@ inline uint16_t XNet::readUart() {
 
 
 ISR(USART_RX_vect) {
+    XpressNet._rxCompleted();
+}
+
+ISR(USART_TX_vect) {
     XpressNet._txCompleted();
 }

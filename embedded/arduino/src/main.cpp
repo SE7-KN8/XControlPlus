@@ -1,9 +1,9 @@
 
 #include "Arduino.h"
 #include "XpressNet.h"
-#include "SoftwareSerial.h"
+#include "AltSoftSerial.h"
 
-SoftwareSerial output(11, 12);
+AltSoftSerial output;
 
 void on_track_power(uint8_t new_track_power) {
     digitalWrite(LED_BUILTIN, new_track_power != XNET_TRACK_POWER_NORMAL);
@@ -18,9 +18,11 @@ void on_turnout_status(uint16_t address, uint8_t state) {
     output.write(data, 5);
 }
 
+
+#define READ_BUFFER_SIZE 10
 uint8_t readBufferPos = 0;
 int8_t bytesToRead = -1; // Not in packet
-uint8_t readBuffer[10];
+uint8_t readBuffer[READ_BUFFER_SIZE];
 
 void parsePacket(const uint8_t data[]) {
     uint8_t length = data[0];
@@ -63,6 +65,12 @@ void parsePacket(const uint8_t data[]) {
     }
 }
 
+void clearReadBuffer() {
+    bytesToRead = -1;
+    memset(readBuffer, 0, 10);
+    readBufferPos = 0;
+}
+
 void receivePackets() {
     if (output.available()) {
         uint8_t readByte = output.read();
@@ -72,14 +80,16 @@ void receivePackets() {
             readBufferPos++;
             bytesToRead--;
         } else if (bytesToRead >= 1) {
+            if (readBufferPos >= READ_BUFFER_SIZE) {
+                // Drop packets that are too long
+                clearReadBuffer();
+            }
             readBuffer[readBufferPos] = readByte;
             bytesToRead--;
             readBufferPos++;
             if (bytesToRead == 0) {
                 parsePacket(readBuffer);
-                bytesToRead = -1;
-                memset(readBuffer, 0, 10);
-                readBufferPos = 0;
+                clearReadBuffer();
             }
         }
     }
@@ -95,8 +105,8 @@ void on_packet(XpressNetPacket packet) {
 
 void setup() {
     pinMode(13, OUTPUT);
-    XpressNet.begin(23, 8);
-    output.begin(19200); // Try with lower speeds at first
+    XpressNet.begin(23, 7);
+    AltSoftSerial::begin(19200); // Try with lower speeds at first
     XpressNet.onTrackPower = on_track_power;
     XpressNet.onTurnoutStatus = on_turnout_status;
 #ifdef XNET_DEBUG
