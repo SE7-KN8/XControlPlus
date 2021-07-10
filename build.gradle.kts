@@ -50,15 +50,17 @@ dependencies {
     implementation("org.jfxtras:jmetro:11.6.15")
 
 
+    val javaFXVersion = "17-ea+14"
+
     if (arch.isAmd64 || arch.isI386) {
-        implementation("org.openjfx:javafx-base:16:${platform}")
-        implementation("org.openjfx:javafx-controls:16:${platform}")
-        implementation("org.openjfx:javafx-graphics:16:${platform}")
+        implementation("org.openjfx:javafx-base:$javaFXVersion:${platform}")
+        implementation("org.openjfx:javafx-controls:$javaFXVersion:${platform}")
+        implementation("org.openjfx:javafx-graphics:$javaFXVersion:${platform}")
     } else {
         println("Excluded javafx runtime dependencies")
-        compileOnly("org.openjfx:javafx-base:16:${platform}")
-        compileOnly("org.openjfx:javafx-controls:16:${platform}")
-        compileOnly("org.openjfx:javafx-graphics:16:${platform}")
+        compileOnly("org.openjfx:javafx-base:$javaFXVersion:${platform}")
+        compileOnly("org.openjfx:javafx-controls:$javaFXVersion:${platform}")
+        compileOnly("org.openjfx:javafx-graphics:$javaFXVersion:${platform}")
     }
 
 }
@@ -70,6 +72,7 @@ java {
 application {
     mainModule.set("xcontrolplus")
     mainClass.set("com.github.se7_kn8.xcontrolplus.MainKt")
+    applicationDefaultJvmArgs = listOf("-Dprism.verbose=true")
 }
 
 tasks.withType<KotlinCompile> {
