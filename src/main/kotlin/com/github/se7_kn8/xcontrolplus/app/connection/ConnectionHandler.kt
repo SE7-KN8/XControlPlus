@@ -38,20 +38,24 @@ class ConnectionHandler : Consumer<Packet> {
                         val conn = connection.get()
                         if (conn != null) {
                             if (conn.isOpen) {
-                                receivedEcho = Int.MAX_VALUE
-                                trace { "Testing connection" }
-                                val echoPacket = EchoPacket()
-                                conn.sendPacket(echoPacket)
-                                val start = System.currentTimeMillis()
                                 var receivedAnswer = false
-                                while ((System.currentTimeMillis() - start) < 5000 && !receivedAnswer) {
-                                    try {
-                                        Thread.sleep(50) // Save some cpu time
-                                    } catch (e: InterruptedException) {
-                                        break@threadLoop
-                                    }
-                                    if (receivedEcho == echoPacket.randomNumber.toInt()) {
-                                        receivedAnswer = true
+                                trace { "Testing connection" }
+                                multipleChecks@ for (i in 0..5) {
+                                    receivedEcho = Int.MAX_VALUE
+                                    val echoPacket = EchoPacket()
+                                    conn.sendPacket(echoPacket)
+                                    val start = System.currentTimeMillis()
+                                    val waitDelay = if (i == 0) 5000 else 1000
+                                    while ((System.currentTimeMillis() - start) < waitDelay && !receivedAnswer) {
+                                        try {
+                                            Thread.sleep(50) // Save some cpu time
+                                        } catch (e: InterruptedException) {
+                                            break@threadLoop
+                                        }
+                                        if (receivedEcho == echoPacket.randomNumber.toInt()) {
+                                            receivedAnswer = true
+                                            break@multipleChecks
+                                        }
                                     }
                                 }
                                 if (!receivedAnswer) {
