@@ -1,8 +1,10 @@
 package com.github.se7_kn8.xcontrolplus
 
 import com.github.se7_kn8.xcontrolplus.app.XControlPlus
+import com.github.se7_kn8.xcontrolplus.app.util.BuildInfo
 import com.github.se7_kn8.xcontrolplus.app.util.debug
 import com.github.se7_kn8.xcontrolplus.app.util.info
+import com.github.se7_kn8.xcontrolplus.app.util.warn
 import javafx.application.Application
 import java.util.*
 
@@ -12,6 +14,13 @@ fun main(args: Array<String>) {
         val file = mainClass.getResource("/assets/logging/logging.properties")!!.file
         System.setProperty("java.util.logging.config.file", file)
         info("Set logging.properties to $file")
+    }
+
+    if (BuildInfo().isDebug()) {
+        warn("DEBUG MODE")
+        System.getProperties().forEach { t, u ->
+            println("$t=$u")
+        }
     }
 
     info("Starting XControlPlus")
