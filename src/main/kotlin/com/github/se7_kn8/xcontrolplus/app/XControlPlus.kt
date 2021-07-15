@@ -22,12 +22,14 @@ import com.github.se7_kn8.xcontrolplus.app.toolbox.ToolRenderer
 import com.github.se7_kn8.xcontrolplus.app.util.FileUtil
 import com.github.se7_kn8.xcontrolplus.app.util.debug
 import com.github.se7_kn8.xcontrolplus.app.util.translate
+import com.github.se7_kn8.xcontrolplus.app.util.warn
 import com.github.se7_kn8.xcontrolplus.protocol.Connection
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.beans.binding.Bindings
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.ListChangeListener
+import javafx.concurrent.Task
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Scene
@@ -48,6 +50,23 @@ class XControlPlus : Application() {
     private val projectManager = ProjectManager()
     private val currentTab = SimpleObjectProperty<SheetTab>()
     private val currentGridHelper = SimpleObjectProperty<GridHelper>()
+
+
+    class SaveSettingsTask : Task<Unit>() {
+
+        override fun call() {
+            while (!Thread.currentThread().isInterrupted) {
+                try {
+                    ApplicationContext.get().userSettings.save()
+                    ApplicationContext.get().applicationSettings.save()
+                    Thread.sleep(10_000)
+                } catch (e: Exception) {
+                    warn(e, "Error in save settings threads")
+                }
+            }
+        }
+
+    }
 
     override fun init() {
         debug("Init application")
@@ -245,6 +264,8 @@ class XControlPlus : Application() {
                 ).apply { initOwner(WindowContext.get().primaryStage) }.showAndWait()
             }
         }
+
+        ApplicationContext.get().executor.submit(SaveSettingsTask())
 
         // Show the window
         stage.show()

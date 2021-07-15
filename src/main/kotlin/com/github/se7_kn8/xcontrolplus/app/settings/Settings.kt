@@ -36,6 +36,7 @@ abstract class Settings(fileName: String, val entries: List<SettingsEntry<*>>) {
     fun save(forceSave: Boolean = false) {
         if (hasChanged || forceSave) {
             saveMapIntoFile()
+            hasChanged = false
         }
     }
 
@@ -117,6 +118,7 @@ class UserSettings : Settings(
         COLORED_TURNOUTS,
         SINGLE_TOUCH_MODE,
         OPEN_LATEST_CONNECTION,
+        SINGLE_TOUCH_TO_TURN,
     )
 ) {
     companion object {
@@ -125,5 +127,6 @@ class UserSettings : Settings(
         val COLORED_TURNOUTS = SettingsEntry("colored_turnouts", false)
         val SINGLE_TOUCH_MODE = SettingsEntry("single_touch", false)
         val OPEN_LATEST_CONNECTION = SettingsEntry("open_latest_connection", false)
+        val SINGLE_TOUCH_TO_TURN = SettingsEntry("single_touch_to_turn", false)
     }
 }

@@ -59,6 +59,10 @@ class SheetTab(project: Project, val sheet: Sheet) : Tab(sheet.name.get()) {
                             longPressTimer.stop()
                         }
                     }
+                } else if (ApplicationContext.get().userSettings[UserSettings.SINGLE_TOUCH_TO_TURN] && it.eventType == MouseEvent.MOUSE_PRESSED) {
+                    sheet.gridHelper.getHoveredCell().ifPresent { cell ->
+                        cell.getContextOptions().firstOrNull()?.onAction?.handle(ActionEvent())
+                    }
                 } else {
                     this.moveMouseButton = MouseButton.MIDDLE
                 }
