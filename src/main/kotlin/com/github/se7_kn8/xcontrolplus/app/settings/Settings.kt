@@ -91,6 +91,7 @@ class ApplicationSettings : Settings(
         WINDOW_HEIGHT,
         LATEST_PROJECT_PATH,
         LATEST_CONNECTION,
+        RENDER_GRID,
     )
 ) {
     companion object {
@@ -103,6 +104,7 @@ class ApplicationSettings : Settings(
         val WINDOW_HEIGHT = SettingsEntry("window_height", 0.0)
         val LATEST_PROJECT_PATH = SettingsEntry("latest_project_path", "")
         val LATEST_CONNECTION = SettingsEntry("latest_connection", "")
+        val RENDER_GRID = SettingsEntry("render_grid", false)
     }
 }
 

@@ -334,6 +334,12 @@ class XControlPlus : Application() {
             }
         }
 
+        applyShowGrid(ApplicationContext.get().applicationSettings[ApplicationSettings.RENDER_GRID])
+
+        showGrid.selectedProperty().addListener { _, _, newValue ->
+            applyShowGrid(newValue)
+        }
+
         setLabelText(ApplicationContext.get().connectionHandler.connection.get(), false)
         ApplicationContext.get().connectionHandler.connection.addListener { _, _, newValue ->
             setLabelText(newValue, true)
@@ -346,7 +352,6 @@ class XControlPlus : Application() {
 
                 if (oldValue != null) {
                     oldValue.sheet.gridHelper.gridView.scaleProperty().unbindBidirectional(zoomSlider.valueProperty())
-                    oldValue.sheet.gridHelper.gridView.renderGridProperty().unbindBidirectional(showGrid.selectedProperty())
                 }
 
                 if (newValue != null) {
@@ -354,7 +359,6 @@ class XControlPlus : Application() {
                     scaleProperty().bindBidirectional(zoomSlider.valueProperty())
 
                     showGrid.isSelected = isRenderGrid
-                    renderGridProperty().bindBidirectional(showGrid.selectedProperty())
                 }
 
                 mousePosInfoX.textProperty().bind(Bindings.concat(translate("label.x"), " ", mouseGridXProperty()))
@@ -455,6 +459,15 @@ class XControlPlus : Application() {
             right.children.add(button)
         }
         return right
+    }
+
+    private fun applyShowGrid(showGrid: Boolean) {
+        projectManager.activeProject.get()?.let { project ->
+            project.sheets.forEach {
+                it.gridHelper.gridView.isRenderGrid = showGrid
+            }
+        }
+        ApplicationContext.get().applicationSettings[ApplicationSettings.RENDER_GRID] = showGrid
     }
 
     private fun saveWindowSettings() {

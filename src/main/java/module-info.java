@@ -2,6 +2,7 @@ module xcontrolplus {
 	requires xcontrolplus.gridview;
 	requires xcontrolplus.protocol;
 
+	requires javafx.base;
 	requires javafx.controls;
 	requires javafx.graphics;
 
