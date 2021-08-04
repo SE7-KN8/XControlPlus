@@ -92,7 +92,8 @@ class ApplicationSettings : Settings(
         WINDOW_HEIGHT,
         LATEST_PROJECT_PATH,
         LATEST_CONNECTION,
-        RENDER_GRID,
+        RENDER_GRID, // Could this be added to user settings?
+        SHOW_TOOLBARS, // Same for this
     )
 ) {
     companion object {
@@ -106,6 +107,7 @@ class ApplicationSettings : Settings(
         val LATEST_PROJECT_PATH = SettingsEntry("latest_project_path", "")
         val LATEST_CONNECTION = SettingsEntry("latest_connection", "")
         val RENDER_GRID = SettingsEntry("render_grid", false)
+        val SHOW_TOOLBARS = SettingsEntry("show_toolbars", true)
     }
 }
 

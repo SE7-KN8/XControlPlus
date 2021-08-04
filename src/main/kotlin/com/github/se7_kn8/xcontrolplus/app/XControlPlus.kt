@@ -51,6 +51,11 @@ class XControlPlus : Application() {
     private val currentTab = SimpleObjectProperty<SheetTab>()
     private val currentGridHelper = SimpleObjectProperty<GridHelper>()
 
+    // Layout things
+    private val root = BorderPane()
+    private lateinit var leftToolBar: Node
+    private lateinit var rightToolBar: Node
+
 
     class SaveSettingsTask : Task<Unit>() {
 
@@ -118,16 +123,16 @@ class XControlPlus : Application() {
             }
         }
 
-        val left = getLeftNode()
-        val right = getRightNode(toolRenderer)
+        leftToolBar = getLeftNode()
+        rightToolBar = getRightNode(toolRenderer)
         val top = getTopNode()
         val bottom = getBottomNode()
 
         // Setup root node
         val createProjectLabel = Label(translate("label.new_project_hint"))
-        val root = BorderPane()
-        root.left = left
-        root.right = right
+
+        root.left = leftToolBar
+        root.right = rightToolBar
         root.top = top
         root.bottom = bottom
         root.center = createProjectLabel
@@ -339,8 +344,8 @@ class XControlPlus : Application() {
         val mousePosInfoX = Label()
         val mousePosInfoY = Label()
 
-        val showGrid = CheckBox()
-        showGrid.text = translate("label.render_grid")
+        val showGrid = CheckBox(translate("label.render_grid"))
+        val showToolbars = CheckBox(translate("label.show_toolbars"))
 
         val connectionInfo = Label()
 
@@ -355,11 +360,19 @@ class XControlPlus : Application() {
             }
         }
 
-        applyShowGrid(ApplicationContext.get().applicationSettings[ApplicationSettings.RENDER_GRID])
-
         showGrid.selectedProperty().addListener { _, _, newValue ->
             applyShowGrid(newValue)
         }
+
+        showToolbars.selectedProperty().addListener { _, _, newValue ->
+            applyShowToolbars(newValue)
+        }
+
+        showGrid.isSelected = ApplicationContext.get().applicationSettings[ApplicationSettings.RENDER_GRID]
+        Platform.runLater { applyShowGrid(showGrid.isSelected) }
+
+        showToolbars.isSelected = ApplicationContext.get().applicationSettings[ApplicationSettings.SHOW_TOOLBARS]
+        Platform.runLater { applyShowToolbars(showToolbars.isSelected) }
 
         setLabelText(ApplicationContext.get().connectionHandler.connection.get(), false)
         ApplicationContext.get().connectionHandler.connection.addListener { _, _, newValue ->
@@ -378,8 +391,6 @@ class XControlPlus : Application() {
                 if (newValue != null) {
                     zoomSlider.value = scale
                     scaleProperty().bindBidirectional(zoomSlider.valueProperty())
-
-                    showGrid.isSelected = isRenderGrid
                 }
 
                 mousePosInfoX.textProperty().bind(Bindings.concat(translate("label.x"), " ", mouseGridXProperty()))
@@ -387,7 +398,7 @@ class XControlPlus : Application() {
             }
         }
 
-        bottom.children.addAll(connectionInfo, showGrid, mousePosInfoX, mousePosInfoY, zoomSlider)
+        bottom.children.addAll(showToolbars, connectionInfo, showGrid, mousePosInfoX, mousePosInfoY, zoomSlider)
         return bottom
     }
 
@@ -489,6 +500,18 @@ class XControlPlus : Application() {
             }
         }
         ApplicationContext.get().applicationSettings[ApplicationSettings.RENDER_GRID] = showGrid
+    }
+
+
+    private fun applyShowToolbars(showToolbars: Boolean) {
+        if (showToolbars) {
+            root.left = leftToolBar
+            root.right = rightToolBar
+        } else {
+            root.left = null
+            root.right = null
+        }
+        ApplicationContext.get().applicationSettings[ApplicationSettings.SHOW_TOOLBARS] = showToolbars
     }
 
     private fun saveWindowSettings() {
